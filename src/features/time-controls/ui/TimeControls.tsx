@@ -3,10 +3,12 @@ import './TimeControls.css';
 interface TimeControlsProps {
     currentYear: number;
     isPlaying: boolean;
+    speed: number;
     onTogglePlay: () => void;
+    onToggleSpeed: () => void;
 }
 
-export const TimeControls = ({ currentYear, isPlaying, onTogglePlay }: TimeControlsProps) => {
+export const TimeControls = ({ currentYear, isPlaying, speed, onTogglePlay, onToggleSpeed }: TimeControlsProps) => {
 
 
     const getEraName = (year: number) => {
@@ -28,7 +30,7 @@ export const TimeControls = ({ currentYear, isPlaying, onTogglePlay }: TimeContr
                 <button className="circle-btn play-btn" onClick={onTogglePlay}>
                     {isPlaying ? '⏸' : '▶'}
                 </button>
-                <button className="circle-btn speed-btn">1x</button>
+                <button className="circle-btn speed-btn" onClick={onToggleSpeed}>{speed}x</button>
             </div>
         </div>
     );

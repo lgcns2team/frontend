@@ -40,6 +40,7 @@ const HistoryMap = () => {
 
     const [currentYear, setCurrentYear] = useState<number>(475);
     const [isPlaying, setIsPlaying] = useState<boolean>(false);
+    const [speed, setSpeed] = useState<number>(1);
     const [layerType, setLayerType] = useState<'default' | 'battles' | 'trade' | 'people'>('default');
 
     const playInterval = useRef<ReturnType<typeof setInterval> | null>(null);
@@ -203,13 +204,14 @@ const HistoryMap = () => {
     // Auto Play
     useEffect(() => {
         if (isPlaying) {
+            const intervalMs = 500 / speed;
             playInterval.current = setInterval(() => {
                 setCurrentYear(prev => {
                     const next = prev + 1;
                     if (next > 2024) return 475; // Loop back
                     return next;
                 });
-            }, 500);
+            }, intervalMs);
         } else {
             if (playInterval.current) {
                 clearInterval(playInterval.current);
@@ -219,7 +221,14 @@ const HistoryMap = () => {
         return () => {
             if (playInterval.current) clearInterval(playInterval.current);
         };
-    }, [isPlaying]);
+    }, [isPlaying, speed]);
+
+    const toggleSpeed = () => {
+        setSpeed(prev => {
+            if (prev >= 16) return 1;
+            return prev * 2;
+        });
+    };
 
     const updateMarkers = () => {
         if (!mapInstance.current || !markersLayer.current) return;
@@ -389,7 +398,9 @@ const HistoryMap = () => {
                 <TimeControls
                     currentYear={currentYear}
                     isPlaying={isPlaying}
+                    speed={speed}
                     onTogglePlay={() => setIsPlaying(!isPlaying)}
+                    onToggleSpeed={toggleSpeed}
                 />
                 <MapLayers
                     activeLayer={layerType}
