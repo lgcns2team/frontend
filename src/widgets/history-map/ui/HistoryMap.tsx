@@ -36,6 +36,7 @@ const HistoryMap = () => {
     const mapContainer = useRef<HTMLDivElement>(null);
     const mapInstance = useRef<L.Map | null>(null);
     const historicalLayer = useRef<L.Layer | null>(null);
+    const mapDataLayer = useRef<L.Layer | null>(null);
     const markersLayer = useRef<L.LayerGroup | null>(null);
 
     const [currentYear, setCurrentYear] = useState<number>(475);
@@ -141,6 +142,16 @@ const HistoryMap = () => {
 
                     const newLayer = L.geoJSON(filteredData as any, {
                         style: function (feature: any) {
+                            // Check if this is a LineString with custom stroke properties
+                            if (feature.geometry.type === 'LineString' || feature.geometry.type === 'MultiLineString') {
+                                return {
+                                    color: feature.properties?.stroke || feature.properties?.color || '#ef4444',
+                                    weight: feature.properties?.['stroke-width'] || 2,
+                                    opacity: 1,
+                                    fillOpacity: 0
+                                };
+                            }
+                            // Default polygon styling
                             return {
                                 fillColor: getColorByCountry(feature?.properties?.NAME || feature?.properties?.name),
                                 weight: 1,
@@ -191,7 +202,47 @@ const HistoryMap = () => {
             }
         };
 
+        const loadMapDataLayer = async () => {
+            // Only show map_data between 1231 and 1259
+            if (currentYear < 1231 || currentYear > 1259) {
+                if (mapDataLayer.current && mapInstance.current) {
+                    mapInstance.current.removeLayer(mapDataLayer.current);
+                    mapDataLayer.current = null;
+                }
+                return;
+            }
+
+            try {
+                const response = await fetch('/geojson/map_data.geojson');
+                if (!response.ok) return;
+                const data = await response.json();
+
+                if (data && mapInstance.current) {
+                    const mapDataGeoJSON = L.geoJSON(data as any, {
+                        style: function (feature: any) {
+                            return {
+                                color: feature.properties?.stroke || feature.properties?.color || '#ef4444',
+                                weight: feature.properties?.['stroke-width'] || 2,
+                                opacity: 1,
+                                fillOpacity: 0
+                            };
+                        }
+                    });
+
+                    if (mapDataLayer.current) {
+                        mapInstance.current?.removeLayer(mapDataLayer.current);
+                    }
+
+                    mapDataGeoJSON.addTo(mapInstance.current!);
+                    mapDataLayer.current = mapDataGeoJSON;
+                }
+            } catch (error) {
+                console.error('Error loading map_data:', error);
+            }
+        };
+
         loadMapData();
+        loadMapDataLayer();
         updateMarkers();
 
     }, [currentYear]);
