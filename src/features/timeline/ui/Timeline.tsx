@@ -14,6 +14,7 @@ export const Timeline = ({ currentYear, onYearChange }: TimelineProps) => {
 
             <div className="timeline-wrapper">
                 <div className="timeline-slider-container">
+                    <div className="timeline-ruler-ticks"></div>
                     <input
                         type="range"
                         min="-2333"

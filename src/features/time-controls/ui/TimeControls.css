@@ -4,17 +4,64 @@
     gap: 12px;
 }
 
-.year-display-box {
+.ruler-display-container {
     background: white;
-    border: 2px solid #666;
-    border-radius: 4px;
-    padding: 8px 16px;
-    font-size: 24px;
+    border: 3px solid;
+    /* Color set inline */
+    border-radius: 8px;
+    padding: 4px 12px;
+    min-width: 240px;
+    position: relative;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    height: 64px;
+}
+
+.ruler-marks-top,
+.ruler-marks-bottom {
+    height: 6px;
+    width: 100%;
+    background-image: repeating-linear-gradient(90deg,
+            #94a3b8 0px,
+            #94a3b8 1px,
+            transparent 1px,
+            transparent 10px);
+    opacity: 0.5;
+}
+
+.year-text-content {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 4px 0;
+}
+
+.year-number {
+    font-size: 28px;
+    font-weight: 800;
+    font-family: 'Courier New', Courier, monospace;
+    /* Monospace for ruler feel */
+    letter-spacing: -1px;
+}
+
+.year-unit {
+    font-size: 16px;
     font-weight: bold;
-    color: #333;
-    min-width: 200px;
-    text-align: center;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    color: #64748b;
+    margin-top: 6px;
+}
+
+.era-badge {
+    padding: 2px 8px;
+    border-radius: 12px;
+    font-size: 14px;
+    font-weight: bold;
+    color: #1e293b;
+    margin-left: 8px;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
 }
 
 .playback-controls {

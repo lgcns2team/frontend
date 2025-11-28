@@ -38,6 +38,22 @@
     gap: 12px;
 }
 
+/* Top Right */
+.top-right {
+    top: 20px;
+    right: 20px;
+}
+
+/* Right Sidebar */
+.right-sidebar {
+    top: 50%;
+    right: 20px;
+    transform: translateY(-50%);
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
 /* Marker Styles */
 .capital-marker {
     background: none;

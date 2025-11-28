@@ -15,28 +15,56 @@
 
 .timeline-slider-container {
     position: relative;
-    height: 20px;
+    height: 80px;
+    /* Increased height further */
     display: flex;
     align-items: center;
+    margin-bottom: 10px;
 }
 
 .timeline-slider {
     -webkit-appearance: none;
+    appearance: none;
+    /* Standard property */
     width: 100%;
-    height: 8px;
+    height: 100%;
     background: transparent;
     outline: none;
-    z-index: 2;
+    z-index: 3;
     margin: 0;
+    position: absolute;
+    top: 0;
+    left: 0;
 }
 
-/* Custom Slider Track */
+/* Ruler Ticks */
+.timeline-ruler-ticks {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 2;
+    background-image:
+        repeating-linear-gradient(90deg, #64748b 0px, #64748b 1px, transparent 1px, transparent 10px),
+        /* Major ticks */
+        repeating-linear-gradient(90deg, #94a3b8 0px, #94a3b8 1px, transparent 1px, transparent 2px);
+    /* Minor ticks */
+    background-size: 100% 40px, 100% 24px;
+    /* Taller ticks */
+    background-position: center, center;
+    background-repeat: no-repeat;
+    pointer-events: none;
+}
+
+/* Custom Slider Track (Colored Gradient) */
 .timeline-track-bg {
     position: absolute;
     top: 50%;
     left: 0;
     right: 0;
-    height: 12px;
+    height: 32px;
+    /* Increased track height */
     transform: translateY(-50%);
     background: linear-gradient(to right,
             #cbd5e1 0%,
@@ -66,32 +94,51 @@
             #fcd34d 97%,
             /* Modern/Empire */
             #fcd34d 100%);
-    border-radius: 6px;
+    border-radius: 4px;
     z-index: 1;
-    box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.1);
+    opacity: 0.8;
 }
 
+/* Lens Thumb */
 .timeline-slider::-webkit-slider-thumb {
     -webkit-appearance: none;
     appearance: none;
-    width: 24px;
-    height: 24px;
+    width: 48px;
+    /* Increased thumb size */
+    height: 48px;
     border-radius: 50%;
-    background: #3b82f6;
+    background: rgba(255, 255, 255, 0.9);
     cursor: pointer;
-    border: 2px solid white;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
-    margin-top: -8px;
+    border: 2px solid #3b82f6;
+    box-shadow:
+        0 4px 6px rgba(0, 0, 0, 0.2),
+        inset 0 0 0 2px rgba(255, 255, 255, 0.5);
+    /* Inner ring */
+    backdrop-filter: blur(4px);
+    transition: transform 0.1s;
+    /* Removed margin-top and transform offset as we want it centered */
+}
+
+.timeline-slider::-webkit-slider-thumb:hover {
+    transform: scale(1.2);
+    /* Magnification effect */
+    background: white;
+    box-shadow: 0 6px 12px rgba(59, 130, 246, 0.4);
 }
 
 .timeline-slider::-moz-range-thumb {
-    width: 24px;
-    height: 24px;
+    width: 48px;
+    height: 48px;
     border-radius: 50%;
-    background: #3b82f6;
+    background: rgba(255, 255, 255, 0.9);
     cursor: pointer;
-    border: 2px solid white;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+    border: 2px solid #3b82f6;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+    transition: transform 0.1s;
+}
+
+.timeline-slider::-moz-range-thumb:hover {
+    transform: scale(1.2);
 }
 
 .timeline-labels {
