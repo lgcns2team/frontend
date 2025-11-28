@@ -11,6 +11,14 @@ import {
     peopleData
 } from '../../../shared/config/constants';
 
+// Features
+import { TimeControls } from '../../../features/time-controls';
+import { MapLayers } from '../../../features/map-layers';
+import { SearchYear } from '../../../features/search-year';
+import { SidebarMenu } from '../../../features/sidebar-menu';
+import { Timeline } from '../../../features/timeline';
+import { ChatbotTrigger } from '../../../features/chatbot';
+
 // Fix Leaflet marker icon issue
 import icon from 'leaflet/dist/images/marker-icon.png';
 import iconShadow from 'leaflet/dist/images/marker-shadow.png';
@@ -35,8 +43,6 @@ const HistoryMap = () => {
     const [layerType, setLayerType] = useState<'default' | 'battles' | 'trade' | 'people'>('default');
 
     const playInterval = useRef<ReturnType<typeof setInterval> | null>(null);
-
-    // ... (previous imports)
 
     // Initialize Map
     useEffect(() => {
@@ -381,97 +387,40 @@ const HistoryMap = () => {
 
             {/* Top Left: Year, Play, Speed, Layers */}
             <div className="ui-overlay top-left">
-                <div className="control-row">
-                    <div className="year-display-box">
-                        {currentYear > 0 ? `${currentYear}년` : `BC ${Math.abs(currentYear)}년`} {getCapitalPeriod(currentYear).split('_')[0] !== '1945' ? '고려시대' : '현대'} {/* Placeholder era name */}
-                    </div>
-                    <div className="playback-controls">
-                        <button className="circle-btn play-btn" onClick={() => setIsPlaying(!isPlaying)}>
-                            {isPlaying ? '⏸' : '▶'}
-                        </button>
-                        <button className="circle-btn speed-btn">1x</button>
-                    </div>
-                </div>
-                <div className="layer-tabs">
-                    <button
-                        className={`tab-btn ${layerType === 'battles' ? 'active' : ''}`}
-                        onClick={() => setLayerType(layerType === 'battles' ? 'default' : 'battles')}
-                    >
-                        전쟁/동맹
-                    </button>
-                    <button
-                        className={`tab-btn ${layerType === 'trade' ? 'active' : ''}`}
-                        onClick={() => setLayerType(layerType === 'trade' ? 'default' : 'trade')}
-                    >
-                        무역
-                    </button>
-                    <button
-                        className={`tab-btn ${layerType === 'people' ? 'active' : ''}`}
-                        onClick={() => setLayerType(layerType === 'people' ? 'default' : 'people')}
-                    >
-                        종교/문화
-                    </button>
-                </div>
+                <TimeControls
+                    currentYear={currentYear}
+                    isPlaying={isPlaying}
+                    onTogglePlay={() => setIsPlaying(!isPlaying)}
+                />
+                <MapLayers
+                    activeLayer={layerType}
+                    onLayerChange={setLayerType}
+                />
             </div>
 
             {/* Top Right: Search */}
             <div className="ui-overlay top-right">
-                <div className="search-box">
-                    <input type="text" placeholder="연도 검색" />
-                    <button className="search-btn">🔍</button>
-                </div>
+                <SearchYear />
             </div>
 
             {/* Right Sidebar: Features */}
             <div className="ui-overlay right-sidebar">
-                <button className="feature-btn">주요사건</button>
-                <button className="feature-btn">교과서</button>
-                <button className="feature-btn">인물</button>
-                <button className="feature-btn">토론</button>
+                <SidebarMenu />
             </div>
 
             {/* Bottom: Chatbot & Timeline */}
             <div className="ui-overlay bottom-bar">
                 <div className="bottom-left-group">
-                    <button className="ai-chat-btn">
-                        <div className="ai-icon">AI</div>
-                        <span>챗봇</span>
-                    </button>
-                    <button className="nav-btn prev-btn" onClick={() => setCurrentYear(prev => prev - 10)}>
-                        ◀
-                    </button>
+                    <ChatbotTrigger />
                 </div>
 
-                <div className="timeline-wrapper">
-                    <div className="timeline-slider-container">
-                        <input
-                            type="range"
-                            min="-2333"
-                            max="2024"
-                            value={currentYear}
-                            className="timeline-slider"
-                            onChange={(e) => setCurrentYear(parseInt(e.target.value))}
-                        />
-                        <div className="timeline-track-bg"></div>
-                    </div>
-                    <div className="timeline-labels">
-                        <span>BC 2000</span>
-                        <span>BC 500</span>
-                        <span>0</span>
-                        <span>500</span>
-                        <span>1000</span>
-                        <span>1500</span>
-                        <span>2024</span>
-                    </div>
-                </div>
-
-                <button className="nav-btn next-btn" onClick={() => setCurrentYear(prev => prev + 10)}>
-                    ▶
-                </button>
+                <Timeline
+                    currentYear={currentYear}
+                    onYearChange={setCurrentYear}
+                />
             </div>
         </div>
     );
 };
 
 export default HistoryMap;
-
