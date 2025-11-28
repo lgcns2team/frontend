@@ -310,6 +310,7 @@ const HistoryMap = () => {
 
     // Helpers
     const getGeojsonFileForYear = (year: number) => {
+        if (year >= 929 && year <= 936) return 'geojson/map-data.geojson';
         if (year <= -1000) return 'geojson/world_bc1000.geojson';
         if (year <= -500) return 'geojson/world_bc500.geojson';
         if (year <= 0) return 'geojson/world_bc1.geojson';
