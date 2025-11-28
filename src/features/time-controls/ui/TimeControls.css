@@ -1,0 +1,46 @@
+.control-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.year-display-box {
+    background: white;
+    border: 2px solid #666;
+    border-radius: 4px;
+    padding: 8px 16px;
+    font-size: 24px;
+    font-weight: bold;
+    color: #333;
+    min-width: 200px;
+    text-align: center;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.playback-controls {
+    display: flex;
+    gap: 8px;
+    background: white;
+    padding: 4px;
+    border-radius: 24px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.circle-btn {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    border: 1px solid #3b82f6;
+    background: white;
+    color: #3b82f6;
+    font-size: 16px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+}
+
+.circle-btn:hover {
+    background: #eff6ff;
+}

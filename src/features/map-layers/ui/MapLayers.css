@@ -1,0 +1,24 @@
+.layer-tabs {
+    display: flex;
+    gap: 4px;
+}
+
+.tab-btn {
+    background: #666;
+    color: white;
+    border: none;
+    padding: 8px 16px;
+    font-size: 16px;
+    font-weight: bold;
+    cursor: pointer;
+    border-radius: 4px;
+    transition: background 0.2s;
+}
+
+.tab-btn:hover {
+    background: #555;
+}
+
+.tab-btn.active {
+    background: #3b82f6;
+}
