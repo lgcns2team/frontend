@@ -9,30 +9,37 @@
 
 /* --- Dynamic Themes --- */
 
-/* 1. Ancient (고대) */
+/* 1. Ancient (고대) - Warm Stone/Clay */
 .history-map-container.theme-ancient {
     font-family: 'Cinzel', serif;
-    --ui-bg: rgba(43, 43, 43, 0.9);
-    --ui-text: #e0e0e0;
-    --ui-border: #8c8c8c;
-    --ui-accent: #d1d1d1;
-    background-color: #2b2b2b;
+    --ui-bg: rgba(231, 224, 210, 0.95);
+    /* Warm Stone */
+    --ui-bg-solid: #e7e0d2;
+    --ui-text: #4a4036;
+    /* Dark Earth */
+    --ui-border: #bcaaa4;
+    --ui-accent: #795548;
+    background-color: #e7e0d2;
 }
 
-/* 2. Medieval (중세) */
+/* 2. Medieval (중세) - Parchment/Paper */
 .history-map-container.theme-medieval {
     font-family: 'Noto Serif KR', serif;
-    --ui-bg: rgba(62, 39, 35, 0.9);
-    --ui-text: #d4c5a9;
-    --ui-border: #5d4037;
-    --ui-accent: #e6d5b8;
-    background-color: #d4c5a9;
+    --ui-bg: rgba(255, 248, 225, 0.95);
+    /* Light Parchment */
+    --ui-bg-solid: #fff8e1;
+    --ui-text: #3e2723;
+    /* Dark Ink */
+    --ui-border: #d7ccc8;
+    --ui-accent: #8d6e63;
+    background-color: #fff8e1;
 }
 
 /* 3. Modern (근대) */
 .history-map-container.theme-modern {
     font-family: 'Nanum Myeongjo', serif;
     --ui-bg: rgba(232, 228, 217, 0.95);
+    --ui-bg-solid: #e8e4d9;
     --ui-text: #111;
     --ui-border: #111;
     --ui-accent: #b91c1c;
@@ -43,6 +50,7 @@
 .history-map-container.theme-contemporary {
     font-family: 'Pretendard', sans-serif;
     --ui-bg: rgba(255, 255, 255, 0.8);
+    --ui-bg-solid: #ffffff;
     --ui-text: #1e293b;
     --ui-border: rgba(0, 0, 0, 0.1);
     --ui-accent: #3b82f6;
@@ -55,11 +63,23 @@
     z-index: 1;
 }
 
-/* UI Overlays */
-.ui-overlay {
+/* UI Overlays Common Styles */
+.top-left-overlay,
+.top-right-overlay,
+.right-sidebar,
+.bottom-bar {
     position: absolute;
     z-index: 1000;
+    pointer-events: none;
+    /* Allow clicks to pass through container */
+}
+
+.top-left-overlay>*,
+.top-right-overlay>*,
+.right-sidebar>*,
+.bottom-bar>* {
     pointer-events: auto;
+    /* Re-enable clicks for children */
 }
 
 /* Bottom Bar */
@@ -73,7 +93,7 @@
 }
 
 /* Top Left */
-.top-left {
+.top-left-overlay {
     top: 20px;
     left: 20px;
     display: flex;
@@ -82,7 +102,7 @@
 }
 
 /* Top Right */
-.top-right {
+.top-right-overlay {
     top: 20px;
     right: 20px;
 }

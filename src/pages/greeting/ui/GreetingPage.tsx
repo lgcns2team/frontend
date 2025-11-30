@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ERAS } from '../../../shared/config/eras';
+import { ERAS } from '../../../shared/config/era-theme';
 import './GreetingPage.css';
 
 const GreetingPage = () => {

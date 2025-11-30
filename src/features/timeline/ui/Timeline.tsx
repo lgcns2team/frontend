@@ -1,5 +1,5 @@
 import './Timeline.css';
-import { getEraColor } from '../../../shared/data/eras';
+import { getEraColor } from '../../../shared/lib/era-utils';
 
 interface TimelineProps {
     currentYear: number;

@@ -1,111 +1,134 @@
-.control-row {
+/* TimeControls.css */
+.time-controls-container {
     display: flex;
+    flex-direction: column;
     align-items: center;
     gap: 12px;
+    padding: 16px 20px;
+    background: var(--ui-bg-solid, white);
+    border-radius: 16px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+    transition: background-color 0.5s ease;
+    min-width: 160px;
+    /* Fixed minimum width */
+    width: 160px;
+    /* Fixed width to prevent jitter */
+    box-sizing: border-box;
 }
 
-.ruler-display-container {
-    background: var(--ui-bg, white);
-    border: 3px solid var(--ui-border, #e2e8f0);
-    /* Color set inline */
-    border-radius: 8px;
-    padding: 8px 12px;
-    min-width: 240px;
-    position: relative;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-    display: flex;
-    flex-direction: column;
-    justify-content: space-between;
-    height: auto;
-    min-height: 80px;
-    color: var(--ui-text, #333);
-}
-
-.ruler-marks-top,
-.ruler-marks-bottom {
-    height: 6px;
-    width: 100%;
-    background-image: repeating-linear-gradient(90deg,
-            var(--ui-border, #94a3b8) 0px,
-            var(--ui-border, #94a3b8) 1px,
-            transparent 1px,
-            transparent 10px);
-    opacity: 0.5;
-}
-
-.time-content-wrapper {
+/* Year Display Group */
+.year-display-group {
     display: flex;
     flex-direction: column;
     align-items: center;
-    justify-content: center;
-    gap: 4px;
-    padding: 4px 0;
-}
-
-.year-row {
-    display: flex;
-    align-items: baseline;
-    gap: 6px;
-    color: var(--ui-text, #333);
-}
-
-.era-row {
-    display: flex;
+    height: 64px;
+    /* Fixed height for year display area */
     justify-content: center;
 }
 
-.year-number {
-    font-size: 28px;
-    font-weight: 800;
+.year-text {
+    font-size: 42px;
+    font-weight: 900;
+    line-height: 42px;
+    /* Fixed line-height matching font-size */
+    height: 42px;
+    /* Fixed height */
     font-family: inherit;
+    /* Inherits era font from HistoryMap container */
     letter-spacing: -1px;
-    line-height: 1;
+    color: var(--ui-text, black);
+    /* Use theme text color or black as requested? User said black. */
+    color: black;
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+    overflow: visible;
+}
+
+.year-sub-row {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-top: 6px;
+    height: 20px;
+    /* Fixed height for sub-row */
 }
 
 .year-unit {
-    font-size: 16px;
-    font-weight: bold;
-    color: var(--ui-text, #64748b);
-    opacity: 0.8;
+    font-size: 14px;
+    font-weight: 700;
+    color: rgba(0, 0, 0, 0.7);
+    line-height: 1;
 }
 
 .era-badge {
-    padding: 4px 12px;
-    border-radius: 12px;
-    font-size: 13px;
-    font-weight: bold;
-    color: var(--ui-bg, white);
-    /* Background color set inline */
-    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
-    white-space: nowrap;
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-size: 10px;
+    font-weight: 800;
+    background: rgba(0, 0, 0, 0.1);
+    color: rgba(0, 0, 0, 0.8);
+    text-transform: uppercase;
+    line-height: 1;
 }
 
-.playback-controls {
+.era-name {
+    font-size: 14px;
+    font-weight: 600;
+    color: rgba(0, 0, 0, 0.8);
+    line-height: 1;
+}
+
+/* Controls Row */
+.controls-row {
     display: flex;
+    align-items: center;
     gap: 8px;
-    background: var(--ui-bg, white);
-    padding: 4px;
-    border-radius: 24px;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-    border: 1px solid var(--ui-border, transparent);
+    background: rgba(255, 255, 255, 0.3);
+    padding: 6px 10px;
+    border-radius: 20px;
+    height: 40px;
+    /* Fixed height */
+    box-sizing: border-box;
 }
 
-.circle-btn {
-    width: 40px;
-    height: 40px;
-    border-radius: 50%;
-    border: 1px solid var(--ui-accent, #3b82f6);
+/* Buttons */
+.control-btn {
+    border: none;
     background: transparent;
-    color: var(--ui-accent, #3b82f6);
-    font-size: 16px;
     cursor: pointer;
     display: flex;
     align-items: center;
     justify-content: center;
-    transition: all 0.2s;
+    transition: transform 0.1s;
+    color: black;
+    padding: 0;
+    margin: 0;
 }
 
-.circle-btn:hover {
-    background: var(--ui-accent, #eff6ff);
-    color: var(--ui-bg, white);
+.control-btn:active {
+    transform: scale(0.95);
+}
+
+.control-btn.play-btn {
+    width: 28px;
+    height: 28px;
+    font-size: 14px;
+    background: rgba(255, 255, 255, 0.5);
+    border-radius: 50%;
+}
+
+.control-btn.play-btn:hover {
+    background: rgba(255, 255, 255, 0.8);
+}
+
+.control-btn.speed-btn {
+    font-size: 13px;
+    font-weight: 700;
+    padding: 2px 6px;
+    border-radius: 8px;
+    height: 24px;
+}
+
+.control-btn.speed-btn:hover {
+    background: rgba(255, 255, 255, 0.4);
 }

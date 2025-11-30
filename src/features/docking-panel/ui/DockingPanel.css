@@ -1,0 +1,83 @@
+/* DockingPanel.css */
+.docking-panel {
+    position: absolute;
+    top: 0;
+    right: 0;
+    height: 100vh;
+    background: var(--ui-bg, white);
+    color: var(--ui-text, #333);
+    border-left: 1px solid var(--ui-border, #ccc);
+    box-shadow: -4px 0 12px rgba(0, 0, 0, 0.1);
+    z-index: 1000;
+    display: flex;
+    flex-direction: column;
+    transition: transform 0.3s ease-in-out;
+    /* Note: Width is controlled via inline style for resizing */
+}
+
+.docking-panel.closed {
+    transform: translateX(100%);
+}
+
+.docking-panel.open {
+    transform: translateX(0);
+}
+
+/* Resize Handle */
+.resize-handle {
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 6px;
+    cursor: col-resize;
+    background: transparent;
+    z-index: 10;
+    transition: background 0.2s;
+}
+
+.resize-handle:hover,
+.resize-handle:active {
+    background: var(--ui-accent, #3b82f6);
+    opacity: 0.5;
+}
+
+/* Header */
+.panel-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 16px 20px;
+    border-bottom: 1px solid var(--ui-border, #eee);
+}
+
+.panel-title {
+    font-size: 1.2rem;
+    font-weight: bold;
+    font-family: inherit;
+}
+
+.close-btn {
+    background: transparent;
+    border: none;
+    color: var(--ui-text, #333);
+    font-size: 1.5rem;
+    cursor: pointer;
+    padding: 4px;
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.2s;
+}
+
+.close-btn:hover {
+    background: rgba(0, 0, 0, 0.05);
+}
+
+/* Content */
+.panel-content {
+    flex: 1;
+    overflow-y: auto;
+    padding: 20px;
+}
