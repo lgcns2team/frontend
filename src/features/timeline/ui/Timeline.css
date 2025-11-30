@@ -65,21 +65,7 @@
     right: 0;
     height: 8px;
     transform: translateY(-50%);
-    background: linear-gradient(to right,
-            #cbd5e1 0%,
-            #cbd5e1 51%,
-            #fca5a5 51%,
-            #fca5a5 60%,
-            #93c5fd 60%,
-            #93c5fd 69.5%,
-            #fdba74 69.5%,
-            #fdba74 74.8%,
-            #c4b5fd 74.8%,
-            #c4b5fd 85.5%,
-            #86efac 85.5%,
-            #86efac 97%,
-            #fcd34d 97%,
-            #fcd34d 100%);
+    background: var(--track-bg, #cbd5e1);
     border: 1px solid var(--ui-border, #47351D);
     border-radius: 4px;
     z-index: 1;

@@ -1,5 +1,6 @@
 import './TimeControls.css';
-import { getEraName } from '../../../shared/lib/era-utils';
+import { getEraName } from '../../../shared/lib/korean-history-eras';
+import { getEraForYear } from '../../../shared/config/era-theme';
 
 interface TimeControlsProps {
     currentYear: number;
@@ -12,13 +13,14 @@ interface TimeControlsProps {
 export const TimeControls = ({ currentYear, isPlaying, speed, onTogglePlay, onToggleSpeed }: TimeControlsProps) => {
 
     const eraName = getEraName(currentYear);
+    const eraConfig = getEraForYear(currentYear);
 
     return (
         <div className="time-controls-container">
             {/* Year Display (Top) */}
             <div className="year-display-group">
                 <div className="year-text">
-                    {currentYear > 0 ? currentYear : Math.abs(currentYear)} 년
+                    {currentYear > 0 ? currentYear : Math.abs(currentYear)} 년 {eraConfig.label}
                 </div>
                 <div className="year-sub-row">
                     <span className="era-name">{eraName}</span>

@@ -9,10 +9,12 @@
     border-radius: 16px;
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
     transition: background-color 0.5s ease;
-    min-width: 160px;
-    /* Fixed minimum width */
-    width: 160px;
-    /* Fixed width to prevent jitter */
+    min-width: 200px;
+    /* Increased from 160px */
+    width: auto;
+    /* Allow expansion */
+    padding: 16px 24px;
+    /* Slightly more padding */
     box-sizing: border-box;
 }
 

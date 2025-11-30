@@ -7,60 +7,30 @@
     transition: all 0.5s ease;
 }
 
-/* --- Dynamic Themes --- */
-
-/* 1. Ancient (고대) - Warm Stone/Clay */
-.history-map-container.theme-ancient {
-    font-family: 'Cinzel', serif;
-    --ui-bg: rgba(231, 224, 210, 0.95);
-    /* Warm Stone */
-    --ui-bg-solid: #e7e0d2;
-    --ui-text: #4a4036;
-    /* Dark Earth */
-    --ui-border: #bcaaa4;
-    --ui-accent: #795548;
-    background-color: #e7e0d2;
-}
-
-/* 2. Medieval (중세) - Parchment/Paper */
-.history-map-container.theme-medieval {
-    font-family: 'Noto Serif KR', serif;
-    --ui-bg: rgba(255, 248, 225, 0.95);
-    /* Light Parchment */
-    --ui-bg-solid: #fff8e1;
-    --ui-text: #3e2723;
-    /* Dark Ink */
-    --ui-border: #d7ccc8;
-    --ui-accent: #8d6e63;
-    background-color: #fff8e1;
-}
-
-/* 3. Modern (근대) */
-.history-map-container.theme-modern {
-    font-family: 'Nanum Myeongjo', serif;
-    --ui-bg: rgba(232, 228, 217, 0.95);
-    --ui-bg-solid: #e8e4d9;
-    --ui-text: #111;
-    --ui-border: #111;
-    --ui-accent: #b91c1c;
-    background-color: #e8e4d9;
-}
-
-/* 4. Contemporary (현대) */
-.history-map-container.theme-contemporary {
-    font-family: 'Pretendard', sans-serif;
-    --ui-bg: rgba(255, 255, 255, 0.8);
-    --ui-bg-solid: #ffffff;
-    --ui-text: #1e293b;
-    --ui-border: rgba(0, 0, 0, 0.1);
-    --ui-accent: #3b82f6;
-    background-color: #f8fafc;
-}
+/* --- Dynamic Themes are now imported from shared/config/era-theme.css --- */
 
 #map {
     width: 100%;
     height: 100%;
     z-index: 1;
+    background: transparent !important;
+    /* Allow container background to show */
+}
+
+/* Tint the map tiles by making them semi-transparent */
+.leaflet-tile-pane {
+    opacity: 0.6;
+    /* Stronger tint (was 0.85) */
+    filter: contrast(0.95) sepia(0.2);
+    /* Slightly more sepia */
+    transition: opacity 0.5s ease, filter 0.5s ease;
+}
+
+/* Adjust tint per theme if needed */
+.theme-contemporary .leaflet-tile-pane {
+    opacity: 1;
+    /* Contemporary can be clean */
+    filter: none;
 }
 
 /* UI Overlays Common Styles */

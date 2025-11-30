@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import * as L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import './HistoryMap.css';
+import '../../../shared/config/era-theme.css';
 import { capitalData } from '../../../shared/data/capitals';
 import { battleData } from '../../../shared/data/battles';
 import { tradeData } from '../../../shared/data/trade';
