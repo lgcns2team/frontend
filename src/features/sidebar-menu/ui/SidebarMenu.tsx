@@ -22,7 +22,8 @@ export const SidebarMenu = ({ onItemClick }: SidebarMenuProps) => {
                     title={item.label}
                     onClick={() => onItemClick?.(item.id)}
                 >
-                    {item.icon}
+                    <span style={{ fontSize: '20px' }}>{item.icon}</span>
+                    <span>{item.label}</span>
                 </button>
             ))}
         </div>

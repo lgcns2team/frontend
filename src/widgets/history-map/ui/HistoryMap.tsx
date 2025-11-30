@@ -38,6 +38,9 @@ export default function HistoryMap() {
     const map = useRef<L.Map | null>(null);
     const historicalLayer = useRef<L.Layer | null>(null);
     const markersLayer = useRef<L.LayerGroup | null>(null);
+    const lastRequestedYear = useRef<number>(475);
+    const layerCache = useRef<Map<number, L.Layer>>(new Map());
+    const abortController = useRef<AbortController | null>(null);
 
     const [currentYear, setCurrentYear] = useState<number>(475);
     const [isPlaying, setIsPlaying] = useState<boolean>(false);
@@ -92,9 +95,13 @@ export default function HistoryMap() {
         };
     }, []);
 
-    // Update map when year changes
+    // Update map when year changes with debounce
     useEffect(() => {
-        updateMapForYear(currentYear);
+        const timer = setTimeout(() => {
+            updateMapForYear(currentYear);
+        }, 100); // 100ms debounce
+
+        return () => clearTimeout(timer);
     }, [currentYear]);
 
     // Update Markers when layer type changes
@@ -105,24 +112,69 @@ export default function HistoryMap() {
     const updateMapForYear = async (year: number) => {
         if (!map.current) return;
 
+        // Cancel previous pending request
+        if (abortController.current) {
+            abortController.current.abort();
+        }
+
+        // Create new controller for this request
+        const controller = new AbortController();
+        abortController.current = controller;
+
+        lastRequestedYear.current = year;
+        const requestId = year;
+
         try {
-            // Load new boundary layer
-            const newLayer = await loadHistoricalBorders(year);
+            let newLayer: L.Layer | null = null;
+
+            // Check cache first
+            // We need to map year to the correct file/key logic used in boundary-utils
+            // Since loadHistoricalBorders handles the file mapping internally, we can cache by the returned layer
+            // BUT, loadHistoricalBorders creates a NEW layer instance every time.
+            // Optimization: We should cache the layer instance associated with the *resolved file* or just cache by year if collisions are low.
+            // Given the file mapping logic is in boundary-utils, let's try to cache by year for now, 
+            // but ideally we should cache by the underlying data source key. 
+            // For simplicity and effectiveness in this context (timeline scrubbing):
+
+            if (layerCache.current.has(year)) {
+                newLayer = layerCache.current.get(year)!;
+            } else {
+                // Pass signal to loadHistoricalBorders if we modify it, but for now just handle the result
+                newLayer = await loadHistoricalBorders(year);
+
+                // If aborted during await, stop here
+                if (controller.signal.aborted) return;
+
+                if (newLayer) {
+                    layerCache.current.set(year, newLayer);
+                }
+            }
+
+            // Double check if this is still the latest request
+            if (requestId !== lastRequestedYear.current) {
+                return;
+            }
 
             if (newLayer) {
                 // Remove existing layer
-                if (historicalLayer.current) {
+                if (historicalLayer.current && historicalLayer.current !== newLayer) {
                     map.current.removeLayer(historicalLayer.current);
                 }
 
-                // Add new layer
-                newLayer.addTo(map.current);
+                // Add new layer only if it's not already on the map
+                if (!map.current.hasLayer(newLayer)) {
+                    newLayer.addTo(map.current);
+                }
                 historicalLayer.current = newLayer;
             }
 
             // Update markers based on year
             updateMarkers(year);
         } catch (error) {
+            if (error instanceof Error && error.name === 'AbortError') {
+                // Ignore abort errors
+                return;
+            }
             console.error('Failed to load historical data:', error);
         }
     };

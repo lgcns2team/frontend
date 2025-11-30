@@ -5,25 +5,33 @@
 }
 
 .feature-btn {
-    width: 60px;
-    height: 60px;
-    border-radius: 50%;
-    background: var(--ui-bg, #666);
+    width: 70px;
+    height: 70px;
+    border-radius: 16px;
+    /* Rounded square looks better for text */
+    background: var(--ui-bg, rgba(30, 41, 59, 0.9));
     color: var(--ui-text, white);
-    border: 2px solid var(--ui-border, transparent);
-    font-size: 12px;
-    font-weight: bold;
+    border: 1px solid var(--ui-border, rgba(255, 255, 255, 0.1));
+    font-size: 11px;
+    font-weight: 600;
     cursor: pointer;
     display: flex;
+    flex-direction: column;
     align-items: center;
     justify-content: center;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
-    transition: all 0.2s;
+    gap: 4px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+    backdrop-filter: blur(8px);
+    transition: all 0.2s ease;
+    padding: 8px;
+    text-align: center;
+    line-height: 1.2;
 }
 
 .feature-btn:hover {
-    transform: scale(1.1);
-    background: var(--ui-accent, #555);
-    color: var(--ui-bg, white);
-    border-color: var(--ui-accent, #555);
+    transform: translateY(-2px);
+    background: var(--ui-accent, #3b82f6);
+    color: white;
+    border-color: rgba(255, 255, 255, 0.3);
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.4);
 }

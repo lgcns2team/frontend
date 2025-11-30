@@ -13,22 +13,38 @@ export const getGeojsonFileForYear = (year: number) => {
     if (year <= -500) return 'geojson/world_bc500.geojson';
     if (year <= 0) return 'geojson/world_bc1.geojson';
     if (year <= 100) return 'geojson/world_100.geojson';
-    if (year <= 300) return 'geojson/world_200.geojson'; // Approx
-    if (year <= 500) return 'geojson/world_400.geojson'; // Approx
-    if (year <= 700) return 'geojson/world_600.geojson'; // Approx
-    if (year <= 900) return 'geojson/world_800.geojson'; // Approx
-    if (year <= 1100) return 'geojson/world_1100.geojson'; // Approx
+    if (year <= 200) return 'geojson/world_200.geojson';
+    if (year <= 400) return 'geojson/world_400.geojson';
+    if (year <= 600) return 'geojson/world_600.geojson';
+    if (year <= 800) return 'geojson/world_800.geojson';
+    if (year <= 1000) return 'geojson/world_1000.geojson';
+    if (year <= 1100) return 'geojson/world_1100.geojson';
+    if (year <= 1200) return 'geojson/world_1200.geojson';
+    if (year <= 1279) return 'geojson/world_1279.geojson';
     if (year <= 1300) return 'geojson/world_1300.geojson';
     if (year <= 1400) return 'geojson/world_1400.geojson';
+    if (year <= 1492) return 'geojson/world_1492.geojson';
     if (year <= 1500) return 'geojson/world_1500.geojson';
+    if (year <= 1530) return 'geojson/world_1530.geojson';
     if (year <= 1600) return 'geojson/world_1600.geojson';
-    if (year <= 1700) return 'geojson/world_1650.geojson';
-    if (year <= 1800) return 'geojson/world_1783.geojson';
-    if (year <= 1900) return 'geojson/world_1880.geojson';
-    if (year <= 1920) return 'geojson/world_1914.geojson';
-    if (year <= 1940) return 'geojson/world_1938.geojson';
-    if (year <= 1960) return 'geojson/world_1945.geojson';
-    if (year <= 2000) return 'geojson/world_1994.geojson';
+    if (year <= 1650) return 'geojson/world_1650.geojson';
+    if (year <= 1700) return 'geojson/world_1700.geojson';
+    if (year <= 1715) return 'geojson/world_1715.geojson';
+    if (year <= 1783) return 'geojson/world_1783.geojson';
+    if (year <= 1800) return 'geojson/world_1800.geojson';
+    if (year <= 1815) return 'geojson/world_1815.geojson';
+    if (year <= 1880) return 'geojson/world_1880.geojson';
+    if (year <= 1900) return 'geojson/world_1900.geojson';
+    if (year <= 1914) return 'geojson/world_1914.geojson';
+    if (year <= 1920) return 'geojson/world_1920.geojson';
+    if (year <= 1930) return 'geojson/world_1930.geojson';
+    if (year <= 1938) return 'geojson/world_1938.geojson';
+    if (year <= 1945) return 'geojson/world_1945.geojson';
+    if (year <= 1960) return 'geojson/world_1960.geojson';
+    if (year <= 1994) return 'geojson/world_1994.geojson';
+    if (year <= 2000) return 'geojson/world_2000.geojson';
+    if (year <= 2010) return 'geojson/world_2010.geojson';
+
     return 'geojson/world_2010.geojson';
 };
 
@@ -37,13 +53,16 @@ export const getColorByCountry = (name: string) => {
         '고조선': '#7c3aed', 'gojoseon': '#7c3aed',
         '고구려': '#ef4444', 'Goguryeo': '#ef4444', 'Koguryo': '#ef4444',
         '백제': '#3b82f6', 'Baekje': '#3b82f6', 'Paekche': '#3b82f6',
-        '신라': '#f59e0b', 'Silla': '#f59e0b',
+        '신라': '#f59e0b', 'Silla': '#f59e0b', 'Silia': '#f59e0b',
         '가야': '#10b981', 'Gaya': '#10b981',
-        '발해': '#6366f1', 'Balhae': '#6366f1',
+        '발해': '#6366f1', 'Balhae': '#6366f1', 'Parhae': '#6366f1',
         '고려': '#8b5cf6', 'Goryeo': '#8b5cf6',
-        '조선': '#10b981', 'Joseon': '#10b981',
+        '조선': '#10b981', 'Joseon': '#10b981', 'Korea': '#10b981',
         '대한제국': '#10b981',
-        '대한민국': '#3b82f6',
+        'Korea (USA)': '#3b82f6',
+        'Korea (USSR)': '#dc2626',
+        '대한민국': '#0043fcff', 'Korea, Republic of': '#0032fcff',
+        '북한': '#ff0000ff', 'Korea, Democratic People\'s Republic of': '#ff0000ff', 'USSR': '#dc2626',
         '일본': '#dc2626', 'Japan': '#dc2626', 'Yamato': '#dc2626', 'Wa': '#dc2626',
         '중국': '#ea580c', 'China': '#ea580c',
         '한': '#ea580c', 'Han': '#ea580c',
@@ -57,11 +76,15 @@ export const getColorByCountry = (name: string) => {
         '여진': '#a855f7', 'Jurchen': '#a855f7', 'Jin': '#a855f7'
     };
 
-    if (name) {
+    if (name && colors[name]) {
+        return colors[name];
+    }
+    else {
         for (let key in colors) {
             if (name.includes(key)) return colors[key];
         }
     }
+
     return '#94a3b8'; // Default
 };
 
@@ -134,7 +157,18 @@ export const loadHistoricalBorders = async (year: number): Promise<L.Layer | nul
                         };
                     }
                     // Polygons (Countries)
-                    const countryName = feature?.properties?.NAME || feature?.properties?.name || '';
+                    const countryName = feature?.properties?.NAME || feature?.properties?.name;
+
+                    // Hide if no name
+                    if (!countryName) {
+                        return {
+                            stroke: false,
+                            fill: false,
+                            opacity: 0,
+                            fillOpacity: 0
+                        };
+                    }
+
                     const fillColor = getColorByCountry(countryName);
 
                     return {
@@ -147,8 +181,9 @@ export const loadHistoricalBorders = async (year: number): Promise<L.Layer | nul
                     };
                 },
                 onEachFeature: function (feature: any, layer: L.Layer) {
-                    if (feature.properties && (feature.properties.NAME || feature.properties.name)) {
-                        const countryName = feature.properties.NAME || feature.properties.name;
+                    const countryName = feature.properties?.NAME || feature.properties?.name;
+
+                    if (countryName) {
                         const displayName = countryName === 'gojoseon' ? '고조선' : countryName;
 
                         layer.bindPopup(

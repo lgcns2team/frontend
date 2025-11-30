@@ -20,7 +20,7 @@ export const TimeControls = ({ currentYear, isPlaying, speed, onTogglePlay, onTo
             {/* Year Display (Top) */}
             <div className="year-display-group">
                 <div className="year-text">
-                    {currentYear > 0 ? currentYear : Math.abs(currentYear)} 년 {eraConfig.label}
+                    {currentYear <= 0 ? `BC ${Math.abs(currentYear)}` : currentYear} 년 {eraConfig.label}
                 </div>
                 <div className="year-sub-row">
                     <span className="era-name">{eraName}</span>
