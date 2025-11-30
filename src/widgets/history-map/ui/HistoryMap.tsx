@@ -18,6 +18,7 @@ import { SearchYear } from '../../../features/search-year';
 import { SidebarMenu } from '../../../features/sidebar-menu';
 import { Timeline } from '../../../features/timeline';
 import { DockingPanel } from '../../../features/docking-panel/ui/DockingPanel';
+import { FloatingPanel } from '../../../features/floating-panel/ui/FloatingPanel';
 import { ChatbotTrigger } from '../../../features/chatbot/ui/ChatbotTrigger';
 
 // Fix Leaflet marker icon issue
@@ -47,6 +48,7 @@ export default function HistoryMap() {
     const [speed, setSpeed] = useState<number>(1);
     const [activePanel, setActivePanel] = useState<string | null>(null);
     const [layerType, setLayerType] = useState<'default' | 'battles' | 'trade' | 'people'>('default');
+    const [selectedCountry, setSelectedCountry] = useState<{ name: string; properties: any } | null>(null);
 
     const playInterval = useRef<ReturnType<typeof setInterval> | null>(null);
 
@@ -128,19 +130,15 @@ export default function HistoryMap() {
             let newLayer: L.Layer | null = null;
 
             // Check cache first
-            // We need to map year to the correct file/key logic used in boundary-utils
-            // Since loadHistoricalBorders handles the file mapping internally, we can cache by the returned layer
-            // BUT, loadHistoricalBorders creates a NEW layer instance every time.
-            // Optimization: We should cache the layer instance associated with the *resolved file* or just cache by year if collisions are low.
-            // Given the file mapping logic is in boundary-utils, let's try to cache by year for now, 
-            // but ideally we should cache by the underlying data source key. 
-            // For simplicity and effectiveness in this context (timeline scrubbing):
-
             if (layerCache.current.has(year)) {
                 newLayer = layerCache.current.get(year)!;
+                // Note: Cached layers retain their event listeners.
+                // However, the 'click' listener closure captures the state at creation time.
+                // Since 'setSelectedCountry' is stable, this is fine.
             } else {
-                // Pass signal to loadHistoricalBorders if we modify it, but for now just handle the result
-                newLayer = await loadHistoricalBorders(year);
+                newLayer = await loadHistoricalBorders(year, (name, props) => {
+                    setSelectedCountry({ name, properties: props });
+                });
 
                 // If aborted during await, stop here
                 if (controller.signal.aborted) return;
@@ -341,16 +339,36 @@ export default function HistoryMap() {
                     onTogglePlay={() => setIsPlaying(!isPlaying)}
                     onToggleSpeed={toggleSpeed}
                 />
+
                 <MapLayers
                     activeLayer={layerType}
                     onLayerChange={setLayerType}
                 />
+
+                {/* Floating Info Panel (Left) */}
+                <FloatingPanel
+                    isOpen={!!selectedCountry}
+                    onClose={() => setSelectedCountry(null)}
+                    title={selectedCountry?.name || '국가 정보'}
+                >
+                    <div className="country-details">
+                        <p><strong>연도:</strong> {currentYear > 0 ? currentYear + '년' : 'BC ' + Math.abs(currentYear) + '년'}</p>
+                        {selectedCountry?.properties && (
+                            <>
+                                {/* Add more properties here as available in GeoJSON */}
+                                <p>{selectedCountry.name}에 대한 상세 정보가 여기에 표시됩니다.</p>
+                            </>
+                        )}
+                    </div>
+                </FloatingPanel>
             </div>
 
             {/* Top Right: Search */}
             <div className="top-right-overlay">
                 <SearchYear />
             </div>
+
+
 
             {/* Right Sidebar Menu */}
             <div className="right-sidebar">

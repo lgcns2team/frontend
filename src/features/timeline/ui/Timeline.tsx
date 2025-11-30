@@ -1,21 +1,116 @@
-import { useMemo } from 'react';
+import { useMemo, useState, useEffect, useRef } from 'react';
 import './Timeline.css';
-import { getEraColor, ERA_LIMITS } from '../../../shared/lib/korean-history-eras';
+import { getEraColor, ERA_LIMITS } from '../../../shared/config/era-theme';
 
 interface TimelineProps {
     currentYear: number;
     onYearChange: (year: number) => void;
 }
 
-const MIN_YEAR = -2333;
-const MAX_YEAR = 2024;
+const GLOBAL_MIN_YEAR = -2333;
+const GLOBAL_MAX_YEAR = 2024;
+const WINDOW_SIZE = 500; // Show 500 years at a time
 
 export const Timeline = ({ currentYear, onYearChange }: TimelineProps) => {
     const thumbColor = getEraColor(currentYear);
 
+    // Initialize view window centered on current year
+    const [viewStart, setViewStart] = useState(() => {
+        const start = currentYear - WINDOW_SIZE / 2;
+        return Math.max(GLOBAL_MIN_YEAR, Math.min(start, GLOBAL_MAX_YEAR - WINDOW_SIZE));
+    });
+
+    const viewEnd = Math.min(GLOBAL_MAX_YEAR, viewStart + WINDOW_SIZE);
+
+    const [isDragging, setIsDragging] = useState(false);
+    const scrollDirection = useRef<number>(0); // -1: left, 0: stop, 1: right
+    const animationFrameId = useRef<number | null>(null);
+
+    // Update view window if currentYear goes out of bounds (e.g. from auto-play or external change)
+    useEffect(() => {
+        if (!isDragging) {
+            if (currentYear < viewStart) {
+                setViewStart(Math.max(GLOBAL_MIN_YEAR, currentYear - WINDOW_SIZE * 0.1));
+            } else if (currentYear > viewEnd) {
+                setViewStart(Math.min(GLOBAL_MAX_YEAR - WINDOW_SIZE, currentYear - WINDOW_SIZE * 0.9));
+            }
+        }
+    }, [currentYear, viewStart, viewEnd, isDragging]);
+
+    // Continuous scroll loop
+    useEffect(() => {
+        const scroll = () => {
+            if (scrollDirection.current !== 0) {
+                const step = 10; // Scroll speed
+
+                setViewStart(prev => {
+                    let nextStart = prev;
+                    if (scrollDirection.current === 1) {
+                        nextStart = Math.min(GLOBAL_MAX_YEAR - WINDOW_SIZE, prev + step);
+                        // Also push currentYear if we are scrolling right
+                        if (nextStart > prev) {
+                            onYearChange(Math.min(GLOBAL_MAX_YEAR, currentYear + step));
+                        }
+                    } else if (scrollDirection.current === -1) {
+                        nextStart = Math.max(GLOBAL_MIN_YEAR, prev - step);
+                        // Also push currentYear if we are scrolling left
+                        if (nextStart < prev) {
+                            onYearChange(Math.max(GLOBAL_MIN_YEAR, currentYear - step));
+                        }
+                    }
+                    return nextStart;
+                });
+            }
+
+            if (isDragging) {
+                animationFrameId.current = requestAnimationFrame(scroll);
+            }
+        };
+
+        if (isDragging) {
+            animationFrameId.current = requestAnimationFrame(scroll);
+        } else {
+            if (animationFrameId.current) {
+                cancelAnimationFrame(animationFrameId.current);
+                animationFrameId.current = null;
+            }
+            scrollDirection.current = 0;
+        }
+
+        return () => {
+            if (animationFrameId.current) {
+                cancelAnimationFrame(animationFrameId.current);
+            }
+        };
+    }, [isDragging, currentYear, onYearChange]);
+
+    const handleSliderChange = (newYear: number) => {
+        onYearChange(newYear);
+
+        // Detect scroll zone
+        const margin = WINDOW_SIZE * 0.1; // 10% margin
+
+        if (newYear > viewEnd - margin && viewEnd < GLOBAL_MAX_YEAR) {
+            scrollDirection.current = 1;
+        } else if (newYear < viewStart + margin && viewStart > GLOBAL_MIN_YEAR) {
+            scrollDirection.current = -1;
+        } else {
+            scrollDirection.current = 0;
+        }
+    };
+
+    const handleMouseDown = () => setIsDragging(true);
+    const handleMouseUp = () => {
+        setIsDragging(false);
+        scrollDirection.current = 0;
+    };
+
     const trackGradient = useMemo(() => {
-        const totalRange = MAX_YEAR - MIN_YEAR;
-        const getPercent = (year: number) => ((year - MIN_YEAR) / totalRange) * 100;
+        const totalRange = viewEnd - viewStart;
+        const getPercent = (year: number) => {
+            const percent = ((year - viewStart) / totalRange) * 100;
+            return Math.max(0, Math.min(100, percent)); // Clamp between 0 and 100
+        };
 
         const eras = [
             { label: '고조선', end: ERA_LIMITS.GOJOSEON_END, color: getEraColor(ERA_LIMITS.GOJOSEON_END - 1) },
@@ -26,21 +121,36 @@ export const Timeline = ({ currentYear, onYearChange }: TimelineProps) => {
             { label: '조선', end: ERA_LIMITS.JOSEON_END, color: getEraColor(ERA_LIMITS.JOSEON_END - 1) },
             { label: '대한제국', end: ERA_LIMITS.KOREAN_EMPIRE_END, color: getEraColor(ERA_LIMITS.KOREAN_EMPIRE_END - 1) },
             { label: '일제강점기', end: ERA_LIMITS.COLONIAL_PERIOD_END, color: getEraColor(ERA_LIMITS.COLONIAL_PERIOD_END - 1) },
-            { label: '대한민국', end: MAX_YEAR, color: getEraColor(MAX_YEAR) },
+            { label: '대한민국', end: GLOBAL_MAX_YEAR, color: getEraColor(GLOBAL_MAX_YEAR) },
         ];
 
         let gradient = 'linear-gradient(to right';
         let prevPercent = 0;
 
-        eras.forEach((era) => {
+        // Filter eras that overlap with current view
+        const visibleEras = eras.filter(era => {
+            return era.end > viewStart;
+        });
+
+        visibleEras.forEach((era) => {
             const endPercent = getPercent(era.end);
-            gradient += `, ${era.color} ${prevPercent}%, ${era.color} ${endPercent}%`;
-            prevPercent = endPercent;
+
+            if (endPercent > prevPercent) {
+                gradient += `, ${era.color} ${prevPercent}%, ${era.color} ${endPercent}%`;
+                prevPercent = endPercent;
+            }
         });
 
         gradient += ')';
         return gradient;
-    }, []);
+    }, [viewStart, viewEnd]);
+
+    // Generate ticks based on view window
+    const ticks = useMemo(() => {
+        const tickCount = 5;
+        const step = (viewEnd - viewStart) / (tickCount - 1);
+        return Array.from({ length: tickCount }, (_, i) => Math.round(viewStart + i * step));
+    }, [viewStart, viewEnd]);
 
     return (
         <div className="timeline-container">
@@ -53,11 +163,15 @@ export const Timeline = ({ currentYear, onYearChange }: TimelineProps) => {
                     <div className="timeline-ruler-ticks"></div>
                     <input
                         type="range"
-                        min={MIN_YEAR}
-                        max={MAX_YEAR}
+                        min={viewStart}
+                        max={viewEnd}
                         value={currentYear}
                         className="timeline-slider"
-                        onChange={(e) => onYearChange(parseInt(e.target.value))}
+                        onChange={(e) => handleSliderChange(parseInt(e.target.value))}
+                        onMouseDown={handleMouseDown}
+                        onMouseUp={handleMouseUp}
+                        onTouchStart={handleMouseDown}
+                        onTouchEnd={handleMouseUp}
                         style={{ '--thumb-color': thumbColor } as React.CSSProperties}
                     />
                     <div
@@ -66,11 +180,11 @@ export const Timeline = ({ currentYear, onYearChange }: TimelineProps) => {
                     ></div>
                 </div>
                 <div className="timeline-labels">
-                    <span>BC 2333</span>
-                    <span>BC 1000</span>
-                    <span>0</span>
-                    <span>1000</span>
-                    <span>2000</span>
+                    {ticks.map(tick => (
+                        <span key={tick}>
+                            {tick <= 0 ? `BC ${Math.abs(tick)}` : tick}
+                        </span>
+                    ))}
                 </div>
             </div>
 

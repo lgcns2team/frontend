@@ -16,9 +16,9 @@ export const DockingPanel = ({
     onClose,
     title,
     children,
-    initialWidth = 400,
+    initialWidth = 600,
     minWidth = 300,
-    maxWidth = 800
+    maxWidth = 900
 }: DockingPanelProps) => {
     const [width, setWidth] = useState(initialWidth);
     const isResizing = useRef(false);

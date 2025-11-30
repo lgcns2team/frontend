@@ -72,12 +72,12 @@
 }
 
 /* --- 1. Ancient (고대 - Stone/Cave) --- */
-.theme-ancient {
+.theme-gojoseon {
     background-color: #2b2b2b;
     background-image: url("data:image/svg+xml,%3Csvg width='100' height='100' viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100' height='100' filter='url(%23noise)' opacity='0.2'/%3E%3C/svg%3E");
 }
 
-.theme-globe-ancient {
+.theme-globe-gojoseon {
     background: radial-gradient(circle at 30% 30%, #666, #1a1a1a);
     box-shadow:
         inset -30px -30px 60px rgba(0, 0, 0, 0.8),
@@ -88,13 +88,13 @@
 }
 
 /* Text Colors for Ancient */
-.theme-ancient~.content-wrapper,
-.theme-ancient~.top-right-nav {
+.theme-gojoseon~.content-wrapper,
+.theme-gojoseon~.top-right-nav {
     color: #e0e0e0;
     font-family: 'Cinzel', serif;
 }
 
-.theme-ancient~.content-wrapper .title {
+.theme-gojoseon~.content-wrapper .title {
     font-size: 6rem;
     font-weight: 900;
     letter-spacing: 0.2em;
@@ -102,20 +102,20 @@
     text-shadow: 4px 4px 0px #000;
 }
 
-.theme-ancient~.content-wrapper .btn,
-.theme-ancient~.top-right-nav .btn {
+.theme-gojoseon~.content-wrapper .btn,
+.theme-gojoseon~.top-right-nav .btn {
     border: 4px solid #e0e0e0;
     color: #e0e0e0;
     font-weight: 900;
 }
 
-.theme-ancient~.content-wrapper .btn:hover,
-.theme-ancient~.top-right-nav .btn:hover {
+.theme-gojoseon~.content-wrapper .btn:hover,
+.theme-gojoseon~.top-right-nav .btn:hover {
     background: #e0e0e0;
     color: #2b2b2b;
 }
 
-.theme-ancient~.era-badge {
+.theme-gojoseon~.era-badge {
     background: #3e3d42;
     color: #d1d1d1;
     border: 1px solid #8c8c8c;
@@ -123,12 +123,12 @@
 
 
 /* --- 2. Medieval (중세 - Parchment) --- */
-.theme-medieval {
+.theme-goryeo {
     background-color: #d4c5a9;
     background-image: url("data:image/svg+xml,%3Csvg width='200' height='200' viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='paper'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.04' numOctaves='5'/%3E%3CfeDiffuseLighting lighting-color='%23d4c5a9' surfaceScale='2'%3E%3CfeDistantLight azimuth='45' elevation='60'/%3E%3C/feDiffuseLighting%3E%3C/filter%3E%3Crect width='200' height='200' filter='url(%23paper)' opacity='0.6'/%3E%3C/svg%3E");
 }
 
-.theme-globe-medieval {
+.theme-globe-goryeo {
     background-image: url('/assets/images/taegeuk_medieval.png');
     background-size: cover;
     background-position: center;
@@ -140,13 +140,13 @@
 }
 
 /* Text Colors for Medieval */
-.theme-medieval~.content-wrapper,
-.theme-medieval~.top-right-nav {
+.theme-goryeo~.content-wrapper,
+.theme-goryeo~.top-right-nav {
     color: #3e2723;
     font-family: 'Noto Serif KR', serif;
 }
 
-.theme-medieval~.content-wrapper .title {
+.theme-goryeo~.content-wrapper .title {
     font-size: 5.5rem;
     font-weight: 900;
     font-style: italic;
@@ -154,33 +154,33 @@
     text-shadow: 2px 2px 0px rgba(62, 39, 35, 0.2);
 }
 
-.theme-medieval~.content-wrapper .btn,
-.theme-medieval~.top-right-nav .btn {
+.theme-goryeo~.content-wrapper .btn,
+.theme-goryeo~.top-right-nav .btn {
     border: 2px solid #3e2723;
     color: #3e2723;
     font-family: 'Noto Serif KR', serif;
     border-radius: 50% 10%;
 }
 
-.theme-medieval~.content-wrapper .btn:hover,
-.theme-medieval~.top-right-nav .btn:hover {
+.theme-goryeo~.content-wrapper .btn:hover,
+.theme-goryeo~.top-right-nav .btn:hover {
     background: #3e2723;
     color: #d4c5a9;
 }
 
-.theme-medieval~.era-badge {
+.theme-goryeo~.era-badge {
     background: #3e2723;
     color: #d4c5a9;
 }
 
 
 /* --- 3. Renaissance (르네상스 - Joseon Sam-taegeuk) --- */
-.theme-renaissance {
+.theme-joseon {
     background-color: #fcf6e8;
     background-image: url("data:image/svg+xml,%3Csvg width='100' height='100' viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='hanji'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.5' numOctaves='3'/%3E%3C/filter%3E%3Crect width='100' height='100' filter='url(%23hanji)' opacity='0.15'/%3E%3C/svg%3E");
 }
 
-.theme-globe-renaissance {
+.theme-globe-joseon {
     /* Joseon Sam-taegeuk: Red, Blue, Yellow swirl */
     background: conic-gradient(from 0deg,
             #c92a2a 0deg 120deg,
@@ -195,7 +195,7 @@
 }
 
 /* Swirl effect overlay for Sam-taegeuk */
-.theme-globe-renaissance::after {
+.theme-globe-joseon::after {
     content: '';
     position: absolute;
     top: 50%;
@@ -208,13 +208,13 @@
 }
 
 /* Text Colors for Renaissance */
-.theme-renaissance~.content-wrapper,
-.theme-renaissance~.top-right-nav {
+.theme-joseon~.content-wrapper,
+.theme-joseon~.top-right-nav {
     color: #1a1a1a;
     font-family: 'Nanum Brush Script', cursive;
 }
 
-.theme-renaissance~.content-wrapper .title {
+.theme-joseon~.content-wrapper .title {
     font-size: 8rem;
     font-weight: normal;
     line-height: 0.8;
@@ -222,21 +222,21 @@
     transform: rotate(-2deg);
 }
 
-.theme-renaissance~.content-wrapper .btn,
-.theme-renaissance~.top-right-nav .btn {
+.theme-joseon~.content-wrapper .btn,
+.theme-joseon~.top-right-nav .btn {
     border: 2px solid #1a1a1a;
     color: #1a1a1a;
     font-size: 2rem;
     border-radius: 50px;
 }
 
-.theme-renaissance~.content-wrapper .btn:hover,
-.theme-renaissance~.top-right-nav .btn:hover {
+.theme-joseon~.content-wrapper .btn:hover,
+.theme-joseon~.top-right-nav .btn:hover {
     background: #1a1a1a;
     color: #fcf6e8;
 }
 
-.theme-renaissance~.era-badge {
+.theme-joseon~.era-badge {
     background: rgba(255, 255, 255, 0.8);
     color: #1a1a1a;
     border: 1px solid #1a1a1a;
@@ -244,13 +244,13 @@
 
 
 /* --- 4. Modern (근대 - Denny Taegeukgi) --- */
-.theme-modern {
+.theme-korean-empire {
     background-color: #e8e4d9;
     background-image: repeating-linear-gradient(0deg, transparent, transparent 1px, #dcd8cc 1px, #dcd8cc 2px);
     background-size: 100% 4px;
 }
 
-.theme-globe-modern {
+.theme-globe-korean-empire {
     /* Denny Taegeukgi: Using uploaded image v2 */
     background-image: url('/assets/images/taegeuk_modern_v2.png');
     background-size: cover;
@@ -265,13 +265,13 @@
 /* Removed CSS pseudo-elements for swirl as we are using an image now */
 
 /* Text Colors for Modern */
-.theme-modern~.content-wrapper,
-.theme-modern~.top-right-nav {
+.theme-korean-empire~.content-wrapper,
+.theme-korean-empire~.top-right-nav {
     color: #111;
     font-family: 'Nanum Myeongjo', serif;
 }
 
-.theme-modern~.content-wrapper .title {
+.theme-korean-empire~.content-wrapper .title {
     font-size: 5rem;
     font-weight: 800;
     border-top: 4px double #111;
@@ -284,8 +284,8 @@
     z-index: 10;
 }
 
-.theme-modern~.content-wrapper .btn,
-.theme-modern~.top-right-nav .btn {
+.theme-korean-empire~.content-wrapper .btn,
+.theme-korean-empire~.top-right-nav .btn {
     background: #111;
     color: #e8e4d9;
     font-family: 'Nanum Myeongjo', serif;
@@ -294,13 +294,13 @@
     box-shadow: 4px 4px 0px rgba(0, 0, 0, 0.3);
 }
 
-.theme-modern~.content-wrapper .btn:hover,
-.theme-modern~.top-right-nav .btn:hover {
+.theme-korean-empire~.content-wrapper .btn:hover,
+.theme-korean-empire~.top-right-nav .btn:hover {
     transform: translate(-2px, -2px);
     box-shadow: 6px 6px 0px rgba(0, 0, 0, 0.3);
 }
 
-.theme-modern~.era-badge {
+.theme-korean-empire~.era-badge {
     background: #2c2c2c;
     color: #e8e4d9;
     border-radius: 0;
@@ -308,11 +308,11 @@
 
 
 /* --- 5. Contemporary (현대 - Official Taegeuk) --- */
-.theme-contemporary {
+.theme-republic {
     background: #fafafa;
 }
 
-.theme-globe-contemporary {
+.theme-globe-republic {
     /* Official Taegeuk: Perfect Yin-Yang using CSS */
     background: linear-gradient(to bottom, #cd2e3a 50%, #0047a0 50%);
     box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
@@ -322,7 +322,7 @@
 }
 
 /* The "Head" of the Red Yang (Left side) */
-.theme-globe-contemporary::before {
+.theme-globe-republic::before {
     content: '';
     position: absolute;
     top: 50%;
@@ -335,7 +335,7 @@
 }
 
 /* The "Head" of the Blue Yin (Right side) */
-.theme-globe-contemporary::after {
+.theme-globe-republic::after {
     content: '';
     position: absolute;
     top: 50%;
@@ -358,7 +358,7 @@
 }
 
 /* Text Colors for Contemporary */
-.theme-contemporary~.content-wrapper {
+.theme-republic~.content-wrapper {
     background: rgba(255, 255, 255, 0.8);
     backdrop-filter: blur(10px);
     border: 1px solid rgba(0, 0, 0, 0.1);
@@ -370,12 +370,12 @@
     font-family: 'Pretendard', sans-serif;
 }
 
-.theme-contemporary~.top-right-nav {
+.theme-republic~.top-right-nav {
     color: #262626;
     font-family: 'Pretendard', sans-serif;
 }
 
-.theme-contemporary~.content-wrapper .title {
+.theme-republic~.content-wrapper .title {
     font-size: 3.5rem;
     font-weight: 900;
     background: linear-gradient(45deg, #cd2e3a, #0047a0);
@@ -386,14 +386,14 @@
     letter-spacing: -1px;
 }
 
-.theme-contemporary~.content-wrapper .description {
+.theme-republic~.content-wrapper .description {
     font-size: 1.1rem;
     color: #666;
     font-weight: 500;
 }
 
-.theme-contemporary~.content-wrapper .btn,
-.theme-contemporary~.top-right-nav .btn {
+.theme-republic~.content-wrapper .btn,
+.theme-republic~.top-right-nav .btn {
     width: 100%;
     background: #000;
     color: white;
@@ -404,14 +404,14 @@
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 }
 
-.theme-contemporary~.content-wrapper .btn:hover,
-.theme-contemporary~.top-right-nav .btn:hover {
+.theme-republic~.content-wrapper .btn:hover,
+.theme-republic~.top-right-nav .btn:hover {
     background: #333;
     transform: translateY(-1px);
 }
 
-.theme-contemporary~.content-wrapper .btn:nth-child(2),
-.theme-contemporary~.content-wrapper .btn:nth-child(3) {
+.theme-republic~.content-wrapper .btn:nth-child(2),
+.theme-republic~.content-wrapper .btn:nth-child(3) {
     background: transparent;
     color: #000;
     box-shadow: none;

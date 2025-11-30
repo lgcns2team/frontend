@@ -1,31 +1,35 @@
 .timeline-container {
     display: flex;
-    align-items: flex-end;
-    gap: 20px;
+    align-items: center;
+    /* Center vertically */
+    gap: 24px;
+    /* Increased gap */
     flex: 1;
+    padding: 0 20px;
+    /* Add side padding */
 }
 
 .timeline-wrapper {
     flex: 1;
     display: flex;
     flex-direction: column;
-    gap: 8px;
+    gap: 12px;
+    /* Increased gap */
     padding-bottom: 10px;
 }
 
 .timeline-slider-container {
     position: relative;
-    height: 80px;
-    /* Increased height further */
+    height: 60px;
+    /* Adjusted height */
     display: flex;
     align-items: center;
-    margin-bottom: 10px;
+    margin-bottom: 5px;
 }
 
 .timeline-slider {
     -webkit-appearance: none;
     appearance: none;
-    /* Standard property */
     width: 100%;
     height: 100%;
     background: transparent;
@@ -35,6 +39,7 @@
     position: absolute;
     top: 0;
     left: 0;
+    cursor: pointer;
 }
 
 /* Ruler Ticks */
@@ -46,15 +51,16 @@
     bottom: 0;
     z-index: 2;
     background-image:
-        repeating-linear-gradient(90deg, #47351D 0px, #47351D 1px, transparent 1px, transparent 10px),
+        repeating-linear-gradient(90deg, var(--ui-text, #47351D) 0px, var(--ui-text, #47351D) 2px, transparent 2px, transparent 20px),
         /* Major ticks */
-        repeating-linear-gradient(90deg, rgba(71, 53, 29, 0.5) 0px, rgba(71, 53, 29, 0.5) 1px, transparent 1px, transparent 2px);
+        repeating-linear-gradient(90deg, rgba(71, 53, 29, 0.3) 0px, rgba(71, 53, 29, 0.3) 1px, transparent 1px, transparent 4px);
     /* Minor ticks */
-    background-size: 100% 12px, 100% 6px;
-    /* Cleaner, shorter ticks */
+    background-size: 100% 16px, 100% 8px;
+    /* Taller ticks */
     background-position: bottom, bottom;
     background-repeat: no-repeat;
     pointer-events: none;
+    opacity: 0.6;
 }
 
 /* Custom Slider Track */
@@ -63,80 +69,106 @@
     top: 50%;
     left: 0;
     right: 0;
-    height: 8px;
+    height: 16px;
+    /* Thicker track */
     transform: translateY(-50%);
     background: var(--track-bg, #cbd5e1);
     border: 1px solid var(--ui-border, #47351D);
-    border-radius: 4px;
+    border-radius: 8px;
+    /* More rounded */
     z-index: 1;
-    opacity: 1;
+    box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 /* Lens Thumb */
 .timeline-slider::-webkit-slider-thumb {
     -webkit-appearance: none;
     appearance: none;
-    width: 24px;
-    height: 24px;
+    width: 32px;
+    /* Larger thumb */
+    height: 32px;
     border-radius: 50%;
     background: var(--thumb-color, #E7903A);
-    cursor: pointer;
-    border: 3px solid var(--ui-bg, #fff);
+    cursor: grab;
+    border: 4px solid var(--ui-bg, #fff);
+    /* Thicker border */
     box-shadow:
-        0 2px 4px rgba(0, 0, 0, 0.3),
+        0 4px 6px rgba(0, 0, 0, 0.2),
         0 0 0 1px var(--ui-border, #47351D);
-    transition: transform 0.1s, background-color 0.2s;
+    transition: transform 0.1s, background-color 0.2s, box-shadow 0.2s;
+    margin-top: -8px;
+    /* Center vertically relative to track if needed, but flex aligns it */
+}
+
+.timeline-slider::-webkit-slider-thumb:active {
+    cursor: grabbing;
+    transform: scale(1.1);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
 }
 
 .timeline-slider::-webkit-slider-thumb:hover {
-    transform: scale(1.2);
+    transform: scale(1.15);
 }
 
 .timeline-slider::-moz-range-thumb {
-    width: 24px;
-    height: 24px;
+    width: 32px;
+    height: 32px;
     border-radius: 50%;
     background: var(--thumb-color, #E7903A);
-    cursor: pointer;
-    border: 3px solid var(--ui-bg, #fff);
+    cursor: grab;
+    border: 4px solid var(--ui-bg, #fff);
     box-shadow:
-        0 2px 4px rgba(0, 0, 0, 0.3),
+        0 4px 6px rgba(0, 0, 0, 0.2),
         0 0 0 1px var(--ui-border, #47351D);
     transition: transform 0.1s, background-color 0.2s;
 }
 
+.timeline-slider::-moz-range-thumb:active {
+    cursor: grabbing;
+    transform: scale(1.1);
+}
+
 .timeline-slider::-moz-range-thumb:hover {
-    transform: scale(1.2);
+    transform: scale(1.15);
 }
 
 .timeline-labels {
     display: flex;
     justify-content: space-between;
     color: var(--ui-text, #666);
-    font-size: 12px;
-    font-weight: 500;
-    padding: 0 10px;
+    font-size: 14px;
+    /* Larger font */
+    font-weight: 600;
+    padding: 0 4px;
+    opacity: 0.8;
 }
 
 .nav-btn {
-    width: 48px;
-    height: 48px;
+    width: 56px;
+    /* Larger buttons */
+    height: 56px;
     border-radius: 50%;
     background: var(--ui-bg, white);
     border: 2px solid var(--ui-accent, #3b82f6);
     color: var(--ui-accent, #3b82f6);
-    font-size: 20px;
+    font-size: 24px;
+    /* Larger icon */
     cursor: pointer;
     display: flex;
     align-items: center;
     justify-content: center;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-    transition: all 0.2s;
-    margin-bottom: 6px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    flex-shrink: 0;
 }
 
 .nav-btn:hover {
     background: var(--ui-accent, #eff6ff);
     color: var(--ui-bg, white);
-    transform: scale(1.05);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+}
+
+.nav-btn:active {
+    transform: translateY(0);
 }

@@ -123,7 +123,10 @@ const intersects = (bbox1: typeof VIEWPORT_BBOX, bbox2: typeof VIEWPORT_BBOX) =>
         bbox2.maxLat < bbox1.minLat);
 };
 
-export const loadHistoricalBorders = async (year: number): Promise<L.Layer | null> => {
+export const loadHistoricalBorders = async (
+    year: number,
+    onCountryClick?: (name: string, properties: any) => void
+): Promise<L.Layer | null> => {
     const file = getGeojsonFileForYear(year);
     try {
         const response = await fetch(`/${file}`);
@@ -208,6 +211,14 @@ export const loadHistoricalBorders = async (year: number): Promise<L.Layer | nul
                         layer.on('mouseout', function (e: any) {
                             if (newLayer) {
                                 newLayer.resetStyle(e.target);
+                            }
+                        });
+
+                        // Click handler
+                        layer.on('click', function (e: any) {
+                            L.DomEvent.stopPropagation(e); // Prevent map click
+                            if (onCountryClick) {
+                                onCountryClick(displayName, feature.properties);
                             }
                         });
                     }

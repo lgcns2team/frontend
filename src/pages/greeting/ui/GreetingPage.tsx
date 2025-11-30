@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ERAS } from '../../../shared/config/era-theme';
 import './GreetingPage.css';
@@ -6,13 +6,32 @@ import './GreetingPage.css';
 const GreetingPage = () => {
     const navigate = useNavigate();
     const [themeIndex, setThemeIndex] = useState(0);
+    const isThrottled = useRef(false);
 
     useEffect(() => {
-        const interval = setInterval(() => {
-            setThemeIndex(prev => (prev + 1) % ERAS.length);
-        }, 4000); // Change theme every 4 seconds
+        const handleWheel = (e: WheelEvent) => {
+            if (isThrottled.current) return;
 
-        return () => clearInterval(interval);
+            if (e.deltaY > 0) {
+                // Scroll Down -> Next Era
+                setThemeIndex(prev => Math.min(prev + 1, ERAS.length - 1));
+                throttle();
+            } else if (e.deltaY < 0) {
+                // Scroll Up -> Previous Era
+                setThemeIndex(prev => Math.max(prev - 1, 0));
+                throttle();
+            }
+        };
+
+        const throttle = () => {
+            isThrottled.current = true;
+            setTimeout(() => {
+                isThrottled.current = false;
+            }, 800); // 800ms delay for smooth transition
+        };
+
+        window.addEventListener('wheel', handleWheel);
+        return () => window.removeEventListener('wheel', handleWheel);
     }, []);
 
     const currentTheme = ERAS[themeIndex];
