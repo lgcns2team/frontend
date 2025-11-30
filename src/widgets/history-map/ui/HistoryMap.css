@@ -4,6 +4,49 @@
     position: relative;
     overflow: hidden;
     font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, system-ui, Roboto, sans-serif;
+    transition: all 0.5s ease;
+}
+
+/* --- Dynamic Themes --- */
+
+/* 1. Ancient (고대) */
+.history-map-container.theme-ancient {
+    font-family: 'Cinzel', serif;
+    --ui-bg: rgba(43, 43, 43, 0.9);
+    --ui-text: #e0e0e0;
+    --ui-border: #8c8c8c;
+    --ui-accent: #d1d1d1;
+    background-color: #2b2b2b;
+}
+
+/* 2. Medieval (중세) */
+.history-map-container.theme-medieval {
+    font-family: 'Noto Serif KR', serif;
+    --ui-bg: rgba(62, 39, 35, 0.9);
+    --ui-text: #d4c5a9;
+    --ui-border: #5d4037;
+    --ui-accent: #e6d5b8;
+    background-color: #d4c5a9;
+}
+
+/* 3. Modern (근대) */
+.history-map-container.theme-modern {
+    font-family: 'Nanum Myeongjo', serif;
+    --ui-bg: rgba(232, 228, 217, 0.95);
+    --ui-text: #111;
+    --ui-border: #111;
+    --ui-accent: #b91c1c;
+    background-color: #e8e4d9;
+}
+
+/* 4. Contemporary (현대) */
+.history-map-container.theme-contemporary {
+    font-family: 'Pretendard', sans-serif;
+    --ui-bg: rgba(255, 255, 255, 0.8);
+    --ui-text: #1e293b;
+    --ui-border: rgba(0, 0, 0, 0.1);
+    --ui-accent: #3b82f6;
+    background-color: #f8fafc;
 }
 
 #map {

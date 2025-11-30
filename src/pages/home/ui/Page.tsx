@@ -2,7 +2,7 @@
 import './Page.css';
 import HistoryMap from '../../../widgets/history-map/ui/HistoryMap';
 
-const Homepage = () => {
+const MapPage = () => {
     return (
         <div className="homepage-container">
             <HistoryMap />
@@ -10,4 +10,4 @@ const Homepage = () => {
     );
 };
 
-export default Homepage;
+export default MapPage;

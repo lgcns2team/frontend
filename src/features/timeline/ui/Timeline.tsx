@@ -1,4 +1,5 @@
 import './Timeline.css';
+import { getEraColor } from '../../../shared/data/eras';
 
 interface TimelineProps {
     currentYear: number;
@@ -6,6 +7,8 @@ interface TimelineProps {
 }
 
 export const Timeline = ({ currentYear, onYearChange }: TimelineProps) => {
+    const thumbColor = getEraColor(currentYear);
+
     return (
         <div className="timeline-container">
             <button className="nav-btn prev-btn" onClick={() => onYearChange(currentYear - 10)}>
@@ -22,6 +25,7 @@ export const Timeline = ({ currentYear, onYearChange }: TimelineProps) => {
                         value={currentYear}
                         className="timeline-slider"
                         onChange={(e) => onYearChange(parseInt(e.target.value))}
+                        style={{ '--thumb-color': thumbColor } as React.CSSProperties}
                     />
                     <div className="timeline-track-bg"></div>
                 </div>

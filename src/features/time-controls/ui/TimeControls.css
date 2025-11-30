@@ -5,18 +5,20 @@
 }
 
 .ruler-display-container {
-    background: white;
-    border: 3px solid;
+    background: var(--ui-bg, white);
+    border: 3px solid var(--ui-border, #e2e8f0);
     /* Color set inline */
     border-radius: 8px;
-    padding: 4px 12px;
+    padding: 8px 12px;
     min-width: 240px;
     position: relative;
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
     display: flex;
     flex-direction: column;
-    justify-content: center;
-    height: 64px;
+    justify-content: space-between;
+    height: auto;
+    min-height: 80px;
+    color: var(--ui-text, #333);
 }
 
 .ruler-marks-top,
@@ -24,62 +26,77 @@
     height: 6px;
     width: 100%;
     background-image: repeating-linear-gradient(90deg,
-            #94a3b8 0px,
-            #94a3b8 1px,
+            var(--ui-border, #94a3b8) 0px,
+            var(--ui-border, #94a3b8) 1px,
             transparent 1px,
             transparent 10px);
     opacity: 0.5;
 }
 
-.year-text-content {
+.time-content-wrapper {
     display: flex;
+    flex-direction: column;
     align-items: center;
     justify-content: center;
-    gap: 8px;
+    gap: 4px;
     padding: 4px 0;
+}
+
+.year-row {
+    display: flex;
+    align-items: baseline;
+    gap: 6px;
+    color: var(--ui-text, #333);
+}
+
+.era-row {
+    display: flex;
+    justify-content: center;
 }
 
 .year-number {
     font-size: 28px;
     font-weight: 800;
-    font-family: 'Courier New', Courier, monospace;
-    /* Monospace for ruler feel */
+    font-family: inherit;
     letter-spacing: -1px;
+    line-height: 1;
 }
 
 .year-unit {
     font-size: 16px;
     font-weight: bold;
-    color: #64748b;
-    margin-top: 6px;
+    color: var(--ui-text, #64748b);
+    opacity: 0.8;
 }
 
 .era-badge {
-    padding: 2px 8px;
+    padding: 4px 12px;
     border-radius: 12px;
-    font-size: 14px;
+    font-size: 13px;
     font-weight: bold;
-    color: #1e293b;
-    margin-left: 8px;
+    color: var(--ui-bg, white);
+    /* Background color set inline */
     box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+    white-space: nowrap;
 }
 
 .playback-controls {
     display: flex;
     gap: 8px;
-    background: white;
+    background: var(--ui-bg, white);
     padding: 4px;
     border-radius: 24px;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    border: 1px solid var(--ui-border, transparent);
 }
 
 .circle-btn {
     width: 40px;
     height: 40px;
     border-radius: 50%;
-    border: 1px solid #3b82f6;
-    background: white;
-    color: #3b82f6;
+    border: 1px solid var(--ui-accent, #3b82f6);
+    background: transparent;
+    color: var(--ui-accent, #3b82f6);
     font-size: 16px;
     cursor: pointer;
     display: flex;
@@ -89,5 +106,6 @@
 }
 
 .circle-btn:hover {
-    background: #eff6ff;
+    background: var(--ui-accent, #eff6ff);
+    color: var(--ui-bg, white);
 }

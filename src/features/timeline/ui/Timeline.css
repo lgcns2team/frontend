@@ -46,95 +46,77 @@
     bottom: 0;
     z-index: 2;
     background-image:
-        repeating-linear-gradient(90deg, #64748b 0px, #64748b 1px, transparent 1px, transparent 10px),
+        repeating-linear-gradient(90deg, #47351D 0px, #47351D 1px, transparent 1px, transparent 10px),
         /* Major ticks */
-        repeating-linear-gradient(90deg, #94a3b8 0px, #94a3b8 1px, transparent 1px, transparent 2px);
+        repeating-linear-gradient(90deg, rgba(71, 53, 29, 0.5) 0px, rgba(71, 53, 29, 0.5) 1px, transparent 1px, transparent 2px);
     /* Minor ticks */
-    background-size: 100% 40px, 100% 24px;
-    /* Taller ticks */
-    background-position: center, center;
+    background-size: 100% 12px, 100% 6px;
+    /* Cleaner, shorter ticks */
+    background-position: bottom, bottom;
     background-repeat: no-repeat;
     pointer-events: none;
 }
 
-/* Custom Slider Track (Colored Gradient) */
+/* Custom Slider Track */
 .timeline-track-bg {
     position: absolute;
     top: 50%;
     left: 0;
     right: 0;
-    height: 32px;
-    /* Increased track height */
+    height: 8px;
     transform: translateY(-50%);
     background: linear-gradient(to right,
             #cbd5e1 0%,
-            /* Gojoseon & Before */
             #cbd5e1 51%,
-            /* ~ BC 108 */
             #fca5a5 51%,
-            /* Proto-Three Kingdoms */
             #fca5a5 60%,
-            /* ~ 300 */
             #93c5fd 60%,
-            /* Three Kingdoms */
             #93c5fd 69.5%,
-            /* ~ 698 */
             #fdba74 69.5%,
-            /* North-South States */
             #fdba74 74.8%,
-            /* ~ 926 */
             #c4b5fd 74.8%,
-            /* Goryeo */
             #c4b5fd 85.5%,
-            /* ~ 1392 */
             #86efac 85.5%,
-            /* Joseon */
             #86efac 97%,
-            /* ~ 1897 */
             #fcd34d 97%,
-            /* Modern/Empire */
             #fcd34d 100%);
+    border: 1px solid var(--ui-border, #47351D);
     border-radius: 4px;
     z-index: 1;
-    opacity: 0.8;
+    opacity: 1;
 }
 
 /* Lens Thumb */
 .timeline-slider::-webkit-slider-thumb {
     -webkit-appearance: none;
     appearance: none;
-    width: 48px;
-    /* Increased thumb size */
-    height: 48px;
+    width: 24px;
+    height: 24px;
     border-radius: 50%;
-    background: rgba(255, 255, 255, 0.9);
+    background: var(--thumb-color, #E7903A);
     cursor: pointer;
-    border: 2px solid #3b82f6;
+    border: 3px solid var(--ui-bg, #fff);
     box-shadow:
-        0 4px 6px rgba(0, 0, 0, 0.2),
-        inset 0 0 0 2px rgba(255, 255, 255, 0.5);
-    /* Inner ring */
-    backdrop-filter: blur(4px);
-    transition: transform 0.1s;
-    /* Removed margin-top and transform offset as we want it centered */
+        0 2px 4px rgba(0, 0, 0, 0.3),
+        0 0 0 1px var(--ui-border, #47351D);
+    transition: transform 0.1s, background-color 0.2s;
 }
 
 .timeline-slider::-webkit-slider-thumb:hover {
     transform: scale(1.2);
-    /* Magnification effect */
-    background: white;
-    box-shadow: 0 6px 12px rgba(59, 130, 246, 0.4);
 }
 
 .timeline-slider::-moz-range-thumb {
-    width: 48px;
-    height: 48px;
+    width: 24px;
+    height: 24px;
     border-radius: 50%;
-    background: rgba(255, 255, 255, 0.9);
+    background: var(--thumb-color, #E7903A);
     cursor: pointer;
-    border: 2px solid #3b82f6;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
-    transition: transform 0.1s;
+    border: 3px solid var(--ui-bg, #fff);
+    box-shadow:
+        0 2px 4px rgba(0, 0, 0, 0.3),
+        0 0 0 1px var(--ui-border, #47351D);
+    transition: transform 0.1s, background-color 0.2s;
 }
 
 .timeline-slider::-moz-range-thumb:hover {
@@ -144,7 +126,7 @@
 .timeline-labels {
     display: flex;
     justify-content: space-between;
-    color: #666;
+    color: var(--ui-text, #666);
     font-size: 12px;
     font-weight: 500;
     padding: 0 10px;
@@ -154,9 +136,9 @@
     width: 48px;
     height: 48px;
     border-radius: 50%;
-    background: white;
-    border: 2px solid #3b82f6;
-    color: #3b82f6;
+    background: var(--ui-bg, white);
+    border: 2px solid var(--ui-accent, #3b82f6);
+    color: var(--ui-accent, #3b82f6);
     font-size: 20px;
     cursor: pointer;
     display: flex;
@@ -168,6 +150,7 @@
 }
 
 .nav-btn:hover {
-    background: #eff6ff;
+    background: var(--ui-accent, #eff6ff);
+    color: var(--ui-bg, white);
     transform: scale(1.05);
 }

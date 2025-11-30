@@ -4,12 +4,13 @@ import 'leaflet/dist/leaflet.css';
 import 'leaflet-draw';
 import 'leaflet-draw/dist/leaflet.draw.css';
 import './HistoryMap.css';
-import {
-    capitalData,
-    battleData,
-    tradeData,
-    peopleData
-} from '../../../shared/config/constants';
+import { capitalData } from '../../../shared/data/capitals';
+import { battleData } from '../../../shared/data/battles';
+import { tradeData } from '../../../shared/data/trade';
+import { peopleData } from '../../../shared/data/people';
+
+import { loadHistoricalBorders } from '../lib/boundary-utils';
+import { getEraForYear } from '../../../shared/config/eras';
 
 // Features
 import { TimeControls } from '../../../features/time-controls';
@@ -36,7 +37,6 @@ const HistoryMap = () => {
     const mapContainer = useRef<HTMLDivElement>(null);
     const mapInstance = useRef<L.Map | null>(null);
     const historicalLayer = useRef<L.Layer | null>(null);
-    const mapDataLayer = useRef<L.Layer | null>(null);
     const markersLayer = useRef<L.LayerGroup | null>(null);
 
     const [currentYear, setCurrentYear] = useState<number>(475);
@@ -52,7 +52,7 @@ const HistoryMap = () => {
             const map = L.map(mapContainer.current, {
                 center: [37.5, 120.0],
                 zoom: 5,
-                zoomControl: true,
+                zoomControl: false,
                 maxZoom: 10,
                 minZoom: 3
             });
@@ -61,31 +61,6 @@ const HistoryMap = () => {
                 attribution: '© OpenStreetMap contributors',
                 opacity: 0.3
             }).addTo(map);
-
-            // FeatureGroup is to store editable layers
-            const drawnItems = new L.FeatureGroup();
-            map.addLayer(drawnItems);
-
-            // Cast L to any to avoid TypeScript errors with leaflet-draw
-            const drawControl = new (L.Control as any).Draw({
-                edit: {
-                    featureGroup: drawnItems
-                },
-                draw: {
-                    polygon: true,
-                    polyline: true,
-                    rectangle: true,
-                    circle: true,
-                    marker: true,
-                    circlemarker: false
-                }
-            });
-            map.addControl(drawControl);
-
-            map.on((L as any).Draw.Event.CREATED, function (e: any) {
-                const layer = e.layer;
-                drawnItems.addLayer(layer);
-            });
 
             mapInstance.current = map;
             markersLayer.current = L.layerGroup().addTo(map);
@@ -103,146 +78,18 @@ const HistoryMap = () => {
     useEffect(() => {
         if (!mapInstance.current) return;
 
-        const loadMapData = async () => {
-            const file = getGeojsonFileForYear(currentYear);
-            try {
-                // Use fetch instead of d3.json to ensure correct path resolution in Vite
-                const response = await fetch(`/${file}`);
-                if (!response.ok) throw new Error('Failed to load GeoJSON');
-                const data = await response.json();
-
-                if (data) {
-                    // Filter features for East Asia
-                    const filteredFeatures = data.features.filter((feature: any) => {
-                        if (!feature.geometry || !feature.geometry.coordinates) return false;
-                        try {
-                            // Simple bounding box check based on first coordinate
-                            let coords = feature.geometry.coordinates;
-                            let checkCoord;
-                            if (feature.geometry.type === 'Polygon') {
-                                checkCoord = coords[0][0];
-                            } else if (feature.geometry.type === 'MultiPolygon') {
-                                checkCoord = coords[0][0][0];
-                            }
-
-                            if (checkCoord) {
-                                const [lng, lat] = checkCoord;
-                                return lng >= 70 && lng <= 150 && lat >= 15 && lat <= 60;
-                            }
-                        } catch (e) {
-                            return false;
-                        }
-                        return false;
-                    });
-
-                    const filteredData = {
-                        type: 'FeatureCollection',
-                        features: filteredFeatures.length > 0 ? filteredFeatures : data.features // Fallback if filter fails
-                    };
-
-                    const newLayer = L.geoJSON(filteredData as any, {
-                        style: function (feature: any) {
-                            // Check if this is a LineString with custom stroke properties
-                            if (feature.geometry.type === 'LineString' || feature.geometry.type === 'MultiLineString') {
-                                return {
-                                    color: feature.properties?.stroke || feature.properties?.color || '#ef4444',
-                                    weight: feature.properties?.['stroke-width'] || 2,
-                                    opacity: 1,
-                                    fillOpacity: 0
-                                };
-                            }
-                            // Default polygon styling
-                            return {
-                                fillColor: getColorByCountry(feature?.properties?.NAME || feature?.properties?.name),
-                                weight: 1,
-                                opacity: 1,
-                                color: '#ffffff',
-                                fillOpacity: 0.5,
-                            };
-                        },
-                        onEachFeature: function (feature: any, layer: L.Layer) {
-                            if (feature.properties && (feature.properties.NAME || feature.properties.name)) {
-                                const countryName = feature.properties.NAME || feature.properties.name;
-                                const displayName = countryName === 'gojoseon' ? '고조선' : countryName;
-
-                                layer.bindPopup(
-                                    `<div style="font-family: sans-serif; padding: 8px;">
-                                        <h3 style="margin: 0 0 8px 0; font-size: 16px; color: #1f2937;">${displayName}</h3>
-                                        <p style="margin: 0; font-size: 13px; color: #6b7280;">${currentYear > 0 ? currentYear + '년' : 'BC ' + Math.abs(currentYear) + '년'}</p>
-                                    </div>`
-                                );
-
-                                layer.on('mouseover', function (e: any) {
-                                    e.target.setStyle({
-                                        weight: 3,
-                                        color: '#3b82f6',
-                                        fillOpacity: 0.75
-                                    });
-                                    e.target.bringToFront();
-                                });
-
-                                layer.on('mouseout', function (e: any) {
-                                    if (newLayer) {
-                                        newLayer.resetStyle(e.target);
-                                    }
-                                });
-                            }
-                        }
-                    });
-
-                    if (historicalLayer.current) {
-                        mapInstance.current?.removeLayer(historicalLayer.current);
-                    }
-
-                    newLayer.addTo(mapInstance.current!);
-                    historicalLayer.current = newLayer;
+        const updateBorders = async () => {
+            const newLayer = await loadHistoricalBorders(currentYear);
+            if (newLayer) {
+                if (historicalLayer.current) {
+                    mapInstance.current?.removeLayer(historicalLayer.current);
                 }
-            } catch (error) {
-                console.error('Error loading map data:', error);
+                newLayer.addTo(mapInstance.current!);
+                historicalLayer.current = newLayer;
             }
         };
 
-        const loadMapDataLayer = async () => {
-            // Only show map_data between 1231 and 1259
-            if (currentYear < 1231 || currentYear > 1259) {
-                if (mapDataLayer.current && mapInstance.current) {
-                    mapInstance.current.removeLayer(mapDataLayer.current);
-                    mapDataLayer.current = null;
-                }
-                return;
-            }
-
-            try {
-                const response = await fetch('/geojson/map_data.geojson');
-                if (!response.ok) return;
-                const data = await response.json();
-
-                if (data && mapInstance.current) {
-                    const mapDataGeoJSON = L.geoJSON(data as any, {
-                        style: function (feature: any) {
-                            return {
-                                color: feature.properties?.stroke || feature.properties?.color || '#ef4444',
-                                weight: feature.properties?.['stroke-width'] || 2,
-                                opacity: 1,
-                                fillOpacity: 0
-                            };
-                        }
-                    });
-
-                    if (mapDataLayer.current) {
-                        mapInstance.current?.removeLayer(mapDataLayer.current);
-                    }
-
-                    mapDataGeoJSON.addTo(mapInstance.current!);
-                    mapDataLayer.current = mapDataGeoJSON;
-                }
-            } catch (error) {
-                console.error('Error loading map_data:', error);
-            }
-        };
-
-        loadMapData();
-        loadMapDataLayer();
+        updateBorders();
         updateMarkers();
 
     }, [currentYear]);
@@ -375,30 +222,6 @@ const HistoryMap = () => {
     };
 
     // Helpers
-    const getGeojsonFileForYear = (year: number) => {
-        if (year <= -1000) return 'geojson/world_bc1000.geojson';
-        if (year <= -500) return 'geojson/world_bc500.geojson';
-        if (year <= 0) return 'geojson/world_bc1.geojson';
-        if (year <= 100) return 'geojson/world_100.geojson';
-        if (year <= 300) return 'geojson/world_200.geojson'; // Approx
-        if (year <= 500) return 'geojson/world_400.geojson'; // Approx
-        if (year <= 700) return 'geojson/world_600.geojson'; // Approx
-        if (year <= 900) return 'geojson/world_800.geojson'; // Approx
-        if (year <= 1100) return 'geojson/world_1100.geojson'; // Approx
-        if (year <= 1300) return 'geojson/world_1300.geojson';
-        if (year <= 1400) return 'geojson/world_1400.geojson';
-        if (year <= 1500) return 'geojson/world_1500.geojson';
-        if (year <= 1600) return 'geojson/world_1600.geojson';
-        if (year <= 1700) return 'geojson/world_1650.geojson';
-        if (year <= 1800) return 'geojson/world_1783.geojson';
-        if (year <= 1900) return 'geojson/world_1880.geojson';
-        if (year <= 1920) return 'geojson/world_1914.geojson';
-        if (year <= 1940) return 'geojson/world_1938.geojson';
-        if (year <= 1960) return 'geojson/world_1945.geojson';
-        if (year <= 2000) return 'geojson/world_1994.geojson';
-        return 'geojson/world_2010.geojson';
-    };
-
     const getCapitalPeriod = (year: number) => {
         if (year <= -1000) return '-2000_-1000';
         if (year <= -500) return '-1000_-500';
@@ -417,31 +240,11 @@ const HistoryMap = () => {
         return '1945_2024';
     };
 
-    const getColorByCountry = (name: string) => {
-        const colors: Record<string, string> = {
-            '고조선': '#7c3aed', 'gojoseon': '#7c3aed',
-            '고구려': '#ef4444', 'Goguryeo': '#ef4444',
-            '백제': '#3b82f6', 'Baekje': '#3b82f6',
-            '신라': '#f59e0b', 'Silla': '#f59e0b',
-            '고려': '#8b5cf6', 'Goryeo': '#8b5cf6',
-            '조선': '#10b981', 'Joseon': '#10b981',
-            '일본': '#dc2626', 'Japan': '#dc2626',
-            '중국': '#ea580c', 'China': '#ea580c',
-            '당': '#f97316', 'Tang': '#f97316',
-            '청': '#0ea5e9', 'Qing': '#0ea5e9',
-            '명': '#eab308', 'Ming': '#eab308'
-        };
-
-        if (name) {
-            for (let key in colors) {
-                if (name.includes(key)) return colors[key];
-            }
-        }
-        return '#94a3b8'; // Default
-    };
+    // Dynamic Theme Calculation
+    const currentEra = getEraForYear(currentYear);
 
     return (
-        <div className="history-map-container">
+        <div className={`history-map-container theme-${currentEra.id}`}>
             <div id="map" ref={mapContainer}></div>
 
             {/* Top Left: Year, Play, Speed, Layers */}

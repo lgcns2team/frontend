@@ -8,9 +8,9 @@
     width: 60px;
     height: 60px;
     border-radius: 50%;
-    background: #666;
-    color: white;
-    border: none;
+    background: var(--ui-bg, #666);
+    color: var(--ui-text, white);
+    border: 2px solid var(--ui-border, transparent);
     font-size: 12px;
     font-weight: bold;
     cursor: pointer;
@@ -18,10 +18,12 @@
     align-items: center;
     justify-content: center;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
-    transition: transform 0.2s;
+    transition: all 0.2s;
 }
 
 .feature-btn:hover {
     transform: scale(1.1);
-    background: #555;
+    background: var(--ui-accent, #555);
+    color: var(--ui-bg, white);
+    border-color: var(--ui-accent, #555);
 }
