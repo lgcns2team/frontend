@@ -1,4 +1,5 @@
 .layer-tabs {
+    margin-left: 12px;
     display: flex;
     gap: 4px;
 }

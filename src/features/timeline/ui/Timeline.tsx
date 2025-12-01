@@ -1,6 +1,6 @@
 import { useMemo, useState, useEffect, useRef } from 'react';
 import './Timeline.css';
-import { getEraColor, ERA_LIMITS } from '../../../shared/config/era-theme';
+import { getEraColor, ERA_LIMITS, ERAS } from '../../../shared/config/era-theme';
 
 interface TimelineProps {
     currentYear: number;
@@ -163,6 +163,44 @@ export const Timeline = ({ currentYear, onYearChange }: TimelineProps) => {
             <div className="timeline-wrapper">
                 <div className="timeline-slider-container">
                     <div className="timeline-ruler-ticks"></div>
+
+                    {/* Era Markers */}
+                    <div className="timeline-era-markers">
+                        {ERAS.map((era) => {
+                            // Calculate midpoint
+                            // Handle -Infinity for Gojoseon start: use GLOBAL_MIN_YEAR
+                            const effectiveStart = era.startYear === -Infinity ? GLOBAL_MIN_YEAR : era.startYear;
+                            // Handle Infinity for Republic end: use GLOBAL_MAX_YEAR
+                            const effectiveEnd = era.endYear === Infinity ? GLOBAL_MAX_YEAR : era.endYear;
+
+                            const midYear = (effectiveStart + effectiveEnd) / 2;
+
+                            // Calculate position relative to view
+                            const totalRange = viewEnd - viewStart;
+                            const midPercent = ((midYear - viewStart) / totalRange) * 100;
+
+                            // Check if visible (allow some buffer)
+                            if (midPercent < -20 || midPercent > 120) return null;
+
+                            const eraColor = getEraColor(effectiveEnd - 1);
+
+                            return (
+                                <div
+                                    key={era.id}
+                                    className="era-label-marker"
+                                    style={{
+                                        left: `${midPercent}%`,
+                                        '--era-color': eraColor
+                                    } as React.CSSProperties}
+                                >
+                                    <div className="era-bubble">
+                                        {era.label}
+                                    </div>
+                                </div>
+                            );
+                        })}
+                    </div>
+
                     <input
                         type="range"
                         min={viewStart}
