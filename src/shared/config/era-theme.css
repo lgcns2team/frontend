@@ -1,0 +1,118 @@
+/* src/shared/styles/era-theme.css */
+
+/* 공통 트랜지션 설정: 시대가 바뀔 때 부드럽게 넘어가도록 */
+.time-controls-container,
+.control-btn,
+body {
+    transition: background-color 0.5s ease, color 0.5s ease, border-color 0.5s ease;
+}
+
+/* 1. 고조선 (Bronze Beige) #D7C0AE */
+.theme-gojoseon {
+    font-family: 'Cinzel', serif;
+    --ui-bg: rgba(229, 225, 220, 0.95);
+    --ui-bg-solid: #f5f0eb;
+    --ui-text: #5d4037;
+    /* 진한 갈색 */
+    --ui-border: #D7C0AE;
+    --ui-accent: #8d6e63;
+    background-color: #f5f0eb;
+}
+
+/* 2. 원삼국 (Light Olive Green) #E2E8F0 -> 약간 흙빛 섞인 올리브로 조정 */
+.theme-proto-three-kingdoms {
+    font-family: 'Noto Serif KR', serif;
+    --ui-bg: rgba(241, 245, 241, 0.95);
+    --ui-bg-solid: #f1f5f1;
+    --ui-text: #334155;
+    --ui-border: #cbd5e1;
+    --ui-accent: #64748b;
+    /* 차분한 슬레이트 블루/그레이 */
+    background-color: #f1f5f1;
+}
+
+/* 3. 삼국시대 (Coral Red) #FDA4AF - 활기찬 느낌 */
+.theme-three-kingdoms {
+    font-family: 'Noto Serif KR', serif;
+    --ui-bg: rgba(255, 241, 242, 0.95);
+    --ui-bg-solid: #fff1f2;
+    --ui-text: #881337;
+    /* 깊은 레드 와인 */
+    --ui-border: #FDA4AF;
+    --ui-accent: #e11d48;
+    background-color: #fff1f2;
+}
+
+/* 4. 남북국시대 (Amber Gold) #FCD34D - 화려함 */
+.theme-north-south-states {
+    font-family: 'Noto Serif KR', serif;
+    --ui-bg: rgba(255, 251, 235, 0.95);
+    --ui-bg-solid: #fffbeb;
+    --ui-text: #78350f;
+    /* 짙은 앰버 브라운 */
+    --ui-border: #FCD34D;
+    --ui-accent: #d97706;
+    background-color: #fffbeb;
+}
+
+/* 5. 고려시대 (Celadon Green) #5EEAD4 - 청자색 */
+.theme-goryeo {
+    font-family: 'Nanum Myeongjo', serif;
+    --ui-bg: rgba(240, 253, 250, 0.95);
+    --ui-bg-solid: #f0fdfa;
+    --ui-text: #134e4a;
+    /* 깊은 청록색 */
+    --ui-border: #5EEAD4;
+    --ui-accent: #0d9488;
+    background-color: #f0fdfa;
+}
+
+/* 6. 조선시대 (Sky Blue/Indigo) #93C5FD - 청렴함 */
+.theme-joseon {
+    font-family: 'Nanum Myeongjo', serif;
+    --ui-bg: rgba(239, 246, 255, 0.95);
+    --ui-bg-solid: #eff6ff;
+    --ui-text: #1e3a8a;
+    /* 짙은 쪽빛 */
+    --ui-border: #93C5FD;
+    --ui-accent: #2563eb;
+    background-color: #eff6ff;
+}
+
+/* 7. 대한제국 (Royal Purple) #C084FC - 황실 */
+.theme-korean-empire {
+    font-family: 'Nanum Myeongjo', serif;
+    --ui-bg: rgba(250, 245, 255, 0.95);
+    --ui-bg-solid: #faf5ff;
+    --ui-text: #581c87;
+    /* 로얄 퍼플 텍스트 */
+    --ui-border: #C084FC;
+    --ui-accent: #9333ea;
+    background-color: #faf5ff;
+}
+
+/* 8. 일제강점기 (Grayscale) #94A3B8 - 무채색 */
+.theme-colonial {
+    font-family: 'Pretendard', sans-serif;
+    --ui-bg: rgba(241, 245, 249, 0.95);
+    --ui-bg-solid: #f1f5f9;
+    --ui-text: #334155;
+    /* 차가운 짙은 회색 */
+    --ui-border: #94A3B8;
+    --ui-accent: #475569;
+    background-color: #f1f5f9;
+    filter: grayscale(0.8);
+    /* 전체적으로 흑백 톤을 줌 */
+}
+
+/* 9. 대한민국 (Deep Blue) #3B82F6 - 현대 */
+.theme-republic {
+    font-family: 'Pretendard', sans-serif;
+    --ui-bg: rgba(255, 255, 255, 0.95);
+    --ui-bg-solid: #ffffff;
+    --ui-text: #0f172a;
+    /* 아주 짙은 네이비 */
+    --ui-border: #3B82F6;
+    --ui-accent: #2563eb;
+    background-color: #ffffff;
+}

@@ -1,34 +1,44 @@
 import './TimeControls.css';
+import { getEraName } from '../../../shared/config/era-theme';
+import { getEraForYear } from '../../../shared/config/era-theme';
 
 interface TimeControlsProps {
     currentYear: number;
     isPlaying: boolean;
+    speed: number;
     onTogglePlay: () => void;
+    onToggleSpeed: () => void;
 }
 
-export const TimeControls = ({ currentYear, isPlaying, onTogglePlay }: TimeControlsProps) => {
+export const TimeControls = ({ currentYear, isPlaying, speed, onTogglePlay, onToggleSpeed }: TimeControlsProps) => {
 
-
-    const getEraName = (year: number) => {
-        // const period = getCapitalPeriod(year).split('_')[0]; // Unused
-        if (year < 918) return '삼국/남북국시대';
-        if (year < 1392) return '고려시대';
-        if (year < 1897) return '조선시대';
-        if (year < 1910) return '대한제국';
-        if (year < 1945) return '일제강점기';
-        return '현대';
-    };
+    const eraConfig = getEraForYear(currentYear);
 
     return (
-        <div className="control-row">
-            <div className="year-display-box">
-                {currentYear > 0 ? `${currentYear}년` : `BC ${Math.abs(currentYear)}년`} {getEraName(currentYear)}
+        <div className="time-controls-container">
+            {/* Year Display (Top) */}
+            <div className="year-display-group">
+                <div className="year-text">
+                    {currentYear <= 0 ? `BC ${Math.abs(currentYear)}` : currentYear} 년 {eraConfig.label}
+                </div>
+                <div className="year-sub-row">
+                    <span className="era-name">{eraConfig.description}</span>
+                </div>
             </div>
-            <div className="playback-controls">
-                <button className="circle-btn play-btn" onClick={onTogglePlay}>
+
+            {/* Controls Row (Bottom) */}
+            <div className="controls-row">
+                <button
+                    className={`control-btn play-btn ${isPlaying ? 'playing' : ''}`}
+                    onClick={onTogglePlay}
+                    aria-label={isPlaying ? "Pause" : "Play"}
+                >
                     {isPlaying ? '⏸' : '▶'}
                 </button>
-                <button className="circle-btn speed-btn">1x</button>
+
+                <button className="control-btn speed-btn" onClick={onToggleSpeed}>
+                    <span className="speed-value">{speed}x</span>
+                </button>
             </div>
         </div>
     );

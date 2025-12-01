@@ -1,15 +1,15 @@
 import { useEffect, useRef, useState } from 'react';
 import * as L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
-import 'leaflet-draw';
-import 'leaflet-draw/dist/leaflet.draw.css';
 import './HistoryMap.css';
-import {
-    capitalData,
-    battleData,
-    tradeData,
-    peopleData
-} from '../../../shared/config/constants';
+import '../../../shared/config/era-theme.css';
+import { capitalData } from '../../../shared/data/capitals';
+import { battleData } from '../../../shared/data/battles';
+import { tradeData } from '../../../shared/data/trade';
+import { peopleData } from '../../../shared/data/people';
+
+import { getEraForYear } from '../../../shared/config/era-theme';
+import { loadHistoricalBorders } from '../lib/boundary-utils';
 
 // Features
 import { TimeControls } from '../../../features/time-controls';
@@ -17,7 +17,9 @@ import { MapLayers } from '../../../features/map-layers';
 import { SearchYear } from '../../../features/search-year';
 import { SidebarMenu } from '../../../features/sidebar-menu';
 import { Timeline } from '../../../features/timeline';
-import { ChatbotTrigger } from '../../../features/chatbot';
+import { DockingPanel } from '../../../features/docking-panel/ui/DockingPanel';
+import { FloatingPanel } from '../../../features/floating-panel/ui/FloatingPanel';
+import { ChatbotTrigger, ChatbotPanel } from '../../../features/chatbot';
 
 // Fix Leaflet marker icon issue
 import icon from 'leaflet/dist/images/marker-icon.png';
@@ -32,202 +34,163 @@ let DefaultIcon = L.icon({
 
 L.Marker.prototype.options.icon = DefaultIcon;
 
-const HistoryMap = () => {
+export default function HistoryMap() {
     const mapContainer = useRef<HTMLDivElement>(null);
-    const mapInstance = useRef<L.Map | null>(null);
+    const map = useRef<L.Map | null>(null);
     const historicalLayer = useRef<L.Layer | null>(null);
     const markersLayer = useRef<L.LayerGroup | null>(null);
+    const lastRequestedYear = useRef<number>(475);
+    const layerCache = useRef<Map<number, L.Layer>>(new Map());
+    const abortController = useRef<AbortController | null>(null);
 
     const [currentYear, setCurrentYear] = useState<number>(475);
     const [isPlaying, setIsPlaying] = useState<boolean>(false);
+    const [speed, setSpeed] = useState<number>(1);
+    const [activePanel, setActivePanel] = useState<string | null>(null);
     const [layerType, setLayerType] = useState<'default' | 'battles' | 'trade' | 'people'>('default');
+    const [selectedCountry, setSelectedCountry] = useState<{ name: string; properties: any } | null>(null);
+    const [isChatbotOpen, setIsChatbotOpen] = useState(false);
+    const [chatbotState, setChatbotState] = useState<{
+        x: number;
+        y: number;
+        width: number;
+        height: number;
+    } | null>(null);
 
     const playInterval = useRef<ReturnType<typeof setInterval> | null>(null);
 
+    const getCapitalPeriod = (year: number) => {
+        if (year <= -1000) return '-2000_-1000';
+        if (year <= -500) return '-1000_-500';
+        if (year <= 0) return '-500_0';
+        if (year <= 300) return '0_300';
+        if (year <= 500) return '300_500';
+        if (year <= 700) return '500_700';
+        if (year <= 900) return '700_900';
+        if (year <= 1100) return '900_1100';
+        if (year <= 1300) return '1100_1300';
+        if (year <= 1400) return '1300_1400';
+        if (year <= 1600) return '1400_1600';
+        if (year <= 1800) return '1600_1800';
+        if (year <= 1900) return '1800_1900';
+        if (year <= 1945) return '1900_1945';
+        return '1945_2024';
+    };
+
     // Initialize Map
     useEffect(() => {
-        if (mapContainer.current && !mapInstance.current) {
-            const map = L.map(mapContainer.current, {
-                center: [37.5, 120.0],
-                zoom: 5,
-                zoomControl: true,
-                maxZoom: 10,
-                minZoom: 3
-            });
+        if (!mapContainer.current) return;
 
-            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-                attribution: '© OpenStreetMap contributors',
-                opacity: 0.3
-            }).addTo(map);
+        // Initialize map
+        map.current = L.map(mapContainer.current, {
+            center: [36.5, 127.5],
+            zoom: 7,
+            zoomControl: false,
+            attributionControl: false
+        });
 
-            // FeatureGroup is to store editable layers
-            const drawnItems = new L.FeatureGroup();
-            map.addLayer(drawnItems);
+        // Add tile layer
+        L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
+            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>'
+        }).addTo(map.current);
 
-            // Cast L to any to avoid TypeScript errors with leaflet-draw
-            const drawControl = new (L.Control as any).Draw({
-                edit: {
-                    featureGroup: drawnItems
-                },
-                draw: {
-                    polygon: true,
-                    polyline: true,
-                    rectangle: true,
-                    circle: true,
-                    marker: true,
-                    circlemarker: false
-                }
-            });
-            map.addControl(drawControl);
+        // Initial load
+        updateMapForYear(currentYear);
 
-            map.on((L as any).Draw.Event.CREATED, function (e: any) {
-                const layer = e.layer;
-                drawnItems.addLayer(layer);
-            });
-
-            mapInstance.current = map;
-            markersLayer.current = L.layerGroup().addTo(map);
-        }
+        markersLayer.current = L.layerGroup().addTo(map.current);
 
         return () => {
-            if (mapInstance.current) {
-                mapInstance.current.remove();
-                mapInstance.current = null;
-            }
+            map.current?.remove();
         };
     }, []);
 
-    // Load GeoJSON
+    // Update map when year changes with debounce
     useEffect(() => {
-        if (!mapInstance.current) return;
+        const timer = setTimeout(() => {
+            updateMapForYear(currentYear);
+        }, 100); // 100ms debounce
 
-        const loadMapData = async () => {
-            const file = getGeojsonFileForYear(currentYear);
-            try {
-                // Use fetch instead of d3.json to ensure correct path resolution in Vite
-                const response = await fetch(`/${file}`);
-                if (!response.ok) throw new Error('Failed to load GeoJSON');
-                const data = await response.json();
-
-                if (data) {
-                    // Filter features for East Asia
-                    const filteredFeatures = data.features.filter((feature: any) => {
-                        if (!feature.geometry || !feature.geometry.coordinates) return false;
-                        try {
-                            // Simple bounding box check based on first coordinate
-                            let coords = feature.geometry.coordinates;
-                            let checkCoord;
-                            if (feature.geometry.type === 'Polygon') {
-                                checkCoord = coords[0][0];
-                            } else if (feature.geometry.type === 'MultiPolygon') {
-                                checkCoord = coords[0][0][0];
-                            }
-
-                            if (checkCoord) {
-                                const [lng, lat] = checkCoord;
-                                return lng >= 70 && lng <= 150 && lat >= 15 && lat <= 60;
-                            }
-                        } catch (e) {
-                            return false;
-                        }
-                        return false;
-                    });
-
-                    const filteredData = {
-                        type: 'FeatureCollection',
-                        features: filteredFeatures.length > 0 ? filteredFeatures : data.features // Fallback if filter fails
-                    };
-
-                    const newLayer = L.geoJSON(filteredData as any, {
-                        style: function (feature: any) {
-                            return {
-                                fillColor: getColorByCountry(feature?.properties?.NAME || feature?.properties?.name),
-                                weight: 1,
-                                opacity: 1,
-                                color: '#ffffff',
-                                fillOpacity: 0.5,
-                            };
-                        },
-                        onEachFeature: function (feature: any, layer: L.Layer) {
-                            if (feature.properties && (feature.properties.NAME || feature.properties.name)) {
-                                const countryName = feature.properties.NAME || feature.properties.name;
-                                const displayName = countryName === 'gojoseon' ? '고조선' : countryName;
-
-                                layer.bindPopup(
-                                    `<div style="font-family: sans-serif; padding: 8px;">
-                                        <h3 style="margin: 0 0 8px 0; font-size: 16px; color: #1f2937;">${displayName}</h3>
-                                        <p style="margin: 0; font-size: 13px; color: #6b7280;">${currentYear > 0 ? currentYear + '년' : 'BC ' + Math.abs(currentYear) + '년'}</p>
-                                    </div>`
-                                );
-
-                                layer.on('mouseover', function (e: any) {
-                                    e.target.setStyle({
-                                        weight: 3,
-                                        color: '#3b82f6',
-                                        fillOpacity: 0.75
-                                    });
-                                    e.target.bringToFront();
-                                });
-
-                                layer.on('mouseout', function (e: any) {
-                                    if (newLayer) {
-                                        newLayer.resetStyle(e.target);
-                                    }
-                                });
-                            }
-                        }
-                    });
-
-                    if (historicalLayer.current) {
-                        mapInstance.current?.removeLayer(historicalLayer.current);
-                    }
-
-                    newLayer.addTo(mapInstance.current!);
-                    historicalLayer.current = newLayer;
-                }
-            } catch (error) {
-                console.error('Error loading map data:', error);
-            }
-        };
-
-        loadMapData();
-        updateMarkers();
-
+        return () => clearTimeout(timer);
     }, [currentYear]);
 
-    // Update Markers when year or layer type changes
+    // Update Markers when layer type changes
     useEffect(() => {
-        updateMarkers();
-    }, [layerType, currentYear]);
+        updateMarkers(currentYear);
+    }, [layerType]);
 
-    // Auto Play
-    useEffect(() => {
-        if (isPlaying) {
-            playInterval.current = setInterval(() => {
-                setCurrentYear(prev => {
-                    const next = prev + 1;
-                    if (next > 2024) return 475; // Loop back
-                    return next;
-                });
-            }, 500);
-        } else {
-            if (playInterval.current) {
-                clearInterval(playInterval.current);
-                playInterval.current = null;
-            }
+    const updateMapForYear = async (year: number) => {
+        if (!map.current) return;
+
+        // Cancel previous pending request
+        if (abortController.current) {
+            abortController.current.abort();
         }
-        return () => {
-            if (playInterval.current) clearInterval(playInterval.current);
-        };
-    }, [isPlaying]);
 
-    const updateMarkers = () => {
-        if (!mapInstance.current || !markersLayer.current) return;
+        // Create new controller for this request
+        const controller = new AbortController();
+        abortController.current = controller;
+
+        lastRequestedYear.current = year;
+        const requestId = year;
+
+        try {
+            let newLayer: L.Layer | null = null;
+
+            // Check cache first
+            if (layerCache.current.has(year)) {
+                newLayer = layerCache.current.get(year)!;
+                // Note: Cached layers retain their event listeners.
+                // However, the 'click' listener closure captures the state at creation time.
+                // Since 'setSelectedCountry' is stable, this is fine.
+            } else {
+                newLayer = await loadHistoricalBorders(year, (name, props) => {
+                    setSelectedCountry({ name, properties: props });
+                });
+
+                // If aborted during await, stop here
+                if (controller.signal.aborted) return;
+
+                if (newLayer) {
+                    layerCache.current.set(year, newLayer);
+                }
+            }
+
+            // Double check if this is still the latest request
+            if (requestId !== lastRequestedYear.current) {
+                return;
+            }
+
+            if (newLayer) {
+                // Remove existing layer
+                if (historicalLayer.current && historicalLayer.current !== newLayer) {
+                    map.current.removeLayer(historicalLayer.current);
+                }
+
+                // Add new layer only if it's not already on the map
+                if (!map.current.hasLayer(newLayer)) {
+                    newLayer.addTo(map.current);
+                }
+                historicalLayer.current = newLayer;
+            }
+
+            // Update markers based on year
+            updateMarkers(year);
+        } catch (error) {
+            if (error instanceof Error && error.name === 'AbortError') {
+                // Ignore abort errors
+                return;
+            }
+            console.error('Failed to load historical data:', error);
+        }
+    };
+
+    const updateMarkers = (year: number) => {
+        if (!markersLayer.current || !map.current) return;
 
         markersLayer.current.clearLayers();
 
         // Always show capitals
-        const periodKey = getCapitalPeriod(currentYear);
+        const periodKey = getCapitalPeriod(year);
         const capitals = capitalData[periodKey];
 
         if (capitals) {
@@ -314,113 +277,144 @@ const HistoryMap = () => {
         }
     };
 
-    // Helpers
-    const getGeojsonFileForYear = (year: number) => {
-        if (year >= 929 && year <= 936) return 'geojson/map-data.geojson';
-        if (year <= -1000) return 'geojson/world_bc1000.geojson';
-        if (year <= -500) return 'geojson/world_bc500.geojson';
-        if (year <= 0) return 'geojson/world_bc1.geojson';
-        if (year <= 100) return 'geojson/world_100.geojson';
-        if (year <= 300) return 'geojson/world_200.geojson'; // Approx
-        if (year <= 500) return 'geojson/world_400.geojson'; // Approx
-        if (year <= 700) return 'geojson/world_600.geojson'; // Approx
-        if (year <= 900) return 'geojson/world_800.geojson'; // Approx
-        if (year <= 1100) return 'geojson/world_1100.geojson'; // Approx
-        if (year <= 1300) return 'geojson/world_1300.geojson';
-        if (year <= 1400) return 'geojson/world_1400.geojson';
-        if (year <= 1500) return 'geojson/world_1500.geojson';
-        if (year <= 1600) return 'geojson/world_1600.geojson';
-        if (year <= 1700) return 'geojson/world_1650.geojson';
-        if (year <= 1800) return 'geojson/world_1783.geojson';
-        if (year <= 1900) return 'geojson/world_1880.geojson';
-        if (year <= 1920) return 'geojson/world_1914.geojson';
-        if (year <= 1940) return 'geojson/world_1938.geojson';
-        if (year <= 1960) return 'geojson/world_1945.geojson';
-        if (year <= 2000) return 'geojson/world_1994.geojson';
-        return 'geojson/world_2010.geojson';
-    };
-
-    const getCapitalPeriod = (year: number) => {
-        if (year <= -1000) return '-2000_-1000';
-        if (year <= -500) return '-1000_-500';
-        if (year <= 0) return '-500_0';
-        if (year <= 300) return '0_300';
-        if (year <= 500) return '300_500';
-        if (year <= 700) return '500_700';
-        if (year <= 900) return '700_900';
-        if (year <= 1100) return '900_1100';
-        if (year <= 1300) return '1100_1300';
-        if (year <= 1400) return '1300_1400';
-        if (year <= 1600) return '1400_1600';
-        if (year <= 1800) return '1600_1800';
-        if (year <= 1900) return '1800_1900';
-        if (year <= 1945) return '1900_1945';
-        return '1945_2024';
-    };
-
-    const getColorByCountry = (name: string) => {
-        const colors: Record<string, string> = {
-            '고조선': '#7c3aed', 'gojoseon': '#7c3aed',
-            '고구려': '#ef4444', 'Goguryeo': '#ef4444',
-            '백제': '#3b82f6', 'Baekje': '#3b82f6',
-            '신라': '#f59e0b', 'Silla': '#f59e0b',
-            '고려': '#8b5cf6', 'Goryeo': '#8b5cf6',
-            '조선': '#10b981', 'Joseon': '#10b981',
-            '일본': '#dc2626', 'Japan': '#dc2626',
-            '중국': '#ea580c', 'China': '#ea580c',
-            '당': '#f97316', 'Tang': '#f97316',
-            '청': '#0ea5e9', 'Qing': '#0ea5e9',
-            '명': '#eab308', 'Ming': '#eab308'
-        };
-
-        if (name) {
-            for (let key in colors) {
-                if (name.includes(key)) return colors[key];
+    // Auto Play
+    useEffect(() => {
+        if (isPlaying) {
+            const intervalMs = 1000 / speed;
+            playInterval.current = setInterval(() => {
+                setCurrentYear(prev => {
+                    const next = prev + 1;
+                    if (next > 2024) {
+                        setIsPlaying(false);
+                        return 2024;
+                    }
+                    return next;
+                });
+            }, intervalMs);
+        } else {
+            if (playInterval.current) {
+                clearInterval(playInterval.current);
+                playInterval.current = null;
             }
         }
-        return '#94a3b8'; // Default
+        return () => {
+            if (playInterval.current) clearInterval(playInterval.current);
+        };
+    }, [isPlaying, speed]);
+
+    const toggleSpeed = () => {
+        setSpeed(prev => prev >= 4 ? 1 : prev * 2);
     };
 
+    // Panel Handlers
+    const handleSidebarClick = (id: string) => {
+        setActivePanel(prev => prev === id ? null : id);
+    };
+
+    const handleClosePanel = () => {
+        setActivePanel(null);
+    };
+
+    const getPanelTitle = (id: string | null) => {
+        switch (id) {
+            case 'search': return '주요사건';
+            case 'textbook': return '교과서';
+            case 'people': return '인물';
+            case 'discussion': return '토론';
+            case 'settings': return '설정';
+            default: return '';
+        }
+    };
+
+    const handleYearChange = (year: number) => {
+        setCurrentYear(year);
+    };
+
+    // Dynamic Theme Calculation
+    const currentEra = getEraForYear(currentYear);
+
     return (
-        <div className="history-map-container">
+        <div className={`history-map-container theme-${currentEra.id}`}>
             <div id="map" ref={mapContainer}></div>
 
             {/* Top Left: Year, Play, Speed, Layers */}
-            <div className="ui-overlay top-left">
+            <div className="top-left-overlay">
                 <TimeControls
                     currentYear={currentYear}
                     isPlaying={isPlaying}
+                    speed={speed}
                     onTogglePlay={() => setIsPlaying(!isPlaying)}
+                    onToggleSpeed={toggleSpeed}
                 />
+
                 <MapLayers
                     activeLayer={layerType}
                     onLayerChange={setLayerType}
                 />
+
+                {/* Floating Info Panel (Left) */}
+                <FloatingPanel
+                    isOpen={!!selectedCountry}
+                    onClose={() => setSelectedCountry(null)}
+                    title={selectedCountry?.name || '국가 정보'}
+                >
+                    <div className="country-details">
+                        <p><strong>연도:</strong> {currentYear > 0 ? currentYear + '년' : 'BC ' + Math.abs(currentYear) + '년'}</p>
+                        {selectedCountry?.properties && (
+                            <>
+                                {/* Add more properties here as available in GeoJSON */}
+                                <p>{selectedCountry.name}에 대한 상세 정보가 여기에 표시됩니다.</p>
+                            </>
+                        )}
+                    </div>
+                </FloatingPanel>
             </div>
 
             {/* Top Right: Search */}
-            <div className="ui-overlay top-right">
+            <div className="top-right-overlay">
                 <SearchYear />
             </div>
 
-            {/* Right Sidebar: Features */}
-            <div className="ui-overlay right-sidebar">
-                <SidebarMenu />
+
+
+            {/* Right Sidebar Menu */}
+            <div className="right-sidebar">
+                <SidebarMenu onItemClick={handleSidebarClick} />
             </div>
 
-            {/* Bottom: Chatbot & Timeline */}
-            <div className="ui-overlay bottom-bar">
-                <div className="bottom-left-group">
-                    <ChatbotTrigger />
+            {/* Docking Panel */}
+            <DockingPanel
+                isOpen={!!activePanel}
+                onClose={handleClosePanel}
+                title={getPanelTitle(activePanel)}
+            >
+                <div style={{ padding: '20px', textAlign: 'center', color: 'var(--ui-text)' }}>
+                    <p>{getPanelTitle(activePanel)} 패널 내용이 여기에 표시됩니다.</p>
+                    <p>현재 연도: {currentYear}년</p>
                 </div>
+            </DockingPanel>
 
+            {/* Bottom Left: Chatbot */}
+            <div className="bottom-left-overlay">
+                <ChatbotTrigger onClick={() => setIsChatbotOpen(prev => !prev)} />
+            </div>
+
+            {isChatbotOpen && (
+                <ChatbotPanel
+                    onClose={() => setIsChatbotOpen(false)}
+                    initialPosition={chatbotState ? { x: chatbotState.x, y: chatbotState.y } : undefined}
+                    initialSize={chatbotState ? { width: chatbotState.width, height: chatbotState.height } : undefined}
+                    onStateChange={(newState) => setChatbotState(newState)}
+                />
+            )}
+
+            {/* Bottom Timeline */}
+            <div className="bottom-bar">
                 <Timeline
                     currentYear={currentYear}
-                    onYearChange={setCurrentYear}
+                    onYearChange={handleYearChange}
                 />
             </div>
         </div>
     );
-};
-
-export default HistoryMap;
+}
