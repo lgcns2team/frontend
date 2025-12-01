@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+    <meta charset="UTF-8">
+    <style>
+        /* 미리보기용 배경 (무시하셔도 됩니다) */
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            background-color: #333;
+            /* 어두운 벽지 느낌 */
+            margin: 0;
+        }
+
+        /* ✅ 여기가 핵심 코드입니다! */
+        .dark-period-frame {
+            /* 1. 액자 크기 및 정렬 */
+            width: 300px;
+            height: 400px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            box-sizing: border-box;
+
+            /* 2. 종이 질감 (배경) */
+            background-color: #dcd0c0;
+            /* 빛바랜 종이색 */
+            color: #2b2b2b;
+            /* 칠흑 같은 글자색 */
+
+            /* 3. 프레임 디자인 (이미지 없이 CSS로 구현) */
+            /* 안쪽의 얇은 검은 테두리 */
+            border: 2px solid #000;
+
+            /* 바깥쪽의 두꺼운 흑단목 느낌 테두리 */
+            outline: 25px solid #242020;
+
+            /* 4. 입체감과 분위기 (그림자) */
+            box-shadow:
+                /* 내부: 오래된 사진처럼 안쪽으로 어둡게 깔리는 그림자 */
+                inset 0 0 60px rgba(0, 0, 0, 0.7),
+                /* 외부: 액자가 벽에서 튀어나온 듯한 그림자 */
+                15px 15px 30px rgba(0, 0, 0, 0.6);
+
+            /* 폰트 (분위기용) */
+            font-family: 'serif';
+            text-align: center;
+            padding: 20px;
+        }
+
+        .title {
+            font-size: 1.5rem;
+            font-weight: bold;
+            margin-bottom: 10px;
+            border-bottom: 1px solid #555;
+            padding-bottom: 5px;
+        }
+
+        .desc {
+            font-size: 0.9rem;
+            opacity: 0.8;
+            line-height: 1.6;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="dark-period-frame">
+        <div class="title">1910 - 1945</div>
+        <div class="desc">
+            암흑의 시대,<br>
+            잊지 말아야 할 역사.<br>
+            <br>
+            (일제강점기)
+        </div>
+    </div>
+
+</body>
+
+</html>

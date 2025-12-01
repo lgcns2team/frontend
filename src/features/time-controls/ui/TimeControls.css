@@ -18,6 +18,15 @@
     box-sizing: border-box;
 }
 
+/* Colonial Theme Specifics */
+.theme-colonial .time-controls-container {
+    border: 2px solid var(--ui-border);
+    outline: var(--colonial-outline);
+    box-shadow: var(--colonial-shadow);
+    margin: 16px;
+    /* Add margin to prevent crowding */
+}
+
 /* Year Display Group */
 .year-display-group {
     display: flex;

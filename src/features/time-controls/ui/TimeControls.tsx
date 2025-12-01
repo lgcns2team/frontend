@@ -1,5 +1,4 @@
 import './TimeControls.css';
-import { getEraName } from '../../../shared/config/era-theme';
 import { getEraForYear } from '../../../shared/config/era-theme';
 
 interface TimeControlsProps {
