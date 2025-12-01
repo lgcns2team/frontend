@@ -12,7 +12,6 @@ interface TimeControlsProps {
 
 export const TimeControls = ({ currentYear, isPlaying, speed, onTogglePlay, onToggleSpeed }: TimeControlsProps) => {
 
-    const eraName = getEraName(currentYear);
     const eraConfig = getEraForYear(currentYear);
 
     return (
@@ -23,7 +22,7 @@ export const TimeControls = ({ currentYear, isPlaying, speed, onTogglePlay, onTo
                     {currentYear <= 0 ? `BC ${Math.abs(currentYear)}` : currentYear} 년 {eraConfig.label}
                 </div>
                 <div className="year-sub-row">
-                    <span className="era-name">{eraName}</span>
+                    <span className="era-name">{eraConfig.description}</span>
                 </div>
             </div>
 

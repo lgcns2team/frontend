@@ -19,7 +19,7 @@ import { SidebarMenu } from '../../../features/sidebar-menu';
 import { Timeline } from '../../../features/timeline';
 import { DockingPanel } from '../../../features/docking-panel/ui/DockingPanel';
 import { FloatingPanel } from '../../../features/floating-panel/ui/FloatingPanel';
-import { ChatbotTrigger } from '../../../features/chatbot/ui/ChatbotTrigger';
+import { ChatbotTrigger, ChatbotPanel } from '../../../features/chatbot';
 
 // Fix Leaflet marker icon issue
 import icon from 'leaflet/dist/images/marker-icon.png';
@@ -49,6 +49,13 @@ export default function HistoryMap() {
     const [activePanel, setActivePanel] = useState<string | null>(null);
     const [layerType, setLayerType] = useState<'default' | 'battles' | 'trade' | 'people'>('default');
     const [selectedCountry, setSelectedCountry] = useState<{ name: string; properties: any } | null>(null);
+    const [isChatbotOpen, setIsChatbotOpen] = useState(false);
+    const [chatbotState, setChatbotState] = useState<{
+        x: number;
+        y: number;
+        width: number;
+        height: number;
+    } | null>(null);
 
     const playInterval = useRef<ReturnType<typeof setInterval> | null>(null);
 
@@ -387,11 +394,22 @@ export default function HistoryMap() {
                 </div>
             </DockingPanel>
 
+            {/* Bottom Left: Chatbot */}
+            <div className="bottom-left-overlay">
+                <ChatbotTrigger onClick={() => setIsChatbotOpen(prev => !prev)} />
+            </div>
+
+            {isChatbotOpen && (
+                <ChatbotPanel
+                    onClose={() => setIsChatbotOpen(false)}
+                    initialPosition={chatbotState ? { x: chatbotState.x, y: chatbotState.y } : undefined}
+                    initialSize={chatbotState ? { width: chatbotState.width, height: chatbotState.height } : undefined}
+                    onStateChange={(newState) => setChatbotState(newState)}
+                />
+            )}
+
             {/* Bottom Timeline */}
             <div className="bottom-bar">
-                <div className="bottom-left-group">
-                    <ChatbotTrigger />
-                </div>
                 <Timeline
                     currentYear={currentYear}
                     onYearChange={handleYearChange}

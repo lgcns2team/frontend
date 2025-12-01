@@ -36,6 +36,7 @@
 /* UI Overlays Common Styles */
 .top-left-overlay,
 .top-right-overlay,
+.bottom-left-overlay,
 .right-sidebar,
 .bottom-bar {
     position: absolute;
@@ -46,6 +47,7 @@
 
 .top-left-overlay>*,
 .top-right-overlay>*,
+.bottom-left-overlay>*,
 .right-sidebar>*,
 .bottom-bar>* {
     pointer-events: auto;
@@ -101,4 +103,12 @@
 .people-marker .event-marker-content {
     background: #f59e0b;
     color: white;
+}
+/* Bottom Left */
+.bottom-left-overlay {
+    bottom: 140px;
+    left: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
 }
