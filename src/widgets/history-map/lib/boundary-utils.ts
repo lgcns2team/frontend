@@ -19,6 +19,11 @@ export const getGeojsonFileForYear = (year: number) => {
     if (year < 790) return 'geojson/world_800.geojson';
     if (year <= 892) return 'geojson/goryeo_balhae_790-892.geojson';
     if (year <= 900) return 'geojson/silla_hubaekjee_893-900.geojson';
+    if (year <= 917) return 'geojson/hugoguryeo_904-917.geojson';
+    if (year <= 928) return 'geojson/goryeo_samgook_918-928.geojson';
+    if (year <= 935) return 'geojson/husamgookmal_929-935.geojson';
+    if (year <= 1350) return 'geojson/goryeo_936-1350.geojson';
+    if (year <= 1391) return 'geojson/goryeomal_1351-1391.geojson';
     if (year <= 1000) return 'geojson/world_1000.geojson';
     if (year <= 1100) return 'geojson/world_1100.geojson';
     if (year <= 1200) return 'geojson/world_1200.geojson';
@@ -56,10 +61,11 @@ export const getColorByCountry = (name: string) => {
         '고구려': '#ef4444', 'Goguryeo': '#ef4444', 'Koguryo': '#ef4444',
         '백제': '#3b82f6', 'Baekje': '#3b82f6', 'Paekche': '#3b82f6',
         '후백제': '#3b82f6', 'Hubaekje': '#3b82f6', 'Later Baekje': '#3b82f6',
+        '후고구려': '#ef4444', 'Hugoguryeo': '#ef4444', 'Later Goguryeo': '#ef4444', 'Taebong': '#ef4444',
         '신라': '#f59e0b', 'Silla': '#f59e0b', 'Silia': '#f59e0b',
         '가야': '#10b981', 'Gaya': '#10b981',
         '발해': '#6366f1', 'Balhae': '#6366f1', 'Parhae': '#6366f1',
-        '고려': '#8b5cf6', 'Goryeo': '#8b5cf6',
+        '고려': '#ef4444', 'Goryeo': '#ef4444',
         '조선': '#10b981', 'Joseon': '#10b981', 'Korea': '#10b981',
         '대한제국': '#10b981',
         'Korea (USA)': '#3b82f6',
