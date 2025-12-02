@@ -1,19 +1,25 @@
 /* DockingPanel.css */
 .docking-panel {
-    position: absolute;
+    position: fixed;
     top: 0;
     right: 0;
     height: 100vh;
     background: var(--ui-bg, white);
     color: var(--ui-text, #333);
-    border-left: 1px solid var(--ui-border, #ccc);
-    box-shadow: -4px 0 12px rgba(0, 0, 0, 0.1);
-    z-index: 1000;
+    border-left: 5px solid var(--ui-border, #ccc);
+    /* box-shadow: -4px 0 12px rgba(0, 0, 0, 0.1); */
+    box-shadow: var(--colonial-shadow);
+    z-index: 2000;
+    /* Ensure it's above everything */
     display: flex;
     flex-direction: column;
     transition: transform 0.3s ease-in-out;
     /* Note: Width is controlled via inline style for resizing */
 }
+
+/* Colonial Theme Specifics */
+/* Colonial Theme Specifics - Removed layout overrides as per user request */
+/* .theme-colonial .docking-panel { ... } removed to keep default layout */
 
 .docking-panel.closed {
     transform: translateX(100%);
@@ -25,22 +31,33 @@
 
 /* Resize Handle */
 /* Resize Handle */
+/* Resize Handle */
 .docking-panel .resize-handle {
     position: absolute;
-    left: 0;
+    left: -12px;
+    /* Center on border */
     top: 0;
     bottom: 0;
-    width: 6px;
+    width: 12px;
+    height: 100vh;
+    /* Even wider hit area */
     cursor: col-resize;
     background: transparent;
-    z-index: 10;
-    transition: background 0.2s;
+    z-index: 9999;
+    /* Ensure it's on top of everything */
+    pointer-events: auto;
+    /* Ensure it captures clicks */
+    transition: background 0.2s, opacity 0.2s;
 }
+
+/* Colonial Theme Resize Handle Override - Removed as layout is reverted */
+/* .theme-colonial .docking-panel .resize-handle { ... } removed */
 
 .docking-panel .resize-handle:hover,
 .docking-panel .resize-handle:active {
     background: var(--ui-accent, #3b82f6);
-    opacity: 0.5;
+    opacity: 0.8;
+    /* Make it more visible */
 }
 
 /* Header */
@@ -50,6 +67,7 @@
     justify-content: space-between;
     padding: 16px 20px;
     border-bottom: 1px solid var(--ui-border, #eee);
+    box-shadow: var(--colonial-shadow);
 }
 
 .panel-title {

@@ -39,11 +39,11 @@ export default function HistoryMap() {
     const map = useRef<L.Map | null>(null);
     const historicalLayer = useRef<L.Layer | null>(null);
     const markersLayer = useRef<L.LayerGroup | null>(null);
-    const lastRequestedYear = useRef<number>(475);
+    const lastRequestedYear = useRef<number>(326);
     const layerCache = useRef<Map<number, L.Layer>>(new Map());
     const abortController = useRef<AbortController | null>(null);
 
-    const [currentYear, setCurrentYear] = useState<number>(475);
+    const [currentYear, setCurrentYear] = useState<number>(326);
     const [isPlaying, setIsPlaying] = useState<boolean>(false);
     const [speed, setSpeed] = useState<number>(1);
     const [activePanel, setActivePanel] = useState<string | null>(null);
