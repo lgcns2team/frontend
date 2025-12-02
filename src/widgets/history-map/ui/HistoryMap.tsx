@@ -20,6 +20,7 @@ import { Timeline } from '../../../features/timeline';
 import { DockingPanel } from '../../../features/docking-panel/ui/DockingPanel';
 import { FloatingPanel } from '../../../features/floating-panel/ui/FloatingPanel';
 import { ChatbotTrigger, ChatbotPanel } from '../../../features/chatbot';
+import { TextbookPanel } from '../../../features/textbook-panel';
 
 // Fix Leaflet marker icon issue
 import icon from 'leaflet/dist/images/marker-icon.png';
@@ -56,6 +57,12 @@ export default function HistoryMap() {
         width: number;
         height: number;
     } | null>(null);
+
+    // Textbook State
+    const [textbookPage, setTextbookPage] = useState(0);
+    const [textbookViewMode, setTextbookViewMode] = useState<'single' | 'double'>('single');
+    const [dockingPanelWidth, setDockingPanelWidth] = useState(800);
+    const [pageInput, setPageInput] = useState('');
 
     const playInterval = useRef<ReturnType<typeof setInterval> | null>(null);
 
@@ -306,9 +313,45 @@ export default function HistoryMap() {
         setSpeed(prev => prev >= 4 ? 1 : prev * 2);
     };
 
+    // Calculate optimal width for textbook
+    const calculateTextbookWidth = (mode: 'single' | 'double') => {
+        const headerHeight = 70; // Approximate header height + padding
+        const availableHeight = window.innerHeight - headerHeight;
+        const pageRatio = 1 / 1.37; // Width / Height
+
+        let targetWidth;
+        if (mode === 'single') {
+            targetWidth = availableHeight * pageRatio;
+        } else {
+            targetWidth = availableHeight * pageRatio * 2;
+        }
+
+        // Add some padding buffer
+        return Math.min(Math.max(targetWidth + 40, 300), 1600);
+    };
+
+    // Update width on resize
+    useEffect(() => {
+        if (activePanel === 'textbook') {
+            const handleResize = () => {
+                setDockingPanelWidth(calculateTextbookWidth(textbookViewMode));
+            };
+
+            window.addEventListener('resize', handleResize);
+            // Initial calculation
+            handleResize();
+
+            return () => window.removeEventListener('resize', handleResize);
+        }
+    }, [activePanel, textbookViewMode]);
+
     // Panel Handlers
     const handleSidebarClick = (id: string) => {
         setActivePanel(prev => prev === id ? null : id);
+        if (id === 'textbook') {
+            // Reset width when opening textbook
+            setDockingPanelWidth(calculateTextbookWidth(textbookViewMode));
+        }
     };
 
     const handleClosePanel = () => {
@@ -330,8 +373,136 @@ export default function HistoryMap() {
         setCurrentYear(year);
     };
 
+    // Textbook Handlers
+    const handleTextbookPrev = () => {
+        if (textbookViewMode === 'single') {
+            setTextbookPage((prev) => Math.max(0, prev - 1));
+        } else {
+            setTextbookPage((prev) => Math.max(0, prev - 2));
+        }
+    };
+
+    const handleTextbookNext = () => {
+        const totalPages = 220;
+        if (textbookViewMode === 'single') {
+            setTextbookPage((prev) => Math.min(totalPages - 1, prev + 1));
+        } else {
+            setTextbookPage((prev) => Math.min(totalPages - 2, prev + 2));
+        }
+    };
+
+    const toggleTextbookViewMode = () => {
+        const newMode = textbookViewMode === 'single' ? 'double' : 'single';
+        setTextbookViewMode(newMode);
+        // Width update is handled by useEffect
+    };
+
+    const handlePageInputSubmit = () => {
+        const pageNum = parseInt(pageInput, 10);
+        if (!isNaN(pageNum) && pageNum >= 1 && pageNum <= 220) {
+            setTextbookPage(pageNum - 1);
+            setPageInput('');
+        } else {
+            alert('1에서 220 사이의 페이지를 입력해주세요.');
+        }
+    };
+
     // Dynamic Theme Calculation
     const currentEra = getEraForYear(currentYear);
+
+    const renderTextbookControls = () => {
+        const totalPages = 220;
+        return (
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <button
+                    onClick={handleTextbookPrev}
+                    disabled={textbookPage === 0}
+                    style={{
+                        padding: '4px 8px',
+                        backgroundColor: 'var(--ui-primary)',
+                        color: 'white',
+                        border: 'none',
+                        borderRadius: '4px',
+                        cursor: 'pointer',
+                        opacity: textbookPage === 0 ? 0.5 : 1
+                    }}
+                >
+                    이전
+                </button>
+                <span style={{ fontSize: '14px', fontWeight: 500, minWidth: '60px', textAlign: 'center', color: 'var(--ui-text)' }}>
+                    {textbookViewMode === 'single'
+                        ? `${textbookPage + 1}p`
+                        : `${textbookPage + 1}p - ${textbookPage + 2}p`}
+                </span>
+                <button
+                    onClick={handleTextbookNext}
+                    disabled={
+                        textbookViewMode === 'single'
+                            ? textbookPage === totalPages - 1
+                            : textbookPage >= totalPages - 2
+                    }
+                    style={{
+                        padding: '4px 8px',
+                        backgroundColor: 'var(--ui-primary)',
+                        color: 'white',
+                        border: 'none',
+                        borderRadius: '4px',
+                        cursor: 'pointer',
+                        opacity: (textbookViewMode === 'single' ? textbookPage === totalPages - 1 : textbookPage >= totalPages - 2) ? 0.5 : 1
+                    }}
+                >
+                    다음
+                </button>
+
+                <div style={{ display: 'flex', alignItems: 'center', gap: '4px', marginLeft: '8px' }}>
+                    <input
+                        type="text"
+                        value={pageInput}
+                        onChange={(e) => setPageInput(e.target.value)}
+                        onKeyDown={(e) => e.key === 'Enter' && handlePageInputSubmit()}
+                        placeholder="페이지"
+                        style={{
+                            width: '50px',
+                            padding: '4px',
+                            borderRadius: '4px',
+                            border: '1px solid var(--ui-border)',
+                            backgroundColor: 'var(--ui-bg)',
+                            color: 'var(--ui-text)',
+                            textAlign: 'center'
+                        }}
+                    />
+                    <button
+                        onClick={handlePageInputSubmit}
+                        style={{
+                            padding: '4px 8px',
+                            backgroundColor: 'var(--ui-primary)',
+                            color: 'white',
+                            border: 'none',
+                            borderRadius: '4px',
+                            cursor: 'pointer'
+                        }}
+                    >
+                        이동
+                    </button>
+                </div>
+
+                <button
+                    onClick={toggleTextbookViewMode}
+                    style={{
+                        padding: '4px 8px',
+                        backgroundColor: 'transparent',
+                        border: '1px solid var(--ui-primary)',
+                        color: 'var(--ui-primary)',
+                        borderRadius: '4px',
+                        cursor: 'pointer',
+                        marginLeft: '8px'
+                    }}
+                >
+                    {textbookViewMode === 'single' ? '양면보기' : '한면보기'}
+                </button>
+            </div>
+        );
+    };
 
     return (
         <div className={`history-map-container theme-${currentEra.id}`}>
@@ -387,11 +558,22 @@ export default function HistoryMap() {
                 isOpen={!!activePanel}
                 onClose={handleClosePanel}
                 title={getPanelTitle(activePanel)}
+                initialWidth={800}
+                width={activePanel === 'textbook' ? dockingPanelWidth : undefined}
+                maxWidth={1600}
+                headerRightContent={activePanel === 'textbook' ? renderTextbookControls() : null}
             >
-                <div style={{ padding: '20px', textAlign: 'center', color: 'var(--ui-text)' }}>
-                    <p>{getPanelTitle(activePanel)} 패널 내용이 여기에 표시됩니다.</p>
-                    <p>현재 연도: {currentYear}년</p>
-                </div>
+                {activePanel === 'textbook' ? (
+                    <TextbookPanel
+                        currentPage={textbookPage}
+                        viewMode={textbookViewMode}
+                    />
+                ) : (
+                    <div style={{ padding: '20px', textAlign: 'center', color: 'var(--ui-text)' }}>
+                        <p>{getPanelTitle(activePanel)} 패널 내용이 여기에 표시됩니다.</p>
+                        <p>현재 연도: {currentYear}년</p>
+                    </div>
+                )}
             </DockingPanel>
 
             {/* Bottom Left: Chatbot */}
