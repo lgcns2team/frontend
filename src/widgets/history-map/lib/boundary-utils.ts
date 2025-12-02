@@ -22,6 +22,8 @@ export const getGeojsonFileForYear = (year: number) => {
     if (year <= 917) return 'geojson/hugoguryeo_904-917.geojson';
     if (year <= 928) return 'geojson/goryeo_samgook_918-928.geojson';
     if (year <= 935) return 'geojson/husamgookmal_929-935.geojson';
+    if (year <= 960) return 'geojson/5dae10guk_yo_908-960.geojson';
+    if (year <= 1066) return 'geojson/song_yo_yeojin_961-1066.geojson';
     if (year <= 1350) return 'geojson/goryeo_936-1350.geojson';
     if (year <= 1391) return 'geojson/goryeomal_1351-1391.geojson';
     if (year <= 1000) return 'geojson/world_1000.geojson';
@@ -81,8 +83,9 @@ export const getColorByCountry = (name: string) => {
         '명': '#eab308', 'Ming': '#eab308',
         '청': '#0ea5e9', 'Qing': '#0ea5e9',
         '흉노': '#a855f7', 'Xiongnu': '#a855f7',
-        '거란': '#a855f7', 'Khitan': '#a855f7', 'Liao': '#a855f7',
-        '여진': '#a855f7', 'Jurchen': '#a855f7', 'Jin': '#a855f7'
+        '거란': '#f59e0b', 'Khitan': '#f59e0b', 'Liao': '#f59e0b', // Changed to Amber
+        '여진': '#a855f7', 'Jurchen': '#a855f7', 'Jin': '#a855f7',
+        '오대십국': '#facc15', 'Five Dynasties': '#facc15', 'Later Jin': '#facc15' // Added Yellow
     };
 
     if (name && colors[name]) {
@@ -136,15 +139,32 @@ export const loadHistoricalBorders = async (
     year: number,
     onCountryClick?: (name: string, properties: any) => void
 ): Promise<L.Layer | null> => {
-    const file = getGeojsonFileForYear(year);
-    try {
-        const response = await fetch(`/${file}`);
-        if (!response.ok) throw new Error('Failed to load GeoJSON');
-        const data = await response.json();
+    const baseFile = getGeojsonFileForYear(year);
+    const filesToLoad = [baseFile];
 
-        if (data) {
+    // Add Tang Dynasty if in range
+    if (year >= 618 && year <= 907) {
+        filesToLoad.push('geojson/tang_618-907.geojson');
+    }
+
+    try {
+        const responses = await Promise.all(filesToLoad.map(file => fetch(`/${file}`)));
+        const validResponses = responses.filter(res => res.ok);
+
+        if (validResponses.length === 0) throw new Error('Failed to load any GeoJSON');
+
+        const datas = await Promise.all(validResponses.map(res => res.json()));
+
+        let allFeatures: any[] = [];
+        datas.forEach(data => {
+            if (data && data.features) {
+                allFeatures = [...allFeatures, ...data.features];
+            }
+        });
+
+        if (allFeatures.length > 0) {
             // Robust filtering using Bounding Box Intersection
-            const filteredFeatures = data.features.filter((feature: any) => {
+            const filteredFeatures = allFeatures.filter((feature: any) => {
                 if (!feature.geometry) return false;
                 const featureBBox = getGeometryBBox(feature.geometry);
                 return intersects(VIEWPORT_BBOX, featureBBox);
