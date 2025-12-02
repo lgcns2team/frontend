@@ -1,0 +1,124 @@
+.floating-panel {
+    /* Layout & Positioning */
+    margin-top: 16px;
+    display: flex;
+    flex-direction: column;
+    max-height: calc(100vh - 350px);
+    overflow: hidden;
+
+    /* Theming & Visuals */
+    background: var(--ui-bg, rgba(255, 255, 255, 0.85));
+    color: var(--ui-text, #1e293b);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid var(--ui-border, rgba(255, 255, 255, 0.5));
+    border-radius: 16px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
+
+    /* Interaction */
+    pointer-events: auto;
+
+    /* Animation */
+    animation: panelSlideIn 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+    transform-origin: top left;
+
+    /* Font from theme */
+    font-family: inherit;
+}
+
+@keyframes panelSlideIn {
+    from {
+        opacity: 0;
+        transform: translateY(-10px) scale(0.95);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+/* Header Section */
+.floating-panel-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 16px 20px;
+    border-bottom: 1px solid var(--ui-border, rgba(0, 0, 0, 0.1));
+    background: rgba(255, 255, 255, 0.1);
+    /* Subtle overlay */
+}
+
+.floating-panel-title {
+    margin: 0;
+    font-size: 1.125rem;
+    font-weight: 700;
+    color: var(--ui-text, #1e293b);
+    letter-spacing: -0.01em;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+/* Close Button */
+.floating-panel-close {
+    background: transparent;
+    border: 1px solid var(--ui-border, transparent);
+    width: 28px;
+    height: 28px;
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    color: var(--ui-text, #64748b);
+    opacity: 0.7;
+    transition: all 0.2s ease;
+    font-size: 20px;
+}
+
+.floating-panel-close:hover {
+    background: var(--ui-accent, #ef4444);
+    color: var(--ui-bg, white);
+    opacity: 1;
+    border-color: var(--ui-accent, #ef4444);
+}
+
+/* Content Section */
+.floating-panel-content {
+    padding: 20px;
+    overflow-y: auto;
+    color: var(--ui-text, #334155);
+    font-size: 0.95rem;
+    line-height: 1.6;
+}
+
+/* Scrollbar Styling */
+.floating-panel-content::-webkit-scrollbar {
+    width: 6px;
+}
+
+.floating-panel-content::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.floating-panel-content::-webkit-scrollbar-thumb {
+    background-color: var(--ui-border, rgba(0, 0, 0, 0.1));
+    border-radius: 3px;
+}
+
+.floating-panel-content::-webkit-scrollbar-thumb:hover {
+    background-color: var(--ui-accent, rgba(0, 0, 0, 0.3));
+}
+
+/* Typography inside content */
+.country-details p {
+    margin: 0 0 12px 0;
+}
+
+.country-details strong {
+    color: var(--ui-text, #0f172a);
+    font-weight: 600;
+    margin-right: 6px;
+    border-bottom: 2px solid var(--ui-accent, transparent);
+}

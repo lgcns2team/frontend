@@ -1,0 +1,145 @@
+/* TimeControls.css */
+.time-controls-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+    padding: 16px 20px;
+    background: var(--ui-bg-solid, white);
+    border-radius: 16px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+    transition: background-color 0.5s ease;
+    min-width: 350px;
+    /* Increased from 160px */
+    width: auto;
+    /* Allow expansion */
+    padding: 16px 24px;
+    /* Slightly more padding */
+    box-sizing: border-box;
+}
+
+/* Colonial Theme Specifics */
+.theme-colonial .time-controls-container {
+    border: 2px solid var(--ui-border);
+    outline: var(--colonial-outline);
+    box-shadow: var(--colonial-shadow);
+    margin: 16px;
+    /* Add margin to prevent crowding */
+}
+
+/* Year Display Group */
+.year-display-group {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    height: 64px;
+    /* Fixed height for year display area */
+    justify-content: center;
+}
+
+.year-text {
+    font-size: 42px;
+    font-weight: 900;
+    line-height: 42px;
+    /* Fixed line-height matching font-size */
+    height: 42px;
+    /* Fixed height */
+    font-family: inherit;
+    /* Inherits era font from HistoryMap container */
+    letter-spacing: -1px;
+    color: var(--ui-text, black);
+    /* Use theme text color or black as requested? User said black. */
+    color: black;
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+    overflow: visible;
+}
+
+.year-sub-row {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-top: 6px;
+    height: 20px;
+    /* Fixed height for sub-row */
+}
+
+.year-unit {
+    font-size: 14px;
+    font-weight: 700;
+    color: rgba(0, 0, 0, 0.7);
+    line-height: 1;
+}
+
+.era-badge {
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-size: 10px;
+    font-weight: 800;
+    background: rgba(0, 0, 0, 0.1);
+    color: rgba(0, 0, 0, 0.8);
+    text-transform: uppercase;
+    line-height: 1;
+}
+
+.era-name {
+    font-size: 14px;
+    font-weight: 600;
+    color: rgba(0, 0, 0, 0.8);
+    line-height: 1;
+}
+
+/* Controls Row */
+.controls-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: rgba(255, 255, 255, 0.3);
+    padding: 6px 10px;
+    border-radius: 20px;
+    height: 40px;
+    /* Fixed height */
+    box-sizing: border-box;
+}
+
+/* Buttons */
+.control-btn {
+    border: none;
+    background: transparent;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: transform 0.1s;
+    color: black;
+    padding: 0;
+    margin: 0;
+}
+
+.control-btn:active {
+    transform: scale(0.95);
+}
+
+.control-btn.play-btn {
+    width: 28px;
+    height: 28px;
+    font-size: 14px;
+    background: rgba(255, 255, 255, 0.5);
+    border-radius: 50%;
+}
+
+.control-btn.play-btn:hover {
+    background: rgba(255, 255, 255, 0.8);
+}
+
+.control-btn.speed-btn {
+    font-size: 13px;
+    font-weight: 700;
+    padding: 2px 6px;
+    border-radius: 8px;
+    height: 24px;
+}
+
+.control-btn.speed-btn:hover {
+    background: rgba(255, 255, 255, 0.4);
+}

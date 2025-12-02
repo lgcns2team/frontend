@@ -1,0 +1,33 @@
+.ai-chat-btn {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    background: var(--ui-bg, #666);
+    color: var(--ui-text, white);
+    border: 1px solid var(--ui-border, transparent);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    font-size: 10px;
+    font-family: inherit;
+    /* Inherit font from container */
+    z-index: 10;
+    transition: all 0.3s ease;
+}
+
+.ai-chat-btn:hover {
+    transform: scale(1.1);
+    background: var(--ui-accent, #555);
+    color: var(--ui-bg, white);
+    border-color: var(--ui-accent, #555);
+}
+
+.ai-icon {
+    font-size: 16px;
+    font-weight: bold;
+    margin-bottom: 2px;
+    color: var(--ui-accent, inherit);
+}
