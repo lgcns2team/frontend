@@ -19,12 +19,16 @@ export const getGeojsonFileForYear = (year: number) => {
     if (year < 790) return 'geojson/world_800.geojson';
     if (year <= 892) return 'geojson/goryeo_balhae_790-892.geojson';
     if (year <= 900) return 'geojson/silla_hubaekjee_893-900.geojson';
-    if (year <= 917) return 'geojson/hugoguryeo_904-917.geojson';
-    if (year <= 928) return 'geojson/goryeo_samgook_918-928.geojson';
-    if (year <= 935) return 'geojson/husamgookmal_929-935.geojson';
+    if (year <= 907) return 'geojson/hugoguryeo_904-917.geojson'; // Tang period (if present) or just pre-5Dyn
+    if (year <= 917) return 'geojson/hugoguryeo_5dyn_908-917.geojson'; // 5 Dynasties starts 908
+    if (year <= 926) return 'geojson/goryeo_samgook_balhae_5dyn_918-926.geojson'; // Balhae + 5 Dynasties
+    if (year <= 928) return 'geojson/goryeo_samgook_yo_927-928.geojson'; // Goryeo/Silla/Hubaekje + Liao/5Dyn
+    if (year <= 935) return 'geojson/husamgookmal_yo_929-935.geojson'; // Husamgukmal + Liao/5Dyn
     if (year <= 960) return 'geojson/5dae10guk_yo_908-960.geojson';
     if (year <= 1066) return 'geojson/song_yo_yeojin_961-1066.geojson';
-    if (year <= 1350) return 'geojson/goryeo_936-1350.geojson';
+    if (year <= 1114) return 'geojson/yo_song_seoha_1067-1114.geojson';
+    if (year <= 1351) return 'geojson/geum_seo_song_1115-1351.geojson';
+    if (year <= 1350) return 'geojson/goryeo_936-1350.geojson'; // This might be redundant now if 1351 covers it, but keeping for safety if year range overlaps weirdly
     if (year <= 1391) return 'geojson/goryeomal_1351-1391.geojson';
     if (year <= 1000) return 'geojson/world_1000.geojson';
     if (year <= 1100) return 'geojson/world_1100.geojson';
@@ -85,7 +89,10 @@ export const getColorByCountry = (name: string) => {
         '흉노': '#a855f7', 'Xiongnu': '#a855f7',
         '거란': '#f59e0b', 'Khitan': '#f59e0b', 'Liao': '#f59e0b', // Changed to Amber
         '여진': '#a855f7', 'Jurchen': '#a855f7', 'Jin': '#a855f7',
-        '오대십국': '#facc15', 'Five Dynasties': '#facc15', 'Later Jin': '#facc15' // Added Yellow
+        '오대십국': '#facc15', 'Five Dynasties': '#facc15', 'Later Jin': '#facc15',
+        '서하': '#facc15', 'Western Xia': '#facc15', 'Seoha': '#facc15', // Changed to Yellow for 1115-1351 period consistency
+        '금': '#16a34a', 'Jin (Geum)': '#16a34a', 'Geum': '#16a34a', // Jin as Green
+        '남송': '#3b82f6', 'Southern Song': '#3b82f6', 'Namsong': '#3b82f6' // Southern Song as Blue
     };
 
     if (name && colors[name]) {
