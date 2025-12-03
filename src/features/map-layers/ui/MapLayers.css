@@ -1,36 +1,44 @@
 .layer-tabs {
-    margin-left: 12px;
-    display: flex;
-    gap: 4px;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
+    width: 100%;
+    /* Match parent width (TimeControls) */
 }
 
 .tab-btn {
-    background: var(--ui-bg, #666);
-    color: var(--ui-text, white);
-    border: 1px solid var(--ui-border, transparent);
-    padding: 8px 16px;
-    font-size: 16px;
-    font-weight: bold;
-    font-family: inherit;
-    /* Inherit font from container */
+    position: relative;
+    width: 100%;
+    height: 80px;
+    background-size: 100% 100%;
+    background-position: center;
+    background-repeat: no-repeat;
+    background-color: transparent;
+    border: none;
     cursor: pointer;
-    border-radius: 4px;
     transition: all 0.3s ease;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+    overflow: hidden;
+}
+
+.tab-btn::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: transparent;
+    transition: all 0.3s ease;
+}
+
+.tab-btn:hover::before {
+    background: rgba(255, 255, 255, 0.1);
 }
 
 .tab-btn:hover {
-    transform: scale(1.1);
-    background: var(--ui-accent, #555);
-    color: var(--ui-bg, white);
-    border-color: var(--ui-accent, #555);
-    opacity: 1;
-    z-index: 10;
+    transform: scale(1.05);
 }
 
-.tab-btn.active {
-    background: var(--ui-accent, #3b82f6);
-    color: white;
-    /* Keep text white for active state contrast */
-    border-color: var(--ui-accent, #3b82f6);
+.tab-btn.active::before {
+    background: rgba(255, 255, 255, 0.2);
 }
