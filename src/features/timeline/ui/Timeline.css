@@ -7,6 +7,10 @@
     flex: 1;
     padding: 0 20px;
     /* Add side padding */
+    border-radius: 16px;
+    /* Optional: Rounded corners for the container */
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    /* Optional: Shadow for depth */
 }
 
 .timeline-wrapper {
@@ -215,7 +219,7 @@
 
 .timeline-slider-container {
     position: relative;
-    height: 60px;
+    height: 90px;
     /* Adjusted height */
     display: flex;
     align-items: center;
