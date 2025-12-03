@@ -56,9 +56,10 @@
 
 /* Bottom Bar */
 .bottom-bar {
-    bottom: 20px;
-    left: 20px;
-    right: 20px;
+    padding-top: 30px;
+    bottom: 0px;
+    left: 0px;
+    right: 0px;
     display: flex;
     align-items: flex-end;
     gap: 20px;
@@ -104,6 +105,7 @@
     background: #f59e0b;
     color: white;
 }
+
 /* Bottom Left */
 .bottom-left-overlay {
     bottom: 140px;

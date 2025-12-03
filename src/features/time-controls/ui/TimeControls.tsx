@@ -1,5 +1,8 @@
 import './TimeControls.css';
 import { getEraForYear } from '../../../shared/config/era-theme';
+import goryeoBg from '../../../shared/assets/images/goryeotimecontrol.png';
+import joseonBg from '../../../shared/assets/images/joseontimecontrol.png';
+import daehanBg from '../../../shared/assets/images/daehantimecontrol.png';
 
 interface TimeControlsProps {
     currentYear: number;
@@ -13,8 +16,25 @@ export const TimeControls = ({ currentYear, isPlaying, speed, onTogglePlay, onTo
 
     const eraConfig = getEraForYear(currentYear);
 
+    let bgImage = undefined;
+    if (eraConfig.id === 'goryeo') {
+        bgImage = goryeoBg;
+    } else if (eraConfig.id === 'joseon') {
+        bgImage = joseonBg;
+    } else if (eraConfig.id === 'korean-empire') {
+        bgImage = daehanBg;
+    }
+
     return (
-        <div className="time-controls-container">
+        <div
+            className="time-controls-container"
+            style={bgImage ? {
+                backgroundImage: `url(${bgImage})`,
+                backgroundSize: 'cover',
+                backgroundPosition: 'center',
+                backgroundRepeat: 'no-repeat'
+            } : undefined}
+        >
             {/* Year Display (Top) */}
             <div className="year-display-group">
                 <div className="year-text">

@@ -7,6 +7,7 @@ import { capitalData } from '../../../shared/data/capitals';
 import { battleData } from '../../../shared/data/battles';
 import { tradeData } from '../../../shared/data/trade';
 import { peopleData } from '../../../shared/data/people';
+import durumagiBg from '../../../shared/assets/images/durumagi.png';
 
 import { getEraForYear } from '../../../shared/config/era-theme';
 import { loadHistoricalBorders } from '../lib/boundary-utils';
@@ -590,8 +591,18 @@ export default function HistoryMap() {
                 />
             )}
 
+
+
             {/* Bottom Timeline */}
-            <div className="bottom-bar">
+            <div
+                className="bottom-bar"
+                style={{
+                    backgroundImage: `url(${durumagiBg})`,
+                    backgroundSize: '100% 100%',
+                    backgroundPosition: 'center',
+                    backgroundRepeat: 'no-repeat'
+                }}
+            >
                 <Timeline
                     currentYear={currentYear}
                     onYearChange={handleYearChange}
