@@ -1,8 +1,6 @@
+
 import './TimeControls.css';
 import { getEraForYear } from '../../../shared/config/era-theme';
-import goryeoBg from '../../../shared/assets/images/goryeotimecontrol.png';
-import joseonBg from '../../../shared/assets/images/joseontimecontrol.png';
-import daehanBg from '../../../shared/assets/images/daehantimecontrol.png';
 
 interface TimeControlsProps {
     currentYear: number;
@@ -18,11 +16,15 @@ export const TimeControls = ({ currentYear, isPlaying, speed, onTogglePlay, onTo
 
     let bgImage = undefined;
     if (eraConfig.id === 'goryeo') {
-        bgImage = goryeoBg;
+        bgImage = "/assets/images/timecontrols/goryeotimecontrol.png";
     } else if (eraConfig.id === 'joseon') {
-        bgImage = joseonBg;
+        bgImage = "/assets/images/timecontrols/joseontimecontrol.png";
     } else if (eraConfig.id === 'korean-empire') {
-        bgImage = daehanBg;
+        bgImage = "/assets/images/timecontrols/daehantimecontrol.png";
+    } else if (eraConfig.id === 'colonial') {
+        bgImage = "/assets/images/timecontrols/colonialtimecontrol.png";
+    } else if (eraConfig.id === 'republic') {
+        bgImage = "/assets/images/timecontrols/republictimecontrol.png";
     }
 
     return (
@@ -38,17 +40,17 @@ export const TimeControls = ({ currentYear, isPlaying, speed, onTogglePlay, onTo
             {/* Year Display (Top) */}
             <div className="year-display-group">
                 <div className="year-text">
-                    {currentYear <= 0 ? `BC ${Math.abs(currentYear)}` : currentYear} 년 {eraConfig.label}
+                    {currentYear <= 0 ? `BC ${Math.abs(currentYear)} ` : currentYear} 년 {eraConfig.label}
                 </div>
-                <div className="year-sub-row">
+                {/* <div className="year-sub-row">
                     <span className="era-name">{eraConfig.description}</span>
-                </div>
+                </div> */}
             </div>
 
             {/* Controls Row (Bottom) */}
-            <div className="controls-row">
+            {/* <div className="controls-row">
                 <button
-                    className={`control-btn play-btn ${isPlaying ? 'playing' : ''}`}
+                    className={`control - btn play - btn ${ isPlaying ? 'playing' : '' } `}
                     onClick={onTogglePlay}
                     aria-label={isPlaying ? "Pause" : "Play"}
                 >
@@ -58,7 +60,7 @@ export const TimeControls = ({ currentYear, isPlaying, speed, onTogglePlay, onTo
                 <button className="control-btn speed-btn" onClick={onToggleSpeed}>
                     <span className="speed-value">{speed}x</span>
                 </button>
-            </div>
+            </div> */}
         </div>
     );
 };

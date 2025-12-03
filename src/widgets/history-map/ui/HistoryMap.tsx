@@ -7,7 +7,6 @@ import { capitalData } from '../../../shared/data/capitals';
 import { battleData } from '../../../shared/data/battles';
 import { tradeData } from '../../../shared/data/trade';
 import { peopleData } from '../../../shared/data/people';
-import durumagiBg from '../../../shared/assets/images/durumagi.png';
 
 import { getEraForYear } from '../../../shared/config/era-theme';
 import { loadHistoricalBorders } from '../lib/boundary-utils';
@@ -598,7 +597,7 @@ export default function HistoryMap() {
             <div
                 className="bottom-bar"
                 style={{
-                    backgroundImage: `url(${durumagiBg})`,
+                    backgroundImage: `url("/assets/images/timecontrols/durumagi.png")`,
                     backgroundSize: '100% 100%',
                     backgroundPosition: 'center',
                     backgroundRepeat: 'no-repeat'
