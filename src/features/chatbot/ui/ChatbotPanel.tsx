@@ -87,14 +87,46 @@ export const ChatbotPanel = ({ onClose, initialPosition, initialSize, onStateCha
             }
         };
 
+        const handleTouchMove = (e: TouchEvent) => {
+            if (isDragging) {
+                // Prevent scrolling while dragging
+                if (e.cancelable) e.preventDefault();
+
+                const touch = e.touches[0];
+                setPosition({
+                    x: touch.clientX - dragOffset.current.x,
+                    y: touch.clientY - dragOffset.current.y
+                });
+            }
+        };
+
+        const handleTouchEnd = () => {
+            setIsDragging(false);
+            setIsResizing(false);
+            setResizeDirection(null);
+
+            if (onStateChange) {
+                onStateChange({
+                    x: latestState.current.position.x,
+                    y: latestState.current.position.y,
+                    width: latestState.current.size.width,
+                    height: latestState.current.size.height
+                });
+            }
+        };
+
         if (isDragging || isResizing) {
             window.addEventListener('mousemove', handleMouseMove);
             window.addEventListener('mouseup', handleMouseUp);
+            window.addEventListener('touchmove', handleTouchMove, { passive: false });
+            window.addEventListener('touchend', handleTouchEnd);
         }
 
         return () => {
             window.removeEventListener('mousemove', handleMouseMove);
             window.removeEventListener('mouseup', handleMouseUp);
+            window.removeEventListener('touchmove', handleTouchMove);
+            window.removeEventListener('touchend', handleTouchEnd);
         };
     }, [isDragging, isResizing, resizeDirection]);
 
@@ -103,6 +135,15 @@ export const ChatbotPanel = ({ onClose, initialPosition, initialSize, onStateCha
         dragOffset.current = {
             x: e.clientX - position.x,
             y: e.clientY - position.y
+        };
+    };
+
+    const handleTouchStart = (e: React.TouchEvent) => {
+        setIsDragging(true);
+        const touch = e.touches[0];
+        dragOffset.current = {
+            x: touch.clientX - position.x,
+            y: touch.clientY - position.y
         };
     };
 
@@ -154,7 +195,7 @@ export const ChatbotPanel = ({ onClose, initialPosition, initialSize, onStateCha
                 height: size.height
             }}
         >
-            <div className="chatbot-header" onMouseDown={handleMouseDown}>
+            <div className="chatbot-header" onMouseDown={handleMouseDown} onTouchStart={handleTouchStart}>
                 <div className="chatbot-title">
                     <span>🤖</span> 역사 챗봇 H.AI
                 </div>

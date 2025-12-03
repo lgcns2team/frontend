@@ -522,6 +522,7 @@ export default function HistoryMap() {
                 <MapLayers
                     activeLayer={layerType}
                     onLayerChange={setLayerType}
+                    currentYear={currentYear}
                 />
 
                 {/* Floating Info Panel (Left) */}
