@@ -30,7 +30,7 @@ export const TimeControls = ({ currentYear, isPlaying, speed, onTogglePlay, onTo
             className="time-controls-container"
             style={bgImage ? {
                 backgroundImage: `url(${bgImage})`,
-                backgroundSize: 'cover',
+                backgroundSize: '100% 100%',
                 backgroundPosition: 'center',
                 backgroundRepeat: 'no-repeat'
             } : undefined}

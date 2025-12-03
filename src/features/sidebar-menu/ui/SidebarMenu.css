@@ -30,7 +30,7 @@
 
 .feature-btn:hover {
     transform: translateY(-2px);
-    background: var(--ui-accent, #3b82f6);
+    background: var(—ui-accent, #3b82f6);
     color: white;
     border-color: rgba(255, 255, 255, 0.3);
     box-shadow: 0 6px 12px rgba(0, 0, 0, 0.4);

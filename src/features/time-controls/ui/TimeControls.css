@@ -4,16 +4,14 @@
     flex-direction: column;
     align-items: center;
     gap: 12px;
-    padding: 16px 20px;
     background: var(--ui-bg-solid, white);
-    border-radius: 16px;
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
     transition: background-color 0.5s ease;
-    min-width: 350px;
+    min-width: 400px;
     /* Increased from 160px */
     width: auto;
     /* Allow expansion */
-    padding: 16px 24px;
+    padding: 50px 24px;
     /* Slightly more padding */
     box-sizing: border-box;
 }
