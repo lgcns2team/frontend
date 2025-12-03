@@ -2,6 +2,7 @@ import { useMemo, useState, useEffect, useRef } from 'react';
 import './Timeline.css';
 import { getEraColor, ERA_LIMITS, ERAS } from '../../../shared/config/era-theme';
 
+
 interface TimelineProps {
     currentYear: number;
     onYearChange: (year: number) => void;
