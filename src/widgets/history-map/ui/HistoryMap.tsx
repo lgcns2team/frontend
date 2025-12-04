@@ -10,6 +10,7 @@ import { peopleData } from '../../../shared/data/people';
 
 import { getEraForYear } from '../../../shared/config/era-theme';
 import { loadHistoricalBorders } from '../lib/boundary-utils';
+import { loadTradeRoutes, getTradeRouteStyle } from '../lib/trade-route';
 
 // Features
 import { TimeControls } from '../../../features/time-controls';
@@ -50,6 +51,7 @@ export default function HistoryMap() {
     const map = useRef<L.Map | null>(null);
     const historicalLayer = useRef<L.Layer | null>(null);
     const markersLayer = useRef<L.LayerGroup | null>(null);
+    const tradeLayer = useRef<L.LayerGroup | null>(null);
     const lastRequestedYear = useRef<number>(326);
     const layerCache = useRef<Map<number, L.Layer>>(new Map());
     const abortController = useRef<AbortController | null>(null);
@@ -151,6 +153,7 @@ export default function HistoryMap() {
         updateMapForYear(currentYear);
 
         markersLayer.current = L.layerGroup().addTo(map.current);
+        tradeLayer.current = L.layerGroup().addTo(map.current);
 
         // Load timeline data
         fetch('/assets/images/country-summary/history-timeline.json')
@@ -185,6 +188,27 @@ export default function HistoryMap() {
     useEffect(() => {
         updateMarkers(currentYear);
     }, [layerType, timelineData]);
+
+    // Update Trade Routes
+    useEffect(() => {
+        const updateTradeRoutes = async () => {
+            if (!map.current || !tradeLayer.current) return;
+
+            const routes = await loadTradeRoutes(currentYear);
+
+            tradeLayer.current.clearLayers();
+
+            if (routes.length > 0) {
+                routes.forEach(route => {
+                    L.geoJSON(route, {
+                        style: getTradeRouteStyle()
+                    }).addTo(tradeLayer.current!);
+                });
+            }
+        };
+
+        updateTradeRoutes();
+    }, [currentYear]);
 
     const updateMapForYear = async (year: number) => {
         if (!map.current) return;
