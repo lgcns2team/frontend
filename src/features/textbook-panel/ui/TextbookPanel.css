@@ -1,0 +1,52 @@
+.textbook-panel {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    background-color: var(--ui-bg);
+    color: var(--ui-text);
+    overflow: hidden;
+}
+
+.textbook-content {
+    flex: 1;
+    overflow: hidden;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 0;
+    background-color: transparent;
+    /* Removed dark background */
+}
+
+.page-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100%;
+    width: 100%;
+}
+
+.page-container.single .textbook-page {
+    height: 100%;
+    width: 100%;
+    /* Force width to fill container */
+    object-fit: fill;
+    /* Fill the container, aspect ratio handled by container size */
+}
+
+.page-container.double .page-wrapper {
+    flex: 1;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100%;
+    overflow: hidden;
+}
+
+.page-container.double .textbook-page {
+    height: 100%;
+    width: 100%;
+    /* Force width to fill container */
+    object-fit: fill;
+    /* Fill the container */
+}

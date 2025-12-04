@@ -1,0 +1,302 @@
+[ {
+  "year" : 618,
+  "countryName" : "당",
+  "capitalName" : "장안(長安)",
+  "capitalLatitude" : 34.26,
+  "capitalLongitude" : 108.94,
+  "regnalName" : null
+}, {
+  "year" : 661,
+  "countryName" : "통일 신라",
+  "capitalName" : "금성(경주)",
+  "capitalLatitude" : 35.856,
+  "capitalLongitude" : 129.224,
+  "regnalName" : "문무왕"
+}, {
+  "year" : 681,
+  "countryName" : "통일 신라",
+  "capitalName" : "금성(경주)",
+  "capitalLatitude" : 35.856,
+  "capitalLongitude" : 129.224,
+  "regnalName" : "신문왕"
+}, {
+  "year" : 698,
+  "countryName" : "발해",
+  "capitalName" : "중경 현덕부",
+  "capitalLatitude" : 43.8,
+  "capitalLongitude" : 128.8,
+  "regnalName" : "고왕"
+}, {
+  "year" : 719,
+  "countryName" : "발해",
+  "capitalName" : "중경 현덕부",
+  "capitalLatitude" : 43.8,
+  "capitalLongitude" : 128.8,
+  "regnalName" : "무왕"
+}, {
+  "year" : 737,
+  "countryName" : "발해",
+  "capitalName" : "중경 현덕부",
+  "capitalLatitude" : 43.8,
+  "capitalLongitude" : 128.8,
+  "regnalName" : "문왕"
+}, {
+  "year" : 780,
+  "countryName" : "거란(요나라 이전)",
+  "capitalName" : null,
+  "capitalLatitude" : null,
+  "capitalLongitude" : null,
+  "regnalName" : null
+}, {
+  "year" : 780,
+  "countryName" : "일본",
+  "capitalName" : null,
+  "capitalLatitude" : null,
+  "capitalLongitude" : null,
+  "regnalName" : null
+}, {
+  "year" : 785,
+  "countryName" : "발해",
+  "capitalName" : "상경 용천부",
+  "capitalLatitude" : 44.12,
+  "capitalLongitude" : 129.15,
+  "regnalName" : "문왕"
+}, {
+  "year" : 818,
+  "countryName" : "발해",
+  "capitalName" : "상경 용천부",
+  "capitalLatitude" : 44.12,
+  "capitalLongitude" : 129.15,
+  "regnalName" : "선왕"
+}, {
+  "year" : 887,
+  "countryName" : "통일 신라",
+  "capitalName" : "금성(경주)",
+  "capitalLatitude" : 35.856,
+  "capitalLongitude" : 129.224,
+  "regnalName" : "진성여왕"
+}, {
+  "year" : 892,
+  "countryName" : "후백제",
+  "capitalName" : "무진주(광주)",
+  "capitalLatitude" : 35.15,
+  "capitalLongitude" : 126.85,
+  "regnalName" : "견훤왕"
+}, {
+  "year" : 900,
+  "countryName" : "후백제",
+  "capitalName" : "완산주(전주)",
+  "capitalLatitude" : 35.824,
+  "capitalLongitude" : 127.148,
+  "regnalName" : "견훤왕"
+}, {
+  "year" : 901,
+  "countryName" : "후고구려(태봉)",
+  "capitalName" : "송악(개성)",
+  "capitalLatitude" : 37.97,
+  "capitalLongitude" : 126.56,
+  "regnalName" : "궁예왕"
+}, {
+  "year" : 905,
+  "countryName" : "후고구려(태봉)",
+  "capitalName" : "철원",
+  "capitalLatitude" : 38.27,
+  "capitalLongitude" : 127.2,
+  "regnalName" : "궁예왕"
+}, {
+  "year" : 916,
+  "countryName" : "요(거란)",
+  "capitalName" : null,
+  "capitalLatitude" : null,
+  "capitalLongitude" : null,
+  "regnalName" : null
+}, {
+  "year" : 918,
+  "countryName" : "고려",
+  "capitalName" : "송악(개성)",
+  "capitalLatitude" : 37.97,
+  "capitalLongitude" : 126.56,
+  "regnalName" : "태조"
+}, {
+  "year" : 927,
+  "countryName" : "통일 신라",
+  "capitalName" : "금성(경주)",
+  "capitalLatitude" : 35.856,
+  "capitalLongitude" : 129.224,
+  "regnalName" : "경순왕"
+}, {
+  "year" : 935,
+  "countryName" : "후백제",
+  "capitalName" : "완산주(전주)",
+  "capitalLatitude" : 35.824,
+  "capitalLongitude" : 127.148,
+  "regnalName" : "신검왕"
+}, {
+  "year" : 943,
+  "countryName" : "고려",
+  "capitalName" : "송악(개성)",
+  "capitalLatitude" : 37.97,
+  "capitalLongitude" : 126.56,
+  "regnalName" : "혜종"
+}, {
+  "year" : 945,
+  "countryName" : "고려",
+  "capitalName" : "송악(개성)",
+  "capitalLatitude" : 37.97,
+  "capitalLongitude" : 126.56,
+  "regnalName" : "정종"
+}, {
+  "year" : 949,
+  "countryName" : "고려",
+  "capitalName" : "송악(개성)",
+  "capitalLatitude" : 37.97,
+  "capitalLongitude" : 126.56,
+  "regnalName" : "광종"
+}, {
+  "year" : 960,
+  "countryName" : "송",
+  "capitalName" : null,
+  "capitalLatitude" : null,
+  "capitalLongitude" : null,
+  "regnalName" : null
+}, {
+  "year" : 981,
+  "countryName" : "고려",
+  "capitalName" : "송악(개성)",
+  "capitalLatitude" : 37.97,
+  "capitalLongitude" : 126.56,
+  "regnalName" : "성종"
+}, {
+  "year" : 997,
+  "countryName" : "고려",
+  "capitalName" : "송악(개성)",
+  "capitalLatitude" : 37.97,
+  "capitalLongitude" : 126.56,
+  "regnalName" : "목종"
+}, {
+  "year" : 1009,
+  "countryName" : "고려",
+  "capitalName" : "송악(개성)",
+  "capitalLatitude" : 37.97,
+  "capitalLongitude" : 126.56,
+  "regnalName" : "현종"
+}, {
+  "year" : 1038,
+  "countryName" : "서하",
+  "capitalName" : null,
+  "capitalLatitude" : null,
+  "capitalLongitude" : null,
+  "regnalName" : null
+}, {
+  "year" : 1046,
+  "countryName" : "고려",
+  "capitalName" : "송악(개성)",
+  "capitalLatitude" : 37.97,
+  "capitalLongitude" : 126.56,
+  "regnalName" : "문종"
+}, {
+  "year" : 1100,
+  "countryName" : "여진",
+  "capitalName" : null,
+  "capitalLatitude" : null,
+  "capitalLongitude" : null,
+  "regnalName" : null
+}, {
+  "year" : 1115,
+  "countryName" : "금",
+  "capitalName" : null,
+  "capitalLatitude" : null,
+  "capitalLongitude" : null,
+  "regnalName" : null
+}, {
+  "year" : 1122,
+  "countryName" : "고려",
+  "capitalName" : "송악(개성)",
+  "capitalLatitude" : 37.97,
+  "capitalLongitude" : 126.56,
+  "regnalName" : "인종"
+}, {
+  "year" : 1146,
+  "countryName" : "고려",
+  "capitalName" : "송악(개성)",
+  "capitalLatitude" : 37.97,
+  "capitalLongitude" : 126.56,
+  "regnalName" : "의종"
+}, {
+  "year" : 1206,
+  "countryName" : "몽골 제국",
+  "capitalName" : null,
+  "capitalLatitude" : null,
+  "capitalLongitude" : null,
+  "regnalName" : null
+}, {
+  "year" : 1213,
+  "countryName" : "고려",
+  "capitalName" : "송악(개성)",
+  "capitalLatitude" : 37.97,
+  "capitalLongitude" : 126.56,
+  "regnalName" : "고종"
+}, {
+  "year" : 1232,
+  "countryName" : "고려",
+  "capitalName" : "강화도",
+  "capitalLatitude" : 37.746,
+  "capitalLongitude" : 126.485,
+  "regnalName" : "고종"
+}, {
+  "year" : 1271,
+  "countryName" : "원",
+  "capitalName" : null,
+  "capitalLatitude" : null,
+  "capitalLongitude" : null,
+  "regnalName" : null
+}, {
+  "year" : 1350,
+  "countryName" : "왜구",
+  "capitalName" : "쓰시마(대마도)",
+  "capitalLatitude" : 34.4,
+  "capitalLongitude" : 129.4,
+  "regnalName" : null
+}, {
+  "year" : 1350,
+  "countryName" : "홍건적",
+  "capitalName" : null,
+  "capitalLatitude" : null,
+  "capitalLongitude" : null,
+  "regnalName" : null
+}, {
+  "year" : 1351,
+  "countryName" : "고려",
+  "capitalName" : "송악(개성)",
+  "capitalLatitude" : 37.97,
+  "capitalLongitude" : 126.56,
+  "regnalName" : "공민왕"
+}, {
+  "year" : 1368,
+  "countryName" : "명",
+  "capitalName" : null,
+  "capitalLatitude" : null,
+  "capitalLongitude" : null,
+  "regnalName" : null
+}, {
+  "year" : 1374,
+  "countryName" : "고려",
+  "capitalName" : "송악(개성)",
+  "capitalLatitude" : 37.97,
+  "capitalLongitude" : 126.56,
+  "regnalName" : "우왕"
+}, {
+  "year" : 1388,
+  "countryName" : "고려",
+  "capitalName" : "송악(개성)",
+  "capitalLatitude" : 37.97,
+  "capitalLongitude" : 126.56,
+  "regnalName" : "창왕"
+}, {
+  "year" : 1389,
+  "countryName" : "고려",
+  "capitalName" : "송악(개성)",
+  "capitalLatitude" : 37.97,
+  "capitalLongitude" : 126.56,
+  "regnalName" : "공양왕"
+} ]

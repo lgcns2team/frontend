@@ -1,0 +1,118 @@
+/* DockingPanel.css */
+.docking-panel {
+    position: fixed;
+    top: 0;
+    right: 0;
+    height: 100vh;
+    background: var(--ui-bg, white);
+    color: var(--ui-text, #333);
+    border-left: 5px solid var(--ui-border, #ccc);
+    /* box-shadow: -4px 0 12px rgba(0, 0, 0, 0.1); */
+    box-shadow: var(--colonial-shadow);
+    z-index: 2000;
+    /* Ensure it's above everything */
+    display: flex;
+    flex-direction: column;
+    transition: transform 0.3s ease-in-out;
+    /* Note: Width is controlled via inline style for resizing */
+}
+
+/* Colonial Theme Specifics */
+/* Colonial Theme Specifics - Removed layout overrides as per user request */
+/* .theme-colonial .docking-panel { ... } removed to keep default layout */
+
+.docking-panel.closed {
+    transform: translateX(100%);
+}
+
+.docking-panel.open {
+    transform: translateX(0);
+}
+
+/* Resize Handle */
+/* Resize Handle */
+/* Resize Handle */
+.docking-panel .resize-handle {
+    position: absolute;
+    left: -12px;
+    /* Center on border */
+    top: 0;
+    bottom: 0;
+    width: 12px;
+    height: 100vh;
+    /* Even wider hit area */
+    cursor: col-resize;
+    background: transparent;
+    z-index: 9999;
+    /* Ensure it's on top of everything */
+    pointer-events: auto;
+    /* Ensure it captures clicks */
+    transition: background 0.2s, opacity 0.2s;
+}
+
+/* Colonial Theme Resize Handle Override - Removed as layout is reverted */
+/* .theme-colonial .docking-panel .resize-handle { ... } removed */
+
+.docking-panel .resize-handle:hover,
+.docking-panel .resize-handle:active {
+    background: var(--ui-accent, #3b82f6);
+    opacity: 0.8;
+    /* Make it more visible */
+}
+
+/* Header */
+.panel-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 16px 20px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    background-color: rgba(0, 0, 0, 0.2);
+}
+
+.header-left {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.header-right {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.panel-title {
+    margin: 0;
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: var(--ui-text);
+}
+
+.close-btn {
+    background: none;
+    border: none;
+    color: var(--ui-text-muted);
+    cursor: pointer;
+    height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.docking-panel .close-btn:hover {
+    background: var(--ui-accent, #3b82f6);
+    color: white;
+    /* Keep white on hover for contrast against accent */
+    border-color: var(--ui-accent, #3b82f6);
+    transform: scale(1.05);
+}
+
+/* Content */
+.panel-content {
+    flex: 1;
+    overflow-y: auto;
+    padding: 20px;
+}

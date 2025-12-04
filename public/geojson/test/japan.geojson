@@ -1,0 +1,32 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "NAME": "Unnamed",
+        "name": "일본 -> 발해",
+        "color": "#ef4444",
+        "stroke": "#ef4444",
+        "stroke-width": 2
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            136.79046784797896,
+            36.70128399331513
+          ],
+          [
+            132.50777612975102,
+            39.14524797772245
+          ],
+          [
+            130.5750742261405,
+            43.06784240053568
+          ]
+        ]
+      }
+    }
+  ]
+}
