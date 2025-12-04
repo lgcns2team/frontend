@@ -21,6 +21,7 @@ import { DockingPanel } from '../../../features/docking-panel/ui/DockingPanel';
 import { FloatingPanel } from '../../../features/floating-panel/ui/FloatingPanel';
 import { ChatbotTrigger, ChatbotPanel } from '../../../features/chatbot';
 import { TextbookPanel } from '../../../features/textbook-panel';
+import { CloudTransition } from '../../../features/cloud-transition';
 
 // Fix Leaflet marker icon issue
 import icon from 'leaflet/dist/images/marker-icon.png';
@@ -63,6 +64,10 @@ export default function HistoryMap() {
     const [textbookViewMode, setTextbookViewMode] = useState<'single' | 'double'>('single');
     const [dockingPanelWidth, setDockingPanelWidth] = useState(800);
     const [pageInput, setPageInput] = useState('');
+
+    // Cloud Transition State
+    const [isCloudTransitionActive, setIsCloudTransitionActive] = useState(false);
+    const prevEraId = useRef<string>(getEraForYear(currentYear).id);
 
     const playInterval = useRef<ReturnType<typeof setInterval> | null>(null);
 
@@ -116,6 +121,13 @@ export default function HistoryMap() {
         const timer = setTimeout(() => {
             updateMapForYear(currentYear);
         }, 100); // 100ms debounce
+
+        // Check for Era Change
+        const newEraId = getEraForYear(currentYear).id;
+        if (newEraId !== prevEraId.current) {
+            setIsCloudTransitionActive(true);
+            prevEraId.current = newEraId;
+        }
 
         return () => clearTimeout(timer);
     }, [currentYear]);
@@ -597,7 +609,7 @@ export default function HistoryMap() {
             <div
                 className="bottom-bar"
                 style={{
-                    backgroundImage: `url("/assets/images/timecontrols/durumagi.png")`,
+                    backgroundImage: `url("${currentEra.timelineImage || '/assets/images/timecontrols/durumagi.png'}")`,
                     backgroundSize: '100% 100%',
                     backgroundPosition: 'center',
                     backgroundRepeat: 'no-repeat'
@@ -608,6 +620,12 @@ export default function HistoryMap() {
                     onYearChange={handleYearChange}
                 />
             </div>
+
+            {/* Cloud Transition Effect */}
+            <CloudTransition
+                isActive={isCloudTransitionActive}
+                onAnimationComplete={() => setIsCloudTransitionActive(false)}
+            />
         </div>
     );
 }

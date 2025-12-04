@@ -1,0 +1,85 @@
+.cloud-transition-container {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    z-index: 9999;
+    pointer-events: none;
+    overflow: hidden;
+}
+
+.cloud-layer {
+    position: absolute;
+    top: -10%;
+    left: -10%;
+    width: 120%;
+    height: 120%;
+    background-image: url('../assets/clouds.png');
+    background-size: cover;
+    background-position: center;
+    opacity: 0;
+}
+
+@keyframes cloudFadeInOut {
+    0% {
+        opacity: 0;
+        transform: scale(1.2) translate(0, 0);
+    }
+
+    30% {
+        opacity: 1;
+        transform: scale(1) translate(0, 0);
+    }
+
+    70% {
+        opacity: 1;
+        transform: scale(1) translate(0, 0);
+    }
+
+    100% {
+        opacity: 0;
+        transform: scale(1.2) translate(0, 0);
+    }
+}
+
+@keyframes cloudMove1 {
+    0% {
+        transform: scale(1.5) translate(-5%, -5%);
+    }
+
+    100% {
+        transform: scale(1) translate(0, 0);
+    }
+}
+
+@keyframes cloudMove2 {
+    0% {
+        transform: scale(1.5) translate(5%, 5%);
+    }
+
+    100% {
+        transform: scale(1) translate(0, 0);
+    }
+}
+
+.layer-1 {
+    animation: cloudFadeInOut 2.5s ease-in-out forwards, cloudMove1 2.5s ease-out forwards;
+    background-blend-mode: screen;
+}
+
+.layer-2 {
+    animation: cloudFadeInOut 2.5s ease-in-out forwards, cloudMove2 2.5s ease-out forwards;
+    animation-delay: 0.1s;
+    transform: scaleX(-1);
+    opacity: 0.7;
+    background-blend-mode: overlay;
+}
+
+.layer-3 {
+    animation: cloudFadeInOut 2.5s ease-in-out forwards;
+    animation-delay: 0.0s;
+    background-size: 150%;
+    opacity: 0.5;
+    mix-blend-mode: hard-light;
+}

@@ -110,7 +110,38 @@ body {
 
     background-color: #f1f5f9;
     /* Map background remains neutral/gray */
+    /* Map background remains neutral/gray */
     filter: grayscale(0.8);
+}
+
+/* 9. 광복 (Hopeful Emerald) #34d399 */
+.theme-liberation {
+    font-family: 'Pretendard', sans-serif;
+    --ui-bg: rgba(236, 253, 245, 0.95);
+    /* 아주 연한 민트 */
+    --ui-bg-solid: #ecfdf5;
+    --ui-text: #064e3b;
+    /* 짙은 초록 */
+    --ui-border: #34d399;
+    /* 에메랄드 */
+    --ui-accent: #059669;
+    /* 진한 에메랄드 */
+    background-color: #ecfdf5;
+}
+
+/* 9. 6.25 전쟁 (War-torn Dark Red) #7f1d1d */
+.theme-korean-war {
+    font-family: 'Pretendard', sans-serif;
+    --ui-bg: rgba(40, 20, 20, 0.95);
+    /* 어두운 붉은 갈색 */
+    --ui-bg-solid: #2a1a1a;
+    --ui-text: #fecaca;
+    /* 연한 붉은 텍스트 */
+    --ui-border: #7f1d1d;
+    /* 핏빛 레드 */
+    --ui-accent: #b91c1c;
+    /* 강렬한 레드 */
+    background-color: #2a1a1a;
 }
 
 /* 9. 대한민국 (Deep Blue) #3B82F6 - 현대 */

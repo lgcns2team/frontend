@@ -14,18 +14,7 @@ export const TimeControls = ({ currentYear, isPlaying, speed, onTogglePlay, onTo
 
     const eraConfig = getEraForYear(currentYear);
 
-    let bgImage = undefined;
-    if (eraConfig.id === 'goryeo') {
-        bgImage = "/assets/images/timecontrols/goryeotimecontrol.png";
-    } else if (eraConfig.id === 'joseon') {
-        bgImage = "/assets/images/timecontrols/joseontimecontrol.png";
-    } else if (eraConfig.id === 'korean-empire') {
-        bgImage = "/assets/images/timecontrols/daehantimecontrol.png";
-    } else if (eraConfig.id === 'colonial') {
-        bgImage = "/assets/images/timecontrols/colonialtimecontrol.png";
-    } else if (eraConfig.id === 'republic') {
-        bgImage = "/assets/images/timecontrols/republictimecontrol.png";
-    }
+    const bgImage = eraConfig.bgImage;
 
     return (
         <div
