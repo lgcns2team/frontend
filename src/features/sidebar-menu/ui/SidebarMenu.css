@@ -122,17 +122,25 @@
     border: none;
     transition: background-color 0.2s ease;
     display: flex;
-    flex-direction: column;
+    flex-direction: row;
     align-items: center;
-    justify-content: center;
-    gap: 4px;
+    justify-content: flex-start;
+    gap: 12px;
     color: var(--ui-text, #333);
-    font-size: 56px;
+    font-size: 33.6px;
     font-weight: 700;
     font-family: 'CustomFont', sans-serif;
-    text-align: center;
+    text-align: left;
+    padding-left: 20px;
 }
 
 .menu-item-zone:hover {
     background-color: rgba(255, 255, 255, 0.15);
+}
+
+.menu-icon {
+    width: 80px;
+    height: 80px;
+    object-fit: contain;
+    flex-shrink: 0;
 }
