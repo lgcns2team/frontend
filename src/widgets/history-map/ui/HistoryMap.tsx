@@ -684,15 +684,9 @@ export default function HistoryMap() {
                 </FloatingPanel>
             </div>
 
-            {/* Top Right: Search */}
+            {/* Top Right: Search & Menu */}
             <div className="top-right-overlay">
-                <SearchYear />
-            </div>
-
-
-
-            {/* Right Sidebar Menu */}
-            <div className="right-sidebar">
+                <SearchYear currentYear={currentYear} />
                 <SidebarMenu onItemClick={handleSidebarClick} />
             </div>
 

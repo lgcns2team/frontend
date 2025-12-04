@@ -1,37 +1,138 @@
+@font-face {
+    font-family: 'CustomFont';
+    src: url('/font/TTF/B.ttf') format('truetype');
+    font-weight: 700;
+    font-style: normal;
+}
+
+@font-face {
+    font-family: 'CustomFont';
+    src: url('/font/TTF/M.ttf') format('truetype');
+    font-weight: 500;
+    font-style: normal;
+}
+
+@font-face {
+    font-family: 'CustomFont';
+    src: url('/font/TTF/L.ttf') format('truetype');
+    font-weight: 300;
+    font-style: normal;
+}
+
 .sidebar-menu {
     display: flex;
     flex-direction: column;
-    gap: 16px;
+    width: 200px;
+    align-items: center;
+    position: relative;
+    transition: all 0.3s ease;
 }
 
-.feature-btn {
-    width: 70px;
-    height: 70px;
-    border-radius: 16px;
-    /* Rounded square looks better for text */
-    background: var(--ui-bg, rgba(30, 41, 59, 0.9));
-    color: var(--ui-text, white);
-    border: 1px solid var(--ui-border, rgba(255, 255, 255, 0.1));
-    font-size: 11px;
-    font-weight: 600;
+/* --- Closed State --- */
+.sidebar-menu.closed {
+    height: 60px;
+}
+
+.scroll-closed {
+    width: 100%;
+    height: 100%;
+    background-image: url('/assets/images/roll.png');
+    background-size: 100% 100%;
+    background-repeat: no-repeat;
     cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* --- Open State --- */
+.sidebar-menu.open {
+    height: auto;
+}
+
+.scroll-open-container {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    animation: unrollAnimation 0.5s ease-out forwards;
+}
+
+@keyframes unrollAnimation {
+    from {
+        opacity: 0;
+        transform: scaleY(0.8);
+        transform-origin: top;
+    }
+
+    to {
+        opacity: 1;
+        transform: scaleY(1);
+        transform-origin: top;
+    }
+}
+
+.scroll-top {
+    width: 100%;
+    height: 50px;
+    background-image: url('/assets/images/unroll1.png');
+    background-size: 100% 100%;
+    background-repeat: no-repeat;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 2;
+}
+
+.scroll-middle {
+    width: 100%;
+    height: 400px;
+    background-image: url('/assets/images/unroll2.png');
+    background-size: 100% 100%;
+    background-repeat: no-repeat;
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    padding: 0;
+}
+
+.scroll-bottom {
+    width: 100%;
+    height: 50px;
+    background-image: url('/assets/images/unroll3.png');
+    background-size: 100% 100%;
+    background-repeat: no-repeat;
+    margin-top: -2px;
+}
+
+.menu-items-container {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    height: 100%;
+    align-items: stretch;
+    pointer-events: auto;
+}
+
+.menu-item-zone {
+    width: 100%;
+    flex: 1;
+    cursor: pointer;
+    background: transparent;
+    border: none;
+    transition: background-color 0.2s ease;
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
     gap: 4px;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
-    backdrop-filter: blur(8px);
-    transition: all 0.2s ease;
-    padding: 8px;
+    color: var(--ui-text, #333);
+    font-size: 56px;
+    font-weight: 700;
+    font-family: 'CustomFont', sans-serif;
     text-align: center;
-    line-height: 1.2;
 }
 
-.feature-btn:hover {
-    transform: translateY(-2px);
-    background: var(—ui-accent, #3b82f6);
-    color: white;
-    border-color: rgba(255, 255, 255, 0.3);
-    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.4);
+.menu-item-zone:hover {
+    background-color: rgba(255, 255, 255, 0.15);
 }
