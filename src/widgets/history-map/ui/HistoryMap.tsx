@@ -521,6 +521,7 @@ export default function HistoryMap() {
                 <MapLayers
                     activeLayer={layerType}
                     onLayerChange={setLayerType}
+                    currentYear={currentYear}
                 />
 
                 {/* Floating Info Panel (Left) */}
@@ -590,8 +591,18 @@ export default function HistoryMap() {
                 />
             )}
 
+
+
             {/* Bottom Timeline */}
-            <div className="bottom-bar">
+            <div
+                className="bottom-bar"
+                style={{
+                    backgroundImage: `url("/assets/images/timecontrols/durumagi.png")`,
+                    backgroundSize: '100% 100%',
+                    backgroundPosition: 'center',
+                    backgroundRepeat: 'no-repeat'
+                }}
+            >
                 <Timeline
                     currentYear={currentYear}
                     onYearChange={handleYearChange}
