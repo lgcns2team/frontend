@@ -4,17 +4,15 @@
     flex-direction: column;
     align-items: center;
     gap: 12px;
-    padding: 16px 20px;
     background: var(--ui-bg-solid, white);
-    border-radius: 16px;
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
     transition: background-color 0.5s ease;
-    min-width: 350px;
-    /* Increased from 160px */
-    width: auto;
-    /* Allow expansion */
-    padding: 16px 24px;
-    /* Slightly more padding */
+    min-width: 300px;
+    width: 25vw;
+    /* Responsive width */
+    max-width: 600px;
+    padding: 5vh 3.5vw;
+    /* Responsive padding */
     box-sizing: border-box;
 }
 
@@ -23,8 +21,6 @@
     border: 2px solid var(--ui-border);
     outline: var(--colonial-outline);
     box-shadow: var(--colonial-shadow);
-    margin: 16px;
-    /* Add margin to prevent crowding */
 }
 
 /* Year Display Group */
@@ -38,7 +34,7 @@
 }
 
 .year-text {
-    font-size: 42px;
+    font-size: 30px;
     font-weight: 900;
     line-height: 42px;
     /* Fixed line-height matching font-size */
@@ -47,11 +43,10 @@
     font-family: inherit;
     /* Inherits era font from HistoryMap container */
     letter-spacing: -1px;
-    color: var(--ui-text, black);
+    color: var(--ui-text-timecontrol, rgb(248, 248, 248));
     /* Use theme text color or black as requested? User said black. */
-    color: black;
     font-variant-numeric: tabular-nums;
-    white-space: nowrap;
+    white-space: normal;
     overflow: visible;
 }
 
