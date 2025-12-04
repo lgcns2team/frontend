@@ -213,12 +213,18 @@ export default function HistoryMap() {
         const capitals = capitalData[periodKey];
 
         if (capitals) {
+            const currentEra = getEraForYear(year);
+            const sudooImage = `/assets/images/${currentEra.id}/sudoo.png`;
+
             capitals.forEach(capital => {
                 const icon = L.divIcon({
                     className: 'capital-marker',
-                    html: `<div style="font-size: 14px; text-shadow: 2px 2px 2px white;">⭐ ${capital.capital}</div>`,
-                    iconSize: [100, 20],
-                    iconAnchor: [50, 10]
+                    html: `<div style="display: flex; align-items: center; gap: 4px;">
+                        <img src="${sudooImage}" style="width: 20px; height: 20px;" />
+                        <span style="font-size: 14px; text-shadow: 2px 2px 2px white; font-weight: bold;">${capital.capital}</span>
+                    </div>`,
+                    iconSize: [120, 24],
+                    iconAnchor: [60, 12]
                 });
 
                 L.marker([capital.lat, capital.lng], { icon }).addTo(markersLayer.current!)
@@ -554,15 +560,9 @@ export default function HistoryMap() {
                 </FloatingPanel>
             </div>
 
-            {/* Top Right: Search */}
+            {/* Top Right: Search & Menu */}
             <div className="top-right-overlay">
-                <SearchYear />
-            </div>
-
-
-
-            {/* Right Sidebar Menu */}
-            <div className="right-sidebar">
+                <SearchYear currentYear={currentYear} />
                 <SidebarMenu onItemClick={handleSidebarClick} />
             </div>
 

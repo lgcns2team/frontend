@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import './SidebarMenu.css';
 
 interface SidebarMenuProps {
@@ -5,6 +6,8 @@ interface SidebarMenuProps {
 }
 
 export const SidebarMenu = ({ onItemClick }: SidebarMenuProps) => {
+    const [isOpen, setIsOpen] = useState(false);
+
     const menuItems = [
         { id: 'search', icon: '🔍', label: '주요사건' },
         { id: 'textbook', icon: '📚', label: '교과서' },
@@ -14,18 +17,36 @@ export const SidebarMenu = ({ onItemClick }: SidebarMenuProps) => {
     ];
 
     return (
-        <div className="sidebar-menu">
-            {menuItems.map((item) => (
-                <button
-                    key={item.id}
-                    className="feature-btn"
-                    title={item.label}
-                    onClick={() => onItemClick?.(item.id)}
-                >
-                    <span style={{ fontSize: '20px' }}>{item.icon}</span>
-                    <span>{item.label}</span>
-                </button>
-            ))}
+        <div className={`sidebar-menu ${isOpen ? 'open' : 'closed'}`}>
+            {/* Closed State: Single Roll Image */}
+            {!isOpen && (
+                <div className="scroll-closed" onClick={() => setIsOpen(true)}>
+                </div>
+            )}
+
+            {/* Open State: 3-Part Structure */}
+            {isOpen && (
+                <div className="scroll-open-container">
+                    <div className="scroll-top" onClick={() => setIsOpen(false)}>
+                    </div>
+                    <div className="scroll-middle">
+                        <div className="menu-items-container">
+                            {menuItems.map((item) => (
+                                <button
+                                    key={item.id}
+                                    className="feature-btn"
+                                    title={item.label}
+                                    onClick={() => onItemClick?.(item.id)}
+                                >
+                                    <span style={{ fontSize: '20px' }}>{item.icon}</span>
+                                    <span>{item.label}</span>
+                                </button>
+                            ))}
+                        </div>
+                    </div>
+                    <div className="scroll-bottom"></div>
+                </div>
+            )}
         </div>
     );
 };
