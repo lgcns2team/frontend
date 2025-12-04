@@ -3,7 +3,7 @@ import * as L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import './HistoryMap.css';
 import '../../../shared/config/era-theme.css';
-import { capitalData } from '../../../shared/data/capitals';
+// import { capitalData } from '../../../shared/data/capitals'; // Deprecated in favor of history-timeline.json
 import { battleData } from '../../../shared/data/battles';
 import { tradeData } from '../../../shared/data/trade';
 import { peopleData } from '../../../shared/data/people';
@@ -36,6 +36,15 @@ let DefaultIcon = L.icon({
 
 L.Marker.prototype.options.icon = DefaultIcon;
 
+interface TimelineEvent {
+    year: number;
+    countryName: string;
+    capitalName: string | null;
+    capitalLatitude: number | null;
+    capitalLongitude: number | null;
+    regnalName: string | null;
+}
+
 export default function HistoryMap() {
     const mapContainer = useRef<HTMLDivElement>(null);
     const map = useRef<L.Map | null>(null);
@@ -44,6 +53,38 @@ export default function HistoryMap() {
     const lastRequestedYear = useRef<number>(326);
     const layerCache = useRef<Map<number, L.Layer>>(new Map());
     const abortController = useRef<AbortController | null>(null);
+    const [timelineData, setTimelineData] = useState<TimelineEvent[]>([]);
+
+    // Helper to normalize country names to ID
+    const getCountryId = (name: string): string => {
+        if (!name) return '';
+        const lower = name.toLowerCase();
+
+        // Map Korean names to IDs
+        if (lower.includes('고조선') || lower.includes('gojoseon')) return 'GOJOSEON';
+        if (lower.includes('고구려') || lower.includes('goguryeo') || lower.includes('koguryo')) return 'GOGURYEO';
+        if (lower.includes('백제') || lower.includes('baekje') || lower.includes('paekche')) return 'BAEKJE';
+        if (lower.includes('신라') || lower.includes('silla') || lower.includes('silia')) return 'SILLA';
+        if (lower.includes('가야') || lower.includes('gaya')) return 'GAYA';
+        if (lower.includes('발해') || lower.includes('balhae') || lower.includes('parhae')) return 'BALHAE';
+        if (lower.includes('고려') || lower.includes('goryeo')) return 'GORYEO';
+        if (lower.includes('조선') || lower.includes('joseon')) return 'JOSEON';
+
+        if (lower.includes('당') || lower.includes('tang')) return 'TANG';
+        if (lower.includes('송') || lower.includes('song')) return 'SONG';
+        if (lower.includes('원') || lower.includes('yuan') || lower.includes('mongol')) return 'YUAN';
+        if (lower.includes('명') || lower.includes('ming')) return 'MING';
+        if (lower.includes('청') || lower.includes('qing')) return 'QING';
+
+        if (lower.includes('거란') || lower.includes('요') || lower.includes('khitan') || lower.includes('liao')) return 'LIAO';
+        if (lower.includes('여진') || lower.includes('금') || lower.includes('jurchen') || lower.includes('jin')) return 'JIN';
+        if (lower.includes('서하') || lower.includes('western xia') || lower.includes('seoha')) return 'WESTERN_XIA';
+
+        if (lower.includes('일본') || lower.includes('japan') || lower.includes('yamato') || lower.includes('wa')) return 'JAPAN';
+
+        // Fallback for exact matches or other cases
+        return lower.trim();
+    };
 
     const [currentYear, setCurrentYear] = useState<number>(326);
     const [isPlaying, setIsPlaying] = useState<boolean>(false);
@@ -111,6 +152,14 @@ export default function HistoryMap() {
 
         markersLayer.current = L.layerGroup().addTo(map.current);
 
+        // Load timeline data
+        fetch('/assets/images/country-summary/history-timeline.json')
+            .then(res => res.json())
+            .then(data => {
+                setTimelineData(data);
+            })
+            .catch(err => console.error('Failed to load timeline data:', err));
+
         return () => {
             map.current?.remove();
         };
@@ -132,10 +181,10 @@ export default function HistoryMap() {
         return () => clearTimeout(timer);
     }, [currentYear]);
 
-    // Update Markers when layer type changes
+    // Update Markers when layer type changes or timeline data loads
     useEffect(() => {
         updateMarkers(currentYear);
-    }, [layerType]);
+    }, [layerType, timelineData]);
 
     const updateMapForYear = async (year: number) => {
         if (!map.current) return;
@@ -209,24 +258,105 @@ export default function HistoryMap() {
         markersLayer.current.clearLayers();
 
         // Always show capitals
-        const periodKey = getCapitalPeriod(year);
-        const capitals = capitalData[periodKey];
+        // Always show capitals from timeline data
+        if (timelineData.length > 0) {
+            // 1. Identify visible countries from the map layer
+            const visibleCountryIds = new Set<string>();
 
-        if (capitals) {
-            capitals.forEach(capital => {
-                const icon = L.divIcon({
-                    className: 'capital-marker',
-                    html: `<div style="font-size: 14px; text-shadow: 2px 2px 2px white;">⭐ ${capital.capital}</div>`,
-                    iconSize: [100, 20],
-                    iconAnchor: [50, 10]
+            if (historicalLayer.current) {
+                // If it's a GeoJSON layer (which it should be)
+                (historicalLayer.current as any).eachLayer((layer: any) => {
+                    if (layer.feature && layer.feature.properties) {
+                        const props = layer.feature.properties;
+                        const name = props.NAME || props.name;
+                        if (name) {
+                            visibleCountryIds.add(getCountryId(name));
+                        }
+                    }
                 });
+            }
 
-                L.marker([capital.lat, capital.lng], { icon }).addTo(markersLayer.current!)
-                    .bindPopup(`<b>${capital.country}</b><br>수도: ${capital.capital}`);
+            // Group by country
+            const countries = new Set(timelineData.map(d => d.countryName));
+
+            countries.forEach(country => {
+                // Check if this country is visible on the map
+                // We check if the normalized ID of the timeline country exists in the visible map features
+                const timelineCountryId = getCountryId(country);
+
+                // Special handling: If map has "Tang", timeline "Tang" should show.
+                // If map has "Unified Silla" (which might just be "Silla" in GeoJSON), timeline "Unified Silla" should show.
+                // The getCountryId helper handles this normalization.
+
+                // If the country is NOT visible on the map, skip it
+                // Exception: If we can't find any visible countries (maybe layer hasn't loaded yet?), show all? 
+                // No, better to be strict to fix the "ghost marker" issue.
+                // However, we need to be careful about name mismatches.
+
+                // Debug log if needed: console.log(`Checking ${country} (${timelineCountryId}) against visible:`, visibleCountryIds);
+
+                if (!visibleCountryIds.has(timelineCountryId)) {
+                    // Try loose matching if strict match fails
+                    // e.g. "Unified Silla" vs "Silla"
+                    let matchFound = false;
+                    for (const visibleId of visibleCountryIds) {
+                        if (visibleId.includes(timelineCountryId) || timelineCountryId.includes(visibleId)) {
+                            matchFound = true;
+                            break;
+                        }
+                    }
+                    if (!matchFound) return;
+                }
+
+                // Get all events for this country
+                const countryEvents = timelineData.filter(d => d.countryName === country);
+
+                // Find the latest event that is <= currentYear
+                // Sort by year descending to find the first one <= currentYear
+                const activeEvent = countryEvents
+                    .sort((a, b) => b.year - a.year)
+                    .find(d => d.year <= year);
+
+                // If we found an event, and it has valid coordinates, show it
+                if (activeEvent && activeEvent.capitalName && activeEvent.capitalLatitude && activeEvent.capitalLongitude) {
+                    // Note: The logic "show until next king" is implicitly handled because we find the *latest* event <= currentYear.
+                    // If the next event is in the future, this one remains active.
+                    // However, we should check if the country still exists or if there's a "null" entry indicating end?
+                    // The data seems to have entries with null capital for some years (e.g. 780 Japan null).
+                    // If capitalName is null, we probably shouldn't show a marker.
+
+                    if (activeEvent && activeEvent.capitalName && activeEvent.capitalLatitude && activeEvent.capitalLongitude) {
+                        const icon = L.divIcon({
+                            className: 'capital-marker',
+                            html: `
+                            <div style="display: flex; flex-direction: column; align-items: center; width: 100px;">
+                                <img src="/assets/images/country-summary/sudo.png" style="width: 40px; height: 40px; object-fit: contain;" />
+                                <div style="font-size: 14px; font-weight: bold; color: white; margin-top: 2px; text-align: center; width: 100%; white-space: nowrap;">${activeEvent.capitalName}</div>
+                            </div>
+                        `,
+                            iconSize: [100, 60],
+                            iconAnchor: [50, 20] // Anchor at center of image (approx)
+                        });
+
+                        const popupContent = `
+                        <div style="text-align: center;">
+                            <h3 style="margin: 0 0 5px 0;">${activeEvent.countryName}</h3>
+                            <p style="margin: 0;">수도: ${activeEvent.capitalName}</p>
+                            ${activeEvent.regnalName ? `<p style="margin: 5px 0 0 0;"><strong>${activeEvent.regnalName}</strong></p>` : ''}
+                        </div>
+                    `;
+
+                        L.marker([activeEvent.capitalLatitude, activeEvent.capitalLongitude], { icon })
+                            .addTo(markersLayer.current!)
+                            .bindPopup(popupContent);
+                    }
+                }
             });
         }
 
         // Show other layers
+        const periodKey = getCapitalPeriod(year);
+
         if (layerType === 'battles') {
             const battles = battleData[periodKey];
             if (battles) {
