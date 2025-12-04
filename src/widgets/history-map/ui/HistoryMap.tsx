@@ -11,6 +11,7 @@ import { peopleData } from '../../../shared/data/people';
 import { getEraForYear } from '../../../shared/config/era-theme';
 import { loadHistoricalBorders } from '../lib/boundary-utils';
 import { loadTradeRoutes, getTradeRouteStyle } from '../lib/trade-route';
+import { useEraTransition } from '../lib/useEraTransition';
 
 // Features
 import { TimeControls } from '../../../features/time-controls';
@@ -109,8 +110,8 @@ export default function HistoryMap() {
     const [pageInput, setPageInput] = useState('');
 
     // Cloud Transition State
-    const [isCloudTransitionActive, setIsCloudTransitionActive] = useState(false);
-    const prevEraId = useRef<string>(getEraForYear(currentYear).id);
+    // Cloud Transition State
+    // const { isCloudTransitionActive, handleTransitionComplete } = useEraTransition(currentYear);
 
     const playInterval = useRef<ReturnType<typeof setInterval> | null>(null);
 
@@ -173,13 +174,6 @@ export default function HistoryMap() {
         const timer = setTimeout(() => {
             updateMapForYear(currentYear);
         }, 100); // 100ms debounce
-
-        // Check for Era Change
-        const newEraId = getEraForYear(currentYear).id;
-        if (newEraId !== prevEraId.current) {
-            setIsCloudTransitionActive(true);
-            prevEraId.current = newEraId;
-        }
 
         return () => clearTimeout(timer);
     }, [currentYear]);
@@ -770,10 +764,10 @@ export default function HistoryMap() {
             </div>
 
             {/* Cloud Transition Effect */}
-            <CloudTransition
+            {/* <CloudTransition
                 isActive={isCloudTransitionActive}
-                onAnimationComplete={() => setIsCloudTransitionActive(false)}
-            />
+                onAnimationComplete={handleTransitionComplete}
+            /> */}
         </div>
     );
 }

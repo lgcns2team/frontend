@@ -9,11 +9,11 @@ export const SidebarMenu = ({ onItemClick }: SidebarMenuProps) => {
     const [isOpen, setIsOpen] = useState(false);
 
     const menuItems = [
-        { id: 'search', icon: '🔍', label: '주요사건' },
-        { id: 'textbook', icon: '📚', label: '교과서' },
-        { id: 'people', icon: '👤', label: '인물' },
-        { id: 'discussion', icon: '💬', label: '토론' },
-        { id: 'settings', icon: '⚙️', label: '설정' },
+        { id: 'search', icon: '/assets/images/goryeo/issue.png', label: '주요사건' },
+        { id: 'textbook', icon: '/assets/images/goryeo/book.png', label: '교과서' },
+        { id: 'people', icon: '/assets/images/goryeo/human.png', label: '인물' },
+        { id: 'discussion', icon: '/assets/images/goryeo/discussion.png', label: '토론' },
+        { id: 'settings', icon: '/assets/images/goryeo/set.png', label: '설정' },
     ];
 
     return (
@@ -38,6 +38,7 @@ export const SidebarMenu = ({ onItemClick }: SidebarMenuProps) => {
                                     title={item.label}
                                     onClick={() => onItemClick?.(item.id)}
                                 >
+                                    <img src={item.icon} alt={item.label} className="menu-icon" />
                                     <span>{item.label}</span>
                                 </div>
                             ))}

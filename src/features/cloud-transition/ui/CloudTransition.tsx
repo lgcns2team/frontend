@@ -7,6 +7,11 @@ interface CloudTransitionProps {
 }
 
 export const CloudTransition: React.FC<CloudTransitionProps> = ({ isActive, onAnimationComplete }) => {
+    //랜더링 안하는 코드 필요하면 지울것
+    const disabled = true;
+    if (disabled) return null;
+    //랜더링 안하는 코드 필요하면 지울것
+
     const [isAnimating, setIsAnimating] = useState(false);
 
     useEffect(() => {
