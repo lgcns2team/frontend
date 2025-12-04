@@ -3,11 +3,6 @@ import * as L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import './HistoryMap.css';
 import '../../../shared/config/era-theme.css';
-// import { capitalData } from '../../../shared/data/capitals'; // Deprecated in favor of history-timeline.json
-import { battleData } from '../../../shared/data/battles';
-import { tradeData } from '../../../shared/data/trade';
-import { peopleData } from '../../../shared/data/people';
-
 import { getEraForYear } from '../../../shared/config/era-theme';
 import { loadHistoricalBorders } from '../lib/boundary-utils';
 import { loadTradeRoutes, getTradeRouteStyle } from '../lib/trade-route';
@@ -389,75 +384,14 @@ export default function HistoryMap() {
             });
         }
 
-        // Show other layers
-        const periodKey = getCapitalPeriod(year);
-
+        // Legacy data layers (battles, trade points, people) have been removed.
+        // Logic for these layers is temporarily disabled until new data sources are integrated.
         if (layerType === 'battles') {
-            const battles = battleData[periodKey];
-            if (battles) {
-                battles.forEach(battle => {
-                    const icon = L.divIcon({
-                        className: 'battle-marker',
-                        html: `
-                            <div class="event-marker-content">
-                                <div class="event-icon">⚔️</div>
-                                <div class="event-label">${battle.name}</div>
-                            </div>
-                        `,
-                        iconSize: [100, 40],
-                        iconAnchor: [50, 20]
-                    });
-                    L.marker([battle.lat, battle.lng], { icon }).addTo(markersLayer.current!)
-                        .bindPopup(`<b>${battle.name} (${battle.year}년)</b><br>${battle.outcome}`);
-                });
-            }
+            // TODO: Integrate new battles data source
         } else if (layerType === 'trade') {
-            const trades = tradeData[periodKey];
-            if (trades) {
-                trades.forEach(trade => {
-                    const icon = L.divIcon({
-                        className: 'trade-marker',
-                        html: `
-                            <div class="event-marker-content">
-                                <div class="event-icon">💰</div>
-                                <div class="event-label">${trade.name}</div>
-                            </div>
-                        `,
-                        iconSize: [100, 40],
-                        iconAnchor: [50, 20]
-                    });
-                    L.marker([trade.lat, trade.lng], { icon }).addTo(markersLayer.current!)
-                        .bindPopup(`<b>${trade.name}</b><br>물품: ${trade.goods.join(', ')}`);
-
-                    // Draw line
-                    if (trade.from && trade.to) {
-                        L.polyline([[trade.from.lat, trade.from.lng], [trade.to.lat, trade.to.lng]], {
-                            color: '#10b981',
-                            dashArray: '5, 10',
-                            weight: 2
-                        }).addTo(markersLayer.current!);
-                    }
-                });
-            }
+            // Trade routes are handled separately by tradeLayer and useTradeAnimation
         } else if (layerType === 'people') {
-            const people = peopleData[periodKey];
-            if (people) {
-                people.forEach(person => {
-                    const icon = L.divIcon({
-                        className: 'people-marker',
-                        html: `
-                            <div class="event-marker-content">
-                                <div class="event-icon">👑</div>
-                                <div class="event-label">${person.name}</div>
-                            </div>
-                        `,
-                        iconSize: [100, 40],
-                        iconAnchor: [50, 20]
-                    });
-                    L.marker([person.lat, person.lng], { icon }).addTo(markersLayer.current!)
-                        .bindPopup(`<b>${person.name}</b><br>${person.title}<br>${person.achievements}`);
-                });
-            }
+            // TODO: Integrate new people data source
         }
     };
 
