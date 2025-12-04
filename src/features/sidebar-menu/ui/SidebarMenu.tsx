@@ -32,15 +32,14 @@ export const SidebarMenu = ({ onItemClick }: SidebarMenuProps) => {
                     <div className="scroll-middle">
                         <div className="menu-items-container">
                             {menuItems.map((item) => (
-                                <button
+                                <div
                                     key={item.id}
-                                    className="feature-btn"
+                                    className="menu-item-zone"
                                     title={item.label}
                                     onClick={() => onItemClick?.(item.id)}
                                 >
-                                    <span style={{ fontSize: '20px' }}>{item.icon}</span>
                                     <span>{item.label}</span>
-                                </button>
+                                </div>
                             ))}
                         </div>
                     </div>
