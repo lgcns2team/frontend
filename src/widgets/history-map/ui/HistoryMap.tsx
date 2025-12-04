@@ -11,6 +11,7 @@ import { peopleData } from '../../../shared/data/people';
 import { getEraForYear } from '../../../shared/config/era-theme';
 import { loadHistoricalBorders } from '../lib/boundary-utils';
 import { loadTradeRoutes, getTradeRouteStyle } from '../lib/trade-route';
+import { useTradeAnimation } from '../lib/useTradeAnimation';
 import { useEraTransition } from '../lib/useEraTransition';
 
 // Features
@@ -57,6 +58,7 @@ export default function HistoryMap() {
     const layerCache = useRef<Map<number, L.Layer>>(new Map());
     const abortController = useRef<AbortController | null>(null);
     const [timelineData, setTimelineData] = useState<TimelineEvent[]>([]);
+    const [activeTradeRoutes, setActiveTradeRoutes] = useState<GeoJSON.FeatureCollection[]>([]);
 
     // Helper to normalize country names to ID
     const getCountryId = (name: string): string => {
@@ -188,9 +190,13 @@ export default function HistoryMap() {
         const updateTradeRoutes = async () => {
             if (!map.current || !tradeLayer.current) return;
 
-            const routes = await loadTradeRoutes(currentYear);
-
+            // Clear existing layers first
             tradeLayer.current.clearLayers();
+
+            // Only load trade routes if the trade layer is active
+            if (layerType !== 'trade') return;
+
+            const routes = await loadTradeRoutes(currentYear);
 
             if (routes.length > 0) {
                 routes.forEach(route => {
@@ -199,10 +205,21 @@ export default function HistoryMap() {
                     }).addTo(tradeLayer.current!);
                 });
             }
+
+            setActiveTradeRoutes(routes);
         };
 
         updateTradeRoutes();
-    }, [currentYear]);
+    }, [currentYear, layerType]);
+
+    // Trade Animation Hook
+    useTradeAnimation({
+        map: map.current,
+        routes: activeTradeRoutes,
+        historicalLayer: historicalLayer.current,
+        isActive: layerType === 'trade',
+        speed: speed
+    });
 
     const updateMapForYear = async (year: number) => {
         if (!map.current) return;
