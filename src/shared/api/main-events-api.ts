@@ -15,7 +15,7 @@ export interface ParsedMainEvent extends Omit<MainEvent, 'description'> {
     };
 }
 
-const API_BASE_URL = 'http://localhost:8080/api';
+const API_BASE_URL = '/api';
 
 export const fetchMainEvents = async (): Promise<ParsedMainEvent[]> => {
     try {
