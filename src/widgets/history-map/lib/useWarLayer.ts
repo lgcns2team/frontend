@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import * as L from 'leaflet';
 import { fetchWarData, type WarData } from '../../../shared/api/war-api';
 import { interpolateCatmullRom } from './math-utils';
+import { createTaperedPolygon } from './tapered-route';
 import { useWarAnimation } from './useWarAnimation';
 
 export const useWarLayer = (map: L.Map | null, currentYear: number, isVisible: boolean) => {
@@ -84,33 +85,54 @@ export const useWarLayer = (map: L.Map | null, currentYear: number, isVisible: b
                         ? (battle.routeColor === '#3b82f6' ? '#2563eb' : '#dc2626')
                         : '#dc2626';
 
-                    // 1. Draw the route (Thicker, Solid Line)
-                    const routeLayer = L.polyline(smoothedLatLngs, {
+                    // 1. Draw the route (Tapered Polygon)
+                    // Start thick (15km) -> End thin (2km)
+                    const routeLayer = createTaperedPolygon(smoothedLatLngs, {
                         color: routeColor,
-                        weight: 6,        // Thicker
-                        opacity: 0.8,
-                        lineCap: 'round',
-                        lineJoin: 'round',
-                        pane: 'warPane',  // Use custom pane
-                        interactive: true // Enable interactions
+                        fillColor: routeColor,
+                        fillOpacity: 0, // Start invisible for fade-in
+                        startWidth: 15,
+                        endWidth: 2,
+                        pane: 'warPane',
+                        interactive: true
                     }).addTo(warLayer.current!);
+
+                    // Animate Opacity: Fade In
+                    const startAnimation = () => {
+                        const startTime = performance.now();
+                        const duration = 1000;
+
+                        const animate = () => {
+                            if (!warLayer.current?.hasLayer(routeLayer)) return;
+
+                            const now = performance.now();
+                            const elapsed = now - startTime;
+                            const progress = Math.min(elapsed / duration, 1);
+
+                            routeLayer.setStyle({ fillOpacity: 0.8 * progress });
+
+                            if (progress < 1) {
+                                requestAnimationFrame(animate);
+                            }
+                        };
+                        requestAnimationFrame(animate);
+                    };
+                    startAnimation();
 
                     // Add hover effects
                     routeLayer.on('mouseover', function (e) {
                         const layer = e.target;
                         layer.setStyle({
-                            weight: 10,
-                            opacity: 1,
-                            color: routeColorHover
+                            fillOpacity: 1,
+                            fillColor: routeColorHover
                         });
                     });
 
                     routeLayer.on('mouseout', function (e) {
                         const layer = e.target;
                         layer.setStyle({
-                            weight: 6,
-                            opacity: 0.8,
-                            color: routeColor
+                            fillOpacity: 0.8,
+                            fillColor: routeColor
                         });
                     });
 
@@ -132,8 +154,8 @@ export const useWarLayer = (map: L.Map | null, currentYear: number, isVisible: b
 
                     const arrowIcon = L.icon({
                         iconUrl: '/assets/images/warunit/fortress.png',
-                        iconSize: [24, 24],
-                        iconAnchor: [12, 12]
+                        iconSize: [36, 36],
+                        iconAnchor: [24, 24]
                     });
 
                     L.marker(endPoint, {

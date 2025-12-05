@@ -5,7 +5,8 @@ import './HistoryMap.css';
 import '../../../shared/config/era-theme.css';
 import { getEraForYear } from '../../../shared/config/era-theme';
 import { loadHistoricalBorders } from '../lib/boundary-utils';
-import { loadTradeRoutes, getTradeRouteStyle } from '../lib/trade-route';
+import { loadTradeRoutes } from '../lib/trade-route';
+import { createTaperedPolygon } from '../lib/tapered-route';
 import type { TradeRouteWithColor } from '../lib/trade-route';
 import { useTradeAnimation } from '../lib/useTradeAnimation';
 import { useWarLayer } from '../lib/useWarLayer';
@@ -20,6 +21,7 @@ import { DockingPanel } from '../../../features/docking-panel/ui/DockingPanel';
 import { FloatingPanel } from '../../../features/floating-panel/ui/FloatingPanel';
 import { ChatbotTrigger, ChatbotPanel } from '../../../features/chatbot';
 import { TextbookPanel } from '../../../features/textbook-panel';
+import { MajorEventsPanel } from '../../../features/major-events';
 
 // Fix Leaflet marker icon issue
 import icon from 'leaflet/dist/images/marker-icon.png';
@@ -126,8 +128,8 @@ export default function HistoryMap() {
 
         // Initialize map
         map.current = L.map(mapContainer.current, {
-            center: [36.5, 127.5],
-            zoom: 7,
+            center: [37, 123.5],
+            zoom: 6,
             zoomControl: false,
             attributionControl: false
         });
@@ -198,14 +200,21 @@ export default function HistoryMap() {
 
             if (routesWithColor.length > 0) {
                 routesWithColor.forEach(({ route, trade }) => {
-                    const feature: GeoJSON.Feature<GeoJSON.LineString> = {
-                        type: 'Feature',
-                        properties: {},
-                        geometry: route.path
-                    };
-                    L.geoJSON(feature, {
-                        style: getTradeRouteStyle(route.routeColor || undefined)
-                    }).bindPopup(`
+                    // Convert GeoJSON [lng, lat] to Leaflet [lat, lng]
+                    const latLngs = route.path.coordinates.map(coord => [coord[1], coord[0]] as L.LatLngTuple);
+
+                    // Create tapered polygon
+                    // Start thick (10km) -> End thin (2km)
+                    const routeLayer = createTaperedPolygon(latLngs, {
+                        color: route.routeColor || '#3b82f6',
+                        fillColor: route.routeColor || '#3b82f6',
+                        fillOpacity: 0.8,
+                        startWidth: 10,
+                        endWidth: 2,
+                        interactive: true
+                    });
+
+                    routeLayer.bindPopup(`
                         <div>
                             <strong>${trade.startCountry.countryName} → ${trade.endCountry.countryName}</strong><br/>
                             품목: ${trade.product}<br/>
@@ -377,13 +386,13 @@ export default function HistoryMap() {
                         const icon = L.divIcon({
                             className: 'capital-marker',
                             html: `
-                            <div style="display: flex; flex-direction: column; align-items: center; width: 100px;">
-                                <img src="/assets/images/country-summary/sudo.png" style="width: 40px; height: 40px; object-fit: contain;" />
+                            <div style="display: flex; flex-direction: column; align-items: center; width: 150px;">
+                                <img src="/assets/images/country-summary/sudo.png" style="width: 60px; height: 60px; object-fit: contain;" />
                                 <div style="font-size: 14px; font-weight: bold; color: white; margin-top: 2px; text-align: center; width: 100%; white-space: nowrap;">${activeEvent.capitalName}</div>
                             </div>
                         `,
-                            iconSize: [100, 60],
-                            iconAnchor: [50, 20] // Anchor at center of image (approx)
+                            iconSize: [120, 80],
+                            iconAnchor: [75, 40] // Anchor at center of image (approx)
                         });
 
                         const popupContent = `
@@ -676,7 +685,7 @@ export default function HistoryMap() {
             {/* Top Right: Search & Menu */}
             <div className="top-right-overlay">
                 <SearchYear currentYear={currentYear} />
-                <SidebarMenu onItemClick={handleSidebarClick} />
+                <SidebarMenu onItemClick={handleSidebarClick} currentYear={currentYear} />
             </div>
 
             {/* Docking Panel */}
@@ -694,6 +703,8 @@ export default function HistoryMap() {
                         currentPage={textbookPage}
                         viewMode={textbookViewMode}
                     />
+                ) : activePanel === 'search' ? (
+                    <MajorEventsPanel />
                 ) : (
                     <div style={{ padding: '20px', textAlign: 'center', color: 'var(--ui-text)' }}>
                         <p>{getPanelTitle(activePanel)} 패널 내용이 여기에 표시됩니다.</p>
