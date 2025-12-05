@@ -4,6 +4,7 @@ import { fetchWarData, type WarData } from '../../../shared/api/war-api';
 import { interpolateCatmullRom } from './math-utils';
 import { createTaperedPolygon } from './tapered-route';
 import { useWarAnimation } from './useWarAnimation';
+import { getEraForYear } from '../../../shared/config/era-theme';
 
 export const useWarLayer = (map: L.Map | null, currentYear: number, isVisible: boolean) => {
     const warLayer = useRef<L.LayerGroup | null>(null);
@@ -151,9 +152,10 @@ export const useWarLayer = (map: L.Map | null, currentYear: number, isVisible: b
 
                     // 3. End Point (Fortress)
                     const endPoint = smoothedLatLngs[smoothedLatLngs.length - 1];
+                    const era = getEraForYear(currentYear);
 
                     const arrowIcon = L.icon({
-                        iconUrl: '/assets/images/warunit/fortress.png',
+                        iconUrl: `/assets/images/${era.id}/fortress.png`,
                         iconSize: [36, 36],
                         iconAnchor: [24, 24]
                     });
@@ -180,8 +182,9 @@ export const useWarLayer = (map: L.Map | null, currentYear: number, isVisible: b
                 } else {
                     // If no route, just show a simple marker at the battle location
                     if (battle.latitude && battle.longitude) {
+                        const era = getEraForYear(currentYear);
                         const fortressIcon = L.icon({
-                            iconUrl: '/assets/images/warunit/fortress.png',
+                            iconUrl: `/assets/images/${era.id}/fortress.png`,
                             iconSize: [24, 24],
                             iconAnchor: [12, 12]
                         });

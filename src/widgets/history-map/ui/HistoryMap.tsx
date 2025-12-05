@@ -310,7 +310,11 @@ export default function HistoryMap() {
         markersLayer.current.clearLayers();
 
         // Always show capitals
-        // Always show capitals from timeline data
+        // Always show capitals from timeline data, EXCEPT when in war mode
+        if (layerType === 'battles') {
+            return;
+        }
+
         if (timelineData.length > 0) {
             // 1. Identify visible countries from the map layer
             const visibleCountryIds = new Set<string>();

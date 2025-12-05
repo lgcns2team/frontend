@@ -27,7 +27,7 @@ export const useWarAnimation = ({
     // Icon
     const era = getEraForYear(currentYear);
     const kimaIcon = L.icon({
-        iconUrl: `/assets/images/${era.id}/soldier.png`,
+        iconUrl: `/assets/images/${era.id}/soldier1.png`,
         iconSize: [40, 40],
         iconAnchor: [40, 40],
         className: 'war-unit-icon'
