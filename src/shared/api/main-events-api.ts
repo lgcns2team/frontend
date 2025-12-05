@@ -19,7 +19,7 @@ const API_BASE_URL = '/api';
 
 export const fetchMainEvents = async (): Promise<ParsedMainEvent[]> => {
     try {
-        const response = await fetch(`${API_BASE_URL}/main-events`);
+        const response = await fetch(`${API_BASE_URL}/main-event`);
         if (!response.ok) {
             throw new Error('Failed to fetch main events');
         }
