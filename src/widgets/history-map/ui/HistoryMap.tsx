@@ -5,7 +5,8 @@ import './HistoryMap.css';
 import '../../../shared/config/era-theme.css';
 import { getEraForYear } from '../../../shared/config/era-theme';
 import { loadHistoricalBorders } from '../lib/boundary-utils';
-import { loadTradeRoutes, getTradeRouteStyle } from '../lib/trade-route';
+import { loadTradeRoutes } from '../lib/trade-route';
+import { createTaperedPolygon } from '../lib/tapered-route';
 import type { TradeRouteWithColor } from '../lib/trade-route';
 import { useTradeAnimation } from '../lib/useTradeAnimation';
 import { useWarLayer } from '../lib/useWarLayer';
@@ -191,14 +192,21 @@ export default function HistoryMap() {
 
             if (routesWithColor.length > 0) {
                 routesWithColor.forEach(({ route, trade }) => {
-                    const feature: GeoJSON.Feature<GeoJSON.LineString> = {
-                        type: 'Feature',
-                        properties: {},
-                        geometry: route.path
-                    };
-                    L.geoJSON(feature, {
-                        style: getTradeRouteStyle(route.routeColor || undefined)
-                    }).bindPopup(`
+                    // Convert GeoJSON [lng, lat] to Leaflet [lat, lng]
+                    const latLngs = route.path.coordinates.map(coord => [coord[1], coord[0]] as L.LatLngTuple);
+
+                    // Create tapered polygon
+                    // Start thick (10km) -> End thin (2km)
+                    const routeLayer = createTaperedPolygon(latLngs, {
+                        color: route.routeColor || '#3b82f6',
+                        fillColor: route.routeColor || '#3b82f6',
+                        fillOpacity: 0.8,
+                        startWidth: 10,
+                        endWidth: 2,
+                        interactive: true
+                    });
+
+                    routeLayer.bindPopup(`
                         <div>
                             <strong>${trade.startCountry.countryName} → ${trade.endCountry.countryName}</strong><br/>
                             품목: ${trade.product}<br/>
