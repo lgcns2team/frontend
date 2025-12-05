@@ -78,7 +78,7 @@ export const getColorByCountry = (name: string) => {
         'Korea (USSR)': '#dc2626',
         '대한민국': '#0043fcff', 'Korea, Republic of': '#0032fcff',
         '북한': '#ff0000ff', 'Korea, Democratic People\'s Republic of': '#ff0000ff', 'USSR': '#dc2626',
-        '일본': '#dc2626', 'Japan': '#dc2626', 'Yamato': '#dc2626', 'Wa': '#dc2626',
+        '일본': '#dc2626', 'Japan': '#e45ed0ff', 'Yamato': '#dc2626', 'Wa': '#dc2626',
         '중국': '#ea580c', 'China': '#ea580c',
         '한': '#ea580c', 'Han': '#ea580c',
         '당': '#f97316', 'Tang': '#f97316',
@@ -152,6 +152,12 @@ export const loadHistoricalBorders = async (
     // Add Tang Dynasty if in range
     if (year >= 618 && year <= 907) {
         filesToLoad.push('geojson/tang_618-907.geojson');
+    }
+
+    // Add Japan for Nam-Buk-Guk and Goryeo periods (approx 698 - 1392)
+    // This uses the Joseon-era Japan shape as a placeholder/representation
+    if (year >= 698 && year <= 1392) {
+        filesToLoad.push('geojson/japan.geojson');
     }
 
     try {

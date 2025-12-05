@@ -82,11 +82,17 @@ export const useTradeAnimation = ({
             line: any; // Turf LineString
             length: number;
             duration: number; // Duration in ms
-            offset: number; // Random start offset
+            currentProgress: number; // 0 to 1
+            isPaused: boolean;
         }[] = [];
 
+        // Clear existing markers before adding new ones to prevent duplication
+        if (animationLayer.current) {
+            animationLayer.current.clearLayers();
+        }
+
         // Create a unit for each route
-        routes.forEach(({ route }) => {
+        routes.forEach(({ route, trade }) => {
             const geometry = route.path;
             if (geometry && geometry.type === 'LineString') {
                 const feature: GeoJSON.Feature<GeoJSON.LineString> = {
@@ -97,38 +103,71 @@ export const useTradeAnimation = ({
                 const line = feature as any; // Turf feature
                 const length = turf.length(line, { units: 'kilometers' });
 
-                // Base duration on length (e.g., 1000km = 5 seconds)
-                // Base duration on length (e.g., 1000km = 10 seconds)
-                const duration = (length / 100) * 1000;
+                // Base duration on length (e.g., 1000km = 20 seconds) - Slower speed
+                const duration = (length / 50) * 1000;
 
                 const marker = L.marker([0, 0], { icon: horseIcon }).addTo(animationLayer.current!);
-                console.log('[useTradeAnimation] Created marker for route, length:', length, 'km');
 
-                activeUnits.push({
+                // Bind popup with trade info
+                const popupContent = `
+                    <div style="text-align: center; font-size: 14px;">
+                        <h4 style="margin: 0 0 5px 0; color: #333;">무역 정보</h4>
+                        <div style="margin-bottom: 5px;">
+                            <strong>${trade.startCountry.countryName}</strong> → <strong>${trade.endCountry.countryName}</strong>
+                        </div>
+                        <div style="color: #666;">
+                            품목: <strong>${trade.product}</strong>
+                        </div>
+                        <div style="font-size: 12px; color: #999; margin-top: 3px;">
+                            ${trade.tradeYear}년
+                        </div>
+                    </div>
+                `;
+                marker.bindPopup(popupContent, { closeButton: false });
+
+                const unit = {
                     marker,
                     line,
                     length,
                     duration,
-                    offset: Math.random() * duration // Randomize start positions
+                    currentProgress: Math.random(), // Random start position
+                    isPaused: false
+                };
+
+                // Event listeners for pause/resume
+                marker.on('popupopen', () => {
+                    unit.isPaused = true;
                 });
+                marker.on('popupclose', () => {
+                    unit.isPaused = false;
+                });
+
+                activeUnits.push(unit);
             }
         });
 
         const animate = (timestamp: number) => {
             if (!startTime.current) {
                 startTime.current = timestamp;
-                console.log('[useTradeAnimation] Animation started at:', timestamp);
             }
 
-            // Global time scaling could be applied here if needed
-            const globalTime = timestamp;
+            // Calculate delta time
+            const deltaTime = timestamp - (startTime.current || timestamp);
+            startTime.current = timestamp; // Update for next frame
 
             activeUnits.forEach(unit => {
-                // Calculate progress (0 to 1) based on time and duration, looping
-                const progress = ((globalTime + unit.offset) % unit.duration) / unit.duration;
+                if (unit.isPaused) return;
+
+                // Update progress based on delta time
+                unit.currentProgress += deltaTime / unit.duration;
+
+                // Loop progress
+                if (unit.currentProgress > 1) {
+                    unit.currentProgress -= 1;
+                }
 
                 // Get position along the line
-                const distance = progress * unit.length;
+                const distance = unit.currentProgress * unit.length;
                 const point = turf.along(unit.line, distance, { units: 'kilometers' });
                 const coords = point.geometry.coordinates;
                 const latLng = L.latLng(coords[1], coords[0]);
@@ -140,12 +179,6 @@ export const useTradeAnimation = ({
                 let isOnLand = false;
 
                 if (historicalLayer) {
-                    // We need to iterate over the Leaflet layers in the historicalLayer group
-                    // and convert them to Turf polygons to check containment.
-                    // Optimization: This can be expensive. 
-                    // Better approach: Convert historicalLayer to a single Turf FeatureCollection once when it changes.
-                    // For now, we'll do a simple iteration.
-
                     (historicalLayer as any).eachLayer((layer: any) => {
                         if (isOnLand) return; // Already found
 
@@ -168,7 +201,7 @@ export const useTradeAnimation = ({
             animationFrameId.current = requestAnimationFrame(animate);
         };
 
-        startTime.current = null;
+        startTime.current = null; // Reset start time for delta calculation
         animationFrameId.current = requestAnimationFrame(animate);
         console.log('[useTradeAnimation] Animation loop started with', activeUnits.length, 'units');
 
