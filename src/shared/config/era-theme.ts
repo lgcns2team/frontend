@@ -74,6 +74,7 @@ export const ERAS: EraConfig[] = [
         endYear: ERA_LIMITS.THREE_KINGDOMS_END - 1,
         fontFamily: "'Noto Serif KR', serif",
         color: '#FDA4AF', // 활기찬 코랄 레드
+        bgImage: "/assets/images/three-kingdoms/timecontrol.png",
         timelineImage: "/assets/images/three-kingdoms/timeline.png",
     },
     {
