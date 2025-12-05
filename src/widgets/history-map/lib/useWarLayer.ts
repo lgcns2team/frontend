@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import * as L from 'leaflet';
 import { fetchWarData, type WarData } from '../../../shared/api/war-api';
 import { interpolateCatmullRom } from './math-utils';
-import { createTaperedPolygon } from './tapered-route';
+
 import { useWarAnimation } from './useWarAnimation';
 import { getEraForYear } from '../../../shared/config/era-theme';
 
@@ -86,14 +86,12 @@ export const useWarLayer = (map: L.Map | null, currentYear: number, isVisible: b
                         ? (battle.routeColor === '#3b82f6' ? '#2563eb' : '#dc2626')
                         : '#dc2626';
 
-                    // 1. Draw the route (Tapered Polygon)
-                    // Start thick (15km) -> End thin (2km)
-                    const routeLayer = createTaperedPolygon(smoothedLatLngs, {
+                    // 1. Draw the route (Dashed Polyline)
+                    const routeLayer = L.polyline(smoothedLatLngs, {
                         color: routeColor,
-                        fillColor: routeColor,
-                        fillOpacity: 0, // Start invisible for fade-in
-                        startWidth: 15,
-                        endWidth: 2,
+                        weight: 3,
+                        dashArray: '10, 10',
+                        opacity: 0, // Start invisible for fade-in
                         pane: 'warPane',
                         interactive: true
                     }).addTo(warLayer.current!);
@@ -110,7 +108,7 @@ export const useWarLayer = (map: L.Map | null, currentYear: number, isVisible: b
                             const elapsed = now - startTime;
                             const progress = Math.min(elapsed / duration, 1);
 
-                            routeLayer.setStyle({ fillOpacity: 0.8 * progress });
+                            routeLayer.setStyle({ opacity: 0.8 * progress });
 
                             if (progress < 1) {
                                 requestAnimationFrame(animate);
@@ -124,16 +122,16 @@ export const useWarLayer = (map: L.Map | null, currentYear: number, isVisible: b
                     routeLayer.on('mouseover', function (e) {
                         const layer = e.target;
                         layer.setStyle({
-                            fillOpacity: 1,
-                            fillColor: routeColorHover
+                            opacity: 1,
+                            color: routeColorHover
                         });
                     });
 
                     routeLayer.on('mouseout', function (e) {
                         const layer = e.target;
                         layer.setStyle({
-                            fillOpacity: 0.8,
-                            fillColor: routeColor
+                            opacity: 0.8,
+                            color: routeColor
                         });
                     });
 

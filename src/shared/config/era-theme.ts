@@ -52,6 +52,7 @@ export const ERAS: EraConfig[] = [
         endYear: ERA_LIMITS.GOJOSEON_END - 1,
         fontFamily: "'Cinzel', serif", // 고대 느낌
         color: '#D7C0AE', // 브론즈 베이지
+        bgImage: "/assets/images/gojoseon/timecontrol.png",
         timelineImage: "/assets/images/gojoseon/timeline.png",
     },
     {
@@ -63,6 +64,7 @@ export const ERAS: EraConfig[] = [
         endYear: ERA_LIMITS.PROTO_THREE_KINGDOMS_END - 1,
         fontFamily: "'Noto Serif KR', serif",
         color: '#E2E8F0', // 연한 올리브 그린/슬레이트
+        bgImage: "/assets/images/proto-three-kingdoms/timecontrol.png",
         timelineImage: "/assets/images/proto-three-kingdoms/timeline.png",
     },
     {
@@ -74,6 +76,7 @@ export const ERAS: EraConfig[] = [
         endYear: ERA_LIMITS.THREE_KINGDOMS_END - 1,
         fontFamily: "'Noto Serif KR', serif",
         color: '#FDA4AF', // 활기찬 코랄 레드
+        bgImage: "/assets/images/three-kingdoms/timecontrol.png",
         timelineImage: "/assets/images/three-kingdoms/timeline.png",
     },
     {
