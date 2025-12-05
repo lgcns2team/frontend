@@ -128,12 +128,45 @@ export default function HistoryMap() {
     useEffect(() => {
         if (!mapContainer.current) return;
 
-        // Initialize map
+        // Load saved map state from localStorage
+        const savedZoom = localStorage.getItem('historyMapZoom');
+        const savedCenter = localStorage.getItem('historyMapCenter');
+
+        let initialZoom = 6;
+        let initialCenter: [number, number] = [37, 123.5];
+
+        if (savedZoom) {
+            initialZoom = parseInt(savedZoom, 10);
+        }
+
+        if (savedCenter) {
+            try {
+                initialCenter = JSON.parse(savedCenter);
+            } catch (e) {
+                console.error('Failed to parse saved center:', e);
+            }
+        }
+
+        // Initialize map with saved or default values
         map.current = L.map(mapContainer.current, {
-            center: [37, 123.5],
-            zoom: 6,
+            center: initialCenter,
+            zoom: initialZoom,
             zoomControl: false,
             attributionControl: false
+        });
+
+        // Save map state when zoom or move ends
+        map.current.on('zoomend', () => {
+            if (map.current) {
+                localStorage.setItem('historyMapZoom', map.current.getZoom().toString());
+            }
+        });
+
+        map.current.on('moveend', () => {
+            if (map.current) {
+                const center = map.current.getCenter();
+                localStorage.setItem('historyMapCenter', JSON.stringify([center.lat, center.lng]));
+            }
         });
 
         // Add tile layer
