@@ -77,7 +77,7 @@ export const useWarLayer = (map: L.Map | null, currentYear: number, isVisible: b
 
                     // Get route color from battle data, default to red
                     const routeColor = battle.routeColor || '#ef4444';
-                    const routeColorHover = battle.routeColor 
+                    const routeColorHover = battle.routeColor
                         ? (battle.routeColor === '#3b82f6' ? '#2563eb' : '#dc2626')
                         : '#dc2626';
 
@@ -124,31 +124,11 @@ export const useWarLayer = (map: L.Map | null, currentYear: number, isVisible: b
                     }).addTo(warLayer.current!)
                         .bindPopup(`<b>${battle.battleName}</b> (시작)`);
 
-                    // 3. End Point (Arrow)
-                    // Use the last two points of the SMOOTHED path for better direction
+                    // 3. End Point (Fortress)
                     const endPoint = smoothedLatLngs[smoothedLatLngs.length - 1];
-                    const prevPoint = smoothedLatLngs[smoothedLatLngs.length - 2] || startPoint;
 
-                    // Calculate angle
-                    const dy = endPoint[0] - prevPoint[0];
-                    const dx = endPoint[1] - prevPoint[1];
-                    const angle = Math.atan2(dy, dx) * (180 / Math.PI);
-
-                    // CSS rotation is clockwise from top (0deg).
-                    // Math angle is counter-clockwise from right (0deg).
-                    // We want:
-                    // Math 0 (East) -> CSS 90 (Right)
-                    // Math 90 (North) -> CSS 0 (Up)
-                    // Formula: 90 - angle
-                    const rotation = 90 - angle;
-
-                    const arrowIcon = L.divIcon({
-                        className: 'battle-arrow-icon',
-                        html: `<div style="transform: rotate(${rotation}deg); width: 20px; height: 20px; display: flex; align-items: center; justify-content: center;">
-                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                <path d="M12 2L2 22L12 18L22 22L12 2Z" fill="${routeColor}" stroke="white" stroke-width="2" stroke-linejoin="round"/>
-                            </svg>
-                        </div>`,
+                    const arrowIcon = L.icon({
+                        iconUrl: '/assets/images/warunit/fortress.png',
                         iconSize: [24, 24],
                         iconAnchor: [12, 12]
                     });

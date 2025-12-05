@@ -22,7 +22,7 @@ export interface TradeData {
 
 export const fetchAllTrades = async (): Promise<TradeData[]> => {
     try {
-        const response = await fetch(`http://localhost:8080/api/trades`);
+        const response = await fetch(`/api/trades`);
         if (!response.ok) {
             throw new Error(`Failed to fetch trade data: ${response.statusText}`);
         }
@@ -35,7 +35,7 @@ export const fetchAllTrades = async (): Promise<TradeData[]> => {
 
 export const fetchTradesByCountryAndYear = async (countryId: string, year: number): Promise<TradeData[]> => {
     try {
-        const response = await fetch(`http://localhost:8080/api/trades/${countryId}/${year}`);
+        const response = await fetch(`/api/trades/${countryId}/${year}`);
         if (!response.ok) {
             throw new Error(`Failed to fetch trade data: ${response.statusText}`);
         }

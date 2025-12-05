@@ -57,6 +57,8 @@ export const useTradeAnimation = ({
     }, [map]);
 
     useEffect(() => {
+        console.log('[useTradeAnimation] Effect triggered:', { isActive, hasMap: !!map, hasLayer: !!animationLayer.current, routesCount: routes.length });
+
         if (!isActive || !map || !animationLayer.current || routes.length === 0) {
             if (animationLayer.current) {
                 animationLayer.current.clearLayers();
@@ -94,6 +96,7 @@ export const useTradeAnimation = ({
                 const duration = (length / 100) * 1000;
 
                 const marker = L.marker([0, 0], { icon: horseIcon }).addTo(animationLayer.current!);
+                console.log('[useTradeAnimation] Created marker for route, length:', length, 'km');
 
                 activeUnits.push({
                     marker,
@@ -106,7 +109,10 @@ export const useTradeAnimation = ({
         });
 
         const animate = (timestamp: number) => {
-            if (!startTime.current) startTime.current = timestamp;
+            if (!startTime.current) {
+                startTime.current = timestamp;
+                console.log('[useTradeAnimation] Animation started at:', timestamp);
+            }
 
             // Global time scaling could be applied here if needed
             const globalTime = timestamp;
@@ -158,6 +164,7 @@ export const useTradeAnimation = ({
 
         startTime.current = null;
         animationFrameId.current = requestAnimationFrame(animate);
+        console.log('[useTradeAnimation] Animation loop started with', activeUnits.length, 'units');
 
         return () => {
             if (animationFrameId.current) {

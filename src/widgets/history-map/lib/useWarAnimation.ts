@@ -58,6 +58,8 @@ export const useWarAnimation = ({
     }, [map]);
 
     useEffect(() => {
+        console.log('[useWarAnimation] Effect triggered:', { isActive, hasMap: !!map, hasLayer: !!animationLayer.current, warDataCount: warData.length });
+
         if (!isActive || !map || !animationLayer.current || warData.length === 0) {
             if (animationLayer.current) {
                 animationLayer.current.clearLayers();
@@ -111,6 +113,8 @@ export const useWarAnimation = ({
                         interactive: false // Let clicks pass through to the line
                     }).addTo(animationLayer.current!);
 
+                    console.log('[useWarAnimation] Created marker for battle:', battle.battleName);
+
                     activeUnits.push({
                         marker,
                         line,
@@ -123,7 +127,10 @@ export const useWarAnimation = ({
         });
 
         const animate = (timestamp: number) => {
-            if (!startTime.current) startTime.current = timestamp;
+            if (!startTime.current) {
+                startTime.current = timestamp;
+                console.log('[useWarAnimation] Animation started at:', timestamp);
+            }
 
             const globalTime = timestamp;
 
@@ -188,6 +195,7 @@ export const useWarAnimation = ({
 
         startTime.current = null;
         animationFrameId.current = requestAnimationFrame(animate);
+        console.log('[useWarAnimation] Animation loop started with', activeUnits.length, 'units');
 
         return () => {
             if (animationFrameId.current) {

@@ -35,7 +35,7 @@ export interface WarData {
 
 export const fetchWarData = async (year: number): Promise<WarData[]> => {
     try {
-        const response = await fetch(`http://localhost:8080/api/wars/${year}`);
+        const response = await fetch(`/api/wars/${year}`);
         if (!response.ok) {
             throw new Error(`Failed to fetch war data: ${response.statusText}`);
         }
