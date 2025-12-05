@@ -1,5 +1,8 @@
 import L from 'leaflet';
-import { fetchAllTrades, TradeData, TradeRouteData } from '../../../shared/api/trade-api';
+
+import { fetchAllTrades } from '../../../shared/api/trade-api';
+import type { TradeData, TradeRouteData } from '../../../shared/api/trade-api';
+
 
 export interface TradeRouteProperties {
     name: string;
@@ -17,14 +20,14 @@ export const loadTradeRoutes = async (year: number): Promise<TradeRouteWithColor
     try {
         // Fetch all trades from backend API
         const trades = await fetchAllTrades();
-        
+
         // Filter trades by year (both countries must exist in that year)
         const filteredTrades = trades.filter(trade => {
-            const startCountryExists = trade.startCountry.foundationYear <= year && 
+            const startCountryExists = trade.startCountry.foundationYear <= year &&
                 (!trade.startCountry.endedYear || trade.startCountry.endedYear >= year);
-            const endCountryExists = trade.endCountry.foundationYear <= year && 
+            const endCountryExists = trade.endCountry.foundationYear <= year &&
                 (!trade.endCountry.endedYear || trade.endCountry.endedYear >= year);
-            
+
             return startCountryExists && endCountryExists && trade.tradeYear <= year;
         });
 
