@@ -21,6 +21,7 @@ import { DockingPanel } from '../../../features/docking-panel/ui/DockingPanel';
 import { FloatingPanel } from '../../../features/floating-panel/ui/FloatingPanel';
 import { ChatbotTrigger, ChatbotPanel } from '../../../features/chatbot';
 import { TextbookPanel } from '../../../features/textbook-panel';
+import { MajorEventsPanel } from '../../../features/major-events';
 
 // Fix Leaflet marker icon issue
 import icon from 'leaflet/dist/images/marker-icon.png';
@@ -673,7 +674,7 @@ export default function HistoryMap() {
             {/* Top Right: Search & Menu */}
             <div className="top-right-overlay">
                 <SearchYear currentYear={currentYear} />
-                <SidebarMenu onItemClick={handleSidebarClick} />
+                <SidebarMenu onItemClick={handleSidebarClick} currentYear={currentYear} />
             </div>
 
             {/* Docking Panel */}
@@ -691,6 +692,8 @@ export default function HistoryMap() {
                         currentPage={textbookPage}
                         viewMode={textbookViewMode}
                     />
+                ) : activePanel === 'search' ? (
+                    <MajorEventsPanel />
                 ) : (
                     <div style={{ padding: '20px', textAlign: 'center', color: 'var(--ui-text)' }}>
                         <p>{getPanelTitle(activePanel)} 패널 내용이 여기에 표시됩니다.</p>
