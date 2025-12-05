@@ -61,7 +61,7 @@ export const useWarLayer = (map: L.Map | null, currentYear: number, isVisible: b
             war.battles.forEach(battle => {
                 // Check if we have a valid route with coordinates
                 const hasRoute = battle.markerRoute && battle.markerRoute.coordinates && battle.markerRoute.coordinates.length > 0;
-                
+
                 if (hasRoute) {
                     const coords = battle.markerRoute.coordinates;
                     // GeoJSON is [lng, lat], Leaflet needs [lat, lng]
@@ -212,7 +212,8 @@ export const useWarLayer = (map: L.Map | null, currentYear: number, isVisible: b
     useWarAnimation({
         map,
         warData,
-        isActive: isVisible
+        isActive: isVisible,
+        currentYear
     });
 
     return warLayer;
