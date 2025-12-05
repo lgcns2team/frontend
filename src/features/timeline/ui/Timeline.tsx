@@ -1,4 +1,5 @@
 import { useMemo, useState, useEffect, useRef } from 'react';
+import { fetchMainEvents, type ParsedMainEvent } from '../../../shared/api/main-events-api';
 import './Timeline.css';
 import { getEraColor, ERA_LIMITS, ERAS } from '../../../shared/config/era-theme';
 
@@ -14,6 +15,11 @@ const WINDOW_SIZE = 500; // Show 500 years at a time
 
 export const Timeline = ({ currentYear, onYearChange }: TimelineProps) => {
     const thumbColor = getEraColor(currentYear);
+    const [mainEvents, setMainEvents] = useState<ParsedMainEvent[]>([]);
+
+    useEffect(() => {
+        fetchMainEvents().then(setMainEvents);
+    }, []);
 
     // Initialize view window centered on current year
     const [viewStart, setViewStart] = useState(() => {
@@ -197,6 +203,30 @@ export const Timeline = ({ currentYear, onYearChange }: TimelineProps) => {
                                 >
                                     <div className="era-bubble">
                                         {era.label}
+                                    </div>
+                                </div>
+                            );
+                        })}
+                    </div>
+
+                    {/* Main Event Markers */}
+                    <div className="timeline-event-markers">
+                        {mainEvents.map((event) => {
+                            const totalRange = viewEnd - viewStart;
+                            const percent = ((event.year - viewStart) / totalRange) * 100;
+
+                            if (percent < -5 || percent > 105) return null;
+
+                            return (
+                                <div
+                                    key={event.eventId}
+                                    className="event-marker"
+                                    style={{ left: `${percent}%` }}
+                                    onClick={() => onYearChange(event.year)}
+                                >
+                                    <div className="event-marker-dot" style={{ backgroundColor: getEraColor(event.year) }}></div>
+                                    <div className="event-marker-label" style={{ borderColor: getEraColor(event.year) }}>
+                                        {event.eventName}
                                     </div>
                                 </div>
                             );

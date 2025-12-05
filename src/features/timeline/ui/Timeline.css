@@ -390,15 +390,12 @@
     bottom: 0;
     pointer-events: none;
     z-index: 4;
-    /* Above ticks and slider track */
-    /* overflow: hidden; */
-    /* Hide markers outside view */
 }
 
 .era-label-marker {
     position: absolute;
-    top: -10px;
-    /* Position above the track */
+    top: -16px;
+    /* Moved up slightly */
     transform: translateX(-50%);
     display: flex;
     flex-direction: column;
@@ -408,26 +405,100 @@
 .era-bubble {
     background: var(--ui-bg, white);
     color: var(--era-color, var(--ui-text, #333));
-    padding: 4px 12px;
-    border-radius: 16px;
-    font-size: 12px;
+    padding: 6px 16px;
+    /* Increased padding */
+    border-radius: 20px;
+    /* Increased radius */
+    font-size: 14px;
+    /* Increased font size */
     font-weight: bold;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-    border: 1px solid var(--era-color, var(--ui-border, #ccc));
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+    /* Stronger shadow */
+    border: 2px solid var(--era-color, var(--ui-border, #ccc));
+    /* Thicker border */
     white-space: nowrap;
     position: relative;
+    z-index: 5;
 }
 
 /* Arrow for bubble */
 .era-bubble::after {
     content: '';
     position: absolute;
-    bottom: -4px;
+    bottom: -5px;
     left: 50%;
     transform: translateX(-50%) rotate(45deg);
-    width: 8px;
-    height: 8px;
+    width: 10px;
+    /* Larger arrow */
+    height: 10px;
     background: var(--ui-bg, white);
-    border-bottom: 1px solid var(--era-color, var(--ui-border, #ccc));
-    border-right: 1px solid var(--era-color, var(--ui-border, #ccc));
+    border-bottom: 2px solid var(--era-color, var(--ui-border, #ccc));
+    border-right: 2px solid var(--era-color, var(--ui-border, #ccc));
+}
+
+/* Main Event Markers */
+.timeline-event-markers {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    pointer-events: none;
+    z-index: 5;
+    /* Above slider (z-index: 3) */
+}
+
+.event-marker {
+    position: absolute;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    cursor: pointer;
+    pointer-events: auto;
+    /* Allow clicking */
+    padding: 8px;
+    /* Hit area */
+}
+
+.event-marker-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background-color: var(--ui-accent);
+    border: 2px solid white;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+    transition: transform 0.2s;
+}
+
+.event-marker:hover .event-marker-dot {
+    transform: scale(1.5);
+    z-index: 10;
+}
+
+.event-marker-label {
+    position: absolute;
+    bottom: 20px;
+    /* Position above the dot */
+    left: 50%;
+    transform: translateX(-50%);
+    background: var(--ui-bg, white);
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 12px;
+    white-space: nowrap;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+    border: 1px solid #ccc;
+    /* Fallback */
+    border-width: 1px;
+    border-style: solid;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.2s, visibility 0.2s;
+    pointer-events: none;
+    z-index: 20;
+    color: var(--ui-text, #333);
+}
+
+.event-marker:hover .event-marker-label {
+    opacity: 1;
+    visibility: visible;
 }
