@@ -3,27 +3,31 @@ import * as L from 'leaflet';
 import * as turf from '@turf/turf';
 import { type WarData } from '../../../shared/api/war-api';
 import { interpolateCatmullRom } from './math-utils';
+import { getEraForYear } from '../../../shared/config/era-theme';
 
 interface UseWarAnimationProps {
     map: L.Map | null;
     warData: WarData[];
     speed?: number;
     isActive: boolean;
+    currentYear: number;
 }
 
 export const useWarAnimation = ({
     map,
     warData,
     speed = 1,
-    isActive
+    isActive,
+    currentYear
 }: UseWarAnimationProps) => {
     const animationLayer = useRef<L.LayerGroup | null>(null);
     const animationFrameId = useRef<number | null>(null);
     const startTime = useRef<number | null>(null);
 
     // Icon
+    const era = getEraForYear(currentYear);
     const kimaIcon = L.icon({
-        iconUrl: '/assets/images/warunit/mong/mong-kima-bow.png',
+        iconUrl: `/assets/images/${era.id}/soldier1.png`,
         iconSize: [40, 40],
         iconAnchor: [40, 40],
         className: 'war-unit-icon'
@@ -205,5 +209,5 @@ export const useWarAnimation = ({
                 animationLayer.current.clearLayers();
             }
         };
-    }, [warData, map, isActive]);
+    }, [warData, map, isActive, currentYear]);
 };

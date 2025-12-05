@@ -2,7 +2,11 @@ import { useEffect, useState } from 'react';
 import { fetchMainEvents, type ParsedMainEvent } from '../../../shared/api/main-events-api';
 import './MajorEventsPanel.css';
 
-export const MajorEventsPanel = () => {
+interface MajorEventsPanelProps {
+    onYearChange?: (year: number) => void;
+}
+
+export const MajorEventsPanel = ({ onYearChange }: MajorEventsPanelProps) => {
     const [events, setEvents] = useState<ParsedMainEvent[]>([]);
     const [loading, setLoading] = useState(true);
 
@@ -25,7 +29,12 @@ export const MajorEventsPanel = () => {
         <div className="major-events-panel">
             <div className="major-events-list">
                 {events.map((event) => (
-                    <div key={event.eventId} className="major-event-item">
+                    <div
+                        key={event.eventId}
+                        className="major-event-item"
+                        onClick={() => onYearChange?.(event.year)}
+                        style={{ cursor: 'pointer' }}
+                    >
                         <div className="event-header">
                             <span className="event-year">{event.year}년</span>
                             <span className="event-era">{event.era}</span>
