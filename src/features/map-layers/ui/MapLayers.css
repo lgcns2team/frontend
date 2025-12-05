@@ -42,3 +42,20 @@
 .tab-btn.active::before {
     background: rgba(255, 255, 255, 0.2);
 }
+
+/* Tab Label Styling */
+.tab-label {
+    position: absolute;
+    top: 8px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 23px;
+    font-weight: 700;
+    color: white;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.8);
+    pointer-events: none;
+    z-index: 1;
+    white-space: nowrap;
+    font-family: inherit;
+    /* Inherits era font from parent theme */
+}
