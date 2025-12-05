@@ -34,9 +34,9 @@
 }
 
 .year-text {
-    font-size: 30px;
+    font-size: 60px;
     font-weight: 900;
-    line-height: 42px;
+    line-height: 70px;
     /* Fixed line-height matching font-size */
     height: 42px;
     /* Fixed height */

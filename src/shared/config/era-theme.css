@@ -156,3 +156,115 @@ body {
     background-color: #ffffff;
     --ui-text-timecontrol: #2b2b2b;
 }
+
+/* Era-based Dynamic Font Loading */
+@font-face {
+    font-family: 'EraFont-Gojoseon';
+    src: url('/assets/font/gojoseon/custom.ttf') format('truetype');
+}
+
+@font-face {
+    font-family: 'EraFont-ProtoThreeKingdoms';
+    src: url('/assets/font/proto-three-kingdoms/custom.ttf') format('truetype');
+}
+
+@font-face {
+    font-family: 'EraFont-ThreeKingdoms';
+    src: url('/assets/font/three-kingdoms/custom.ttf') format('truetype');
+}
+
+@font-face {
+    font-family: 'EraFont-NorthSouthStates';
+    src: url('/assets/font/north-south-states/custom.ttf') format('truetype');
+}
+
+@font-face {
+    font-family: 'EraFont-Goryeo';
+    src: url('/assets/font/goryeo/custom.ttf') format('truetype');
+}
+
+@font-face {
+    font-family: 'EraFont-Joseon';
+    src: url('/assets/font/joseon/custom.ttf') format('truetype');
+}
+
+@font-face {
+    font-family: 'EraFont-KoreanEmpire';
+    src: url('/assets/font/korean-empire/custom.ttf') format('truetype');
+}
+
+@font-face {
+    font-family: 'EraFont-Colonial';
+    src: url('/assets/font/colonial/custom.ttf') format('truetype');
+}
+
+@font-face {
+    font-family: 'EraFont-Liberation';
+    src: url('/assets/font/liberation/custom.ttf') format('truetype');
+}
+
+@font-face {
+    font-family: 'EraFont-KoreanWar';
+    src: url('/assets/font/korean-war/custom.ttf') format('truetype');
+}
+
+@font-face {
+    font-family: 'EraFont-Republic';
+    src: url('/assets/font/republic/custom.ttf') format('truetype');
+}
+
+/* Apply era-specific fonts to components */
+.theme-gojoseon .year-text,
+.theme-gojoseon .menu-item-zone {
+    font-family: 'EraFont-Gojoseon', 'Cinzel', serif !important;
+}
+
+.theme-proto-three-kingdoms .year-text,
+.theme-proto-three-kingdoms .menu-item-zone {
+    font-family: 'EraFont-ProtoThreeKingdoms', 'Noto Serif KR', serif !important;
+}
+
+.theme-three-kingdoms .year-text,
+.theme-three-kingdoms .menu-item-zone {
+    font-family: 'EraFont-ThreeKingdoms', 'Noto Serif KR', serif !important;
+}
+
+.theme-north-south-states .year-text,
+.theme-north-south-states .menu-item-zone {
+    font-family: 'EraFont-NorthSouthStates', 'Noto Serif KR', serif !important;
+}
+
+.theme-goryeo .year-text,
+.theme-goryeo .menu-item-zone {
+    font-family: 'EraFont-Goryeo', 'Nanum Myeongjo', serif !important;
+}
+
+.theme-joseon .year-text,
+.theme-joseon .menu-item-zone {
+    font-family: 'EraFont-Joseon', 'Nanum Myeongjo', serif !important;
+}
+
+.theme-korean-empire .year-text,
+.theme-korean-empire .menu-item-zone {
+    font-family: 'EraFont-KoreanEmpire', 'Nanum Myeongjo', serif !important;
+}
+
+.theme-colonial .year-text,
+.theme-colonial .menu-item-zone {
+    font-family: 'EraFont-Colonial', 'Pretendard', sans-serif !important;
+}
+
+.theme-liberation .year-text,
+.theme-liberation .menu-item-zone {
+    font-family: 'EraFont-Liberation', 'Pretendard', sans-serif !important;
+}
+
+.theme-korean-war .year-text,
+.theme-korean-war .menu-item-zone {
+    font-family: 'EraFont-KoreanWar', 'Pretendard', sans-serif !important;
+}
+
+.theme-republic .year-text,
+.theme-republic .menu-item-zone {
+    font-family: 'EraFont-Republic', 'Pretendard', sans-serif !important;
+}

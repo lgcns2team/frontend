@@ -48,7 +48,7 @@ export const SidebarMenu = ({ onItemClick, currentYear }: SidebarMenuProps) => {
                             ))}
                         </div>
                     </div>
-                    <div className="scroll-bottom"></div>
+                    <div className="scroll-bottom" onClick={() => setIsOpen(false)}></div>
                 </div>
             )}
         </div>
