@@ -178,6 +178,8 @@ export default function HistoryMap() {
 
     // Update Trade Routes
     useEffect(() => {
+        let isMounted = true;
+
         const updateTradeRoutes = async () => {
             if (!map.current || !tradeLayer.current) return;
 
@@ -185,9 +187,14 @@ export default function HistoryMap() {
             tradeLayer.current.clearLayers();
 
             // Only load trade routes if the trade layer is active
-            if (layerType !== 'trade') return;
+            if (layerType !== 'trade') {
+                setActiveTradeRoutes([]);
+                return;
+            }
 
             const routesWithColor = await loadTradeRoutes(currentYear);
+
+            if (!isMounted) return;
 
             if (routesWithColor.length > 0) {
                 routesWithColor.forEach(({ route, trade }) => {
@@ -212,6 +219,10 @@ export default function HistoryMap() {
         };
 
         updateTradeRoutes();
+
+        return () => {
+            isMounted = false;
+        };
     }, [currentYear, layerType]);
 
     // Trade Animation Hook
