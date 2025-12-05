@@ -25,7 +25,7 @@ export const loadTradeRoutes = async (year: number): Promise<TradeRouteWithColor
             const endCountryExists = trade.endCountry.foundationYear <= year && 
                 (!trade.endCountry.endedYear || trade.endCountry.endedYear >= year);
             
-            return startCountryExists && endCountryExists && trade.tradeYear <= year;
+            return startCountryExists && endCountryExists;
         });
 
         // Extract routes with their associated trade data
