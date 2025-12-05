@@ -24,7 +24,7 @@ export const useWarAnimation = ({
     // Icon
     const kimaIcon = L.icon({
         iconUrl: '/assets/images/warunit/mong/mong-kima-bow.png',
-        iconSize: [30, 30],
+        iconSize: [40, 40],
         iconAnchor: [40, 40],
         className: 'war-unit-icon'
     });
