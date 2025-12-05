@@ -32,19 +32,25 @@ export const MapLayers = ({ activeLayer, onLayerChange, currentYear }: MapLayers
                 onClick={() => toggleLayer('battles')}
                 aria-label="전쟁/동맹"
                 style={{ backgroundImage: `url(${warImage})` }}
-            />
+            >
+                <span className="tab-label">전쟁/동맹</span>
+            </button>
             <button
                 className={`tab-btn trade ${activeLayer === 'trade' ? 'active' : ''}`}
                 onClick={() => toggleLayer('trade')}
                 aria-label="무역"
                 style={{ backgroundImage: `url(${tradeImage})` }}
-            />
+            >
+                <span className="tab-label">무역</span>
+            </button>
             <button
                 className={`tab-btn religion ${activeLayer === 'people' ? 'active' : ''}`}
                 onClick={() => toggleLayer('people')}
                 aria-label="종교/문화"
                 style={{ backgroundImage: `url(${cultureImage})` }}
-            />
+            >
+                <span className="tab-label">종교/문화</span>
+            </button>
         </div>
     );
 };

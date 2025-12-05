@@ -268,3 +268,47 @@ body {
 .theme-republic .menu-item-zone {
     font-family: 'EraFont-Republic', 'Pretendard', sans-serif !important;
 }
+/* Apply era-specific fonts to MapLayers tab labels */
+.theme-gojoseon .tab-label {
+    font-family: 'EraFont-Gojoseon', 'Cinzel', serif !important;
+}
+
+.theme-proto-three-kingdoms .tab-label {
+    font-family: 'EraFont-ProtoThreeKingdoms', 'Noto Serif KR', serif !important;
+}
+
+.theme-three-kingdoms .tab-label {
+    font-family: 'EraFont-ThreeKingdoms', 'Noto Serif KR', serif !important;
+}
+
+.theme-north-south-states .tab-label {
+    font-family: 'EraFont-NorthSouthStates', 'Noto Serif KR', serif !important;
+}
+
+.theme-goryeo .tab-label {
+    font-family: 'EraFont-Goryeo', 'Nanum Myeongjo', serif !important;
+}
+
+.theme-joseon .tab-label {
+    font-family: 'EraFont-Joseon', 'Nanum Myeongjo', serif !important;
+}
+
+.theme-korean-empire .tab-label {
+    font-family: 'EraFont-KoreanEmpire', 'Nanum Myeongjo', serif !important;
+}
+
+.theme-colonial .tab-label {
+    font-family: 'EraFont-Colonial', 'Pretendard', sans-serif !important;
+}
+
+.theme-liberation .tab-label {
+    font-family: 'EraFont-Liberation', 'Pretendard', sans-serif !important;
+}
+
+.theme-korean-war .tab-label {
+    font-family: 'EraFont-KoreanWar', 'Pretendard', sans-serif !important;
+}
+
+.theme-republic .tab-label {
+    font-family: 'EraFont-Republic', 'Pretendard', sans-serif !important;
+}

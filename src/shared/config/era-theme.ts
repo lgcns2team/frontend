@@ -85,6 +85,7 @@ export const ERAS: EraConfig[] = [
         endYear: ERA_LIMITS.NORTH_SOUTH_STATES_END - 1,
         fontFamily: "'Noto Serif KR', serif",
         color: '#FCD34D', // 화려한 앰버 골드
+        bgImage: "/assets/images/north-south-states/timecontrol.png",
         timelineImage: "/assets/images/north-south-states/timeline.png",
     },
     {
