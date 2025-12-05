@@ -2,6 +2,7 @@ import { useEffect, useRef } from 'react';
 import * as L from 'leaflet';
 import * as turf from '@turf/turf';
 import type { TradeRouteWithColor } from './trade-route';
+import { getEraForYear } from '../../../shared/config/era-theme';
 
 interface UseTradeAnimationProps {
     map: L.Map | null;
@@ -9,28 +10,33 @@ interface UseTradeAnimationProps {
     historicalLayer: L.Layer | null;
     isActive: boolean;
     speed?: number;
+    currentYear: number;
 }
 
 export const useTradeAnimation = ({
     map,
     routes,
     historicalLayer,
-    isActive
+    isActive,
+    currentYear
 }: UseTradeAnimationProps) => {
     const animationLayer = useRef<L.LayerGroup | null>(null);
     const animationFrameId = useRef<number | null>(null);
     const startTime = useRef<number | null>(null);
 
     // Icons
+    // Icons are now dynamic based on era
+    const era = getEraForYear(currentYear);
+
     const horseIcon = L.icon({
-        iconUrl: '/assets/images/tradeunit/acient-horse.png',
+        iconUrl: `/assets/images/${era.id}/transport.png`,
         iconSize: [40, 40],
         iconAnchor: [20, 20],
         className: 'trade-unit-icon'
     });
 
     const shipIcon = L.icon({
-        iconUrl: '/assets/images/tradeunit/ship-acient.png',
+        iconUrl: `/assets/images/${era.id}/ship.png`,
         iconSize: [40, 40],
         iconAnchor: [20, 20],
         className: 'trade-unit-icon'
@@ -174,5 +180,5 @@ export const useTradeAnimation = ({
                 animationLayer.current.clearLayers();
             }
         };
-    }, [isActive, routes, historicalLayer, map]); // Re-run if these change
+    }, [isActive, routes, historicalLayer, map, currentYear]); // Re-run if these change
 };

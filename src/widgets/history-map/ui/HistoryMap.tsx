@@ -6,7 +6,6 @@ import '../../../shared/config/era-theme.css';
 import { getEraForYear } from '../../../shared/config/era-theme';
 import { loadHistoricalBorders } from '../lib/boundary-utils';
 import { loadTradeRoutes } from '../lib/trade-route';
-import { createTaperedPolygon } from '../lib/tapered-route';
 import type { TradeRouteWithColor } from '../lib/trade-route';
 import { useTradeAnimation } from '../lib/useTradeAnimation';
 import { useWarLayer } from '../lib/useWarLayer';
@@ -95,7 +94,10 @@ export default function HistoryMap() {
     const [isPlaying, setIsPlaying] = useState<boolean>(false);
     const [speed, setSpeed] = useState<number>(1);
     const [activePanel, setActivePanel] = useState<string | null>(null);
-    const [layerType, setLayerType] = useState<'default' | 'battles' | 'trade' | 'people'>('default');
+    const [layerType, setLayerType] = useState<'default' | 'battles' | 'trade' | 'people'>(() => {
+        const savedLayer = localStorage.getItem('historyMapLayer');
+        return (savedLayer as 'default' | 'battles' | 'trade' | 'people') || 'default';
+    });
     const [selectedCountry, setSelectedCountry] = useState<{ name: string; properties: any } | null>(null);
     const [isChatbotOpen, setIsChatbotOpen] = useState(false);
     const [chatbotState, setChatbotState] = useState<{
@@ -173,6 +175,11 @@ export default function HistoryMap() {
         localStorage.setItem('historyMapYear', currentYear.toString());
     }, [currentYear]);
 
+    // Save layerType to localStorage
+    useEffect(() => {
+        localStorage.setItem('historyMapLayer', layerType);
+    }, [layerType]);
+
     // Update Markers when layer type changes or timeline data loads
     useEffect(() => {
         updateMarkers(currentYear);
@@ -196,14 +203,12 @@ export default function HistoryMap() {
                     // Convert GeoJSON [lng, lat] to Leaflet [lat, lng]
                     const latLngs = route.path.coordinates.map(coord => [coord[1], coord[0]] as L.LatLngTuple);
 
-                    // Create tapered polygon
-                    // Start thick (10km) -> End thin (2km)
-                    const routeLayer = createTaperedPolygon(latLngs, {
+                    // Create dashed polyline for trade routes
+                    const routeLayer = L.polyline(latLngs, {
                         color: route.routeColor || '#3b82f6',
-                        fillColor: route.routeColor || '#3b82f6',
-                        fillOpacity: 0.8,
-                        startWidth: 10,
-                        endWidth: 2,
+                        weight: 3,
+                        dashArray: '10, 10', // Dashed line effect
+                        opacity: 0.8,
                         interactive: true
                     });
 
@@ -229,7 +234,8 @@ export default function HistoryMap() {
         routes: activeTradeRoutes,
         historicalLayer: historicalLayer.current,
         isActive: layerType === 'trade',
-        speed: speed
+        speed: speed,
+        currentYear: currentYear
     });
 
     const updateMapForYear = async (year: number) => {
@@ -376,11 +382,11 @@ export default function HistoryMap() {
                             className: 'capital-marker',
                             html: `
                             <div style="display: flex; flex-direction: column; align-items: center; width: 150px;">
-                                <img src="/assets/images/country-summary/sudo.png" style="width: 60px; height: 60px; object-fit: contain;" />
+                                <img src="/assets/images/country-summary/sudo.png" style="width: 45px; height: 45px; object-fit: contain;" />
                                 <div style="font-size: 14px; font-weight: bold; color: white; margin-top: 2px; text-align: center; width: 100%; white-space: nowrap;">${activeEvent.capitalName}</div>
                             </div>
                         `,
-                            iconSize: [120, 80],
+                            iconSize: [60, 45],
                             iconAnchor: [75, 40] // Anchor at center of image (approx)
                         });
 
