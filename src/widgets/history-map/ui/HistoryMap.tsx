@@ -126,8 +126,8 @@ export default function HistoryMap() {
 
         // Initialize map
         map.current = L.map(mapContainer.current, {
-            center: [36.5, 127.5],
-            zoom: 7,
+            center: [37, 123.5],
+            zoom: 6,
             zoomControl: false,
             attributionControl: false
         });
@@ -366,13 +366,13 @@ export default function HistoryMap() {
                         const icon = L.divIcon({
                             className: 'capital-marker',
                             html: `
-                            <div style="display: flex; flex-direction: column; align-items: center; width: 100px;">
-                                <img src="/assets/images/country-summary/sudo.png" style="width: 40px; height: 40px; object-fit: contain;" />
+                            <div style="display: flex; flex-direction: column; align-items: center; width: 150px;">
+                                <img src="/assets/images/country-summary/sudo.png" style="width: 60px; height: 60px; object-fit: contain;" />
                                 <div style="font-size: 14px; font-weight: bold; color: white; margin-top: 2px; text-align: center; width: 100%; white-space: nowrap;">${activeEvent.capitalName}</div>
                             </div>
                         `,
-                            iconSize: [100, 60],
-                            iconAnchor: [50, 20] // Anchor at center of image (approx)
+                            iconSize: [120, 80],
+                            iconAnchor: [75, 40] // Anchor at center of image (approx)
                         });
 
                         const popupContent = `

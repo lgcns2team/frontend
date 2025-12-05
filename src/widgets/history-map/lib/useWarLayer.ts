@@ -129,8 +129,8 @@ export const useWarLayer = (map: L.Map | null, currentYear: number, isVisible: b
 
                     const arrowIcon = L.icon({
                         iconUrl: '/assets/images/warunit/fortress.png',
-                        iconSize: [24, 24],
-                        iconAnchor: [12, 12]
+                        iconSize: [36, 36],
+                        iconAnchor: [24, 24]
                     });
 
                     L.marker(endPoint, {
