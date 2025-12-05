@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import * as L from 'leaflet';
 import { fetchWarData, type WarData } from '../../../shared/api/war-api';
 import { interpolateCatmullRom } from './math-utils';
+import { createTaperedPolygon } from './tapered-route';
 import { useWarAnimation } from './useWarAnimation';
 
 export const useWarLayer = (map: L.Map | null, currentYear: number, isVisible: boolean) => {
@@ -58,7 +59,10 @@ export const useWarLayer = (map: L.Map | null, currentYear: number, isVisible: b
 
         warData.forEach(war => {
             war.battles.forEach(battle => {
-                if (battle.markerRoute && battle.markerRoute.coordinates && battle.markerRoute.coordinates.length > 0) {
+                // Check if we have a valid route with coordinates
+                const hasRoute = battle.markerRoute && battle.markerRoute.coordinates && battle.markerRoute.coordinates.length > 0;
+                
+                if (hasRoute) {
                     const coords = battle.markerRoute.coordinates;
                     // GeoJSON is [lng, lat], Leaflet needs [lat, lng]
                     let latLngs = coords.map(coord => [coord[1], coord[0]] as [number, number]);
@@ -81,33 +85,54 @@ export const useWarLayer = (map: L.Map | null, currentYear: number, isVisible: b
                         ? (battle.routeColor === '#3b82f6' ? '#2563eb' : '#dc2626')
                         : '#dc2626';
 
-                    // 1. Draw the route (Thicker, Solid Line)
-                    const routeLayer = L.polyline(smoothedLatLngs, {
+                    // 1. Draw the route (Tapered Polygon)
+                    // Start thick (15km) -> End thin (2km)
+                    const routeLayer = createTaperedPolygon(smoothedLatLngs, {
                         color: routeColor,
-                        weight: 6,        // Thicker
-                        opacity: 0.8,
-                        lineCap: 'round',
-                        lineJoin: 'round',
-                        pane: 'warPane',  // Use custom pane
-                        interactive: true // Enable interactions
+                        fillColor: routeColor,
+                        fillOpacity: 0, // Start invisible for fade-in
+                        startWidth: 15,
+                        endWidth: 2,
+                        pane: 'warPane',
+                        interactive: true
                     }).addTo(warLayer.current!);
+
+                    // Animate Opacity: Fade In
+                    const startAnimation = () => {
+                        const startTime = performance.now();
+                        const duration = 1000;
+
+                        const animate = () => {
+                            if (!warLayer.current?.hasLayer(routeLayer)) return;
+
+                            const now = performance.now();
+                            const elapsed = now - startTime;
+                            const progress = Math.min(elapsed / duration, 1);
+
+                            routeLayer.setStyle({ fillOpacity: 0.8 * progress });
+
+                            if (progress < 1) {
+                                requestAnimationFrame(animate);
+                            }
+                        };
+                        requestAnimationFrame(animate);
+                    };
+                    startAnimation();
 
                     // Add hover effects
                     routeLayer.on('mouseover', function (e) {
                         const layer = e.target;
                         layer.setStyle({
-                            weight: 10,
-                            opacity: 1,
-                            color: routeColorHover
+                            fillOpacity: 1,
+                            fillColor: routeColorHover
                         });
                     });
 
                     routeLayer.on('mouseout', function (e) {
                         const layer = e.target;
                         layer.setStyle({
-                            weight: 6,
-                            opacity: 0.8,
-                            color: routeColor
+                            fillOpacity: 0.8,
+                            fillColor: routeColor
                         });
                     });
 
@@ -152,6 +177,32 @@ export const useWarLayer = (map: L.Map | null, currentYear: number, isVisible: b
 
                     // Bind popup to the line as well
                     routeLayer.bindPopup(`<b>${battle.battleName}</b><br>${battle.details}`);
+                } else {
+                    // If no route, just show a simple marker at the battle location
+                    if (battle.latitude && battle.longitude) {
+                        const fortressIcon = L.icon({
+                            iconUrl: '/assets/images/warunit/fortress.png',
+                            iconSize: [24, 24],
+                            iconAnchor: [12, 12]
+                        });
+
+                        L.marker([battle.latitude, battle.longitude], {
+                            icon: fortressIcon,
+                            pane: 'warPane'
+                        }).addTo(warLayer.current!)
+                            .bindPopup(`
+                                <div style="min-width: 200px;">
+                                    <h3 style="margin: 0 0 8px 0; font-size: 16px; font-weight: bold;">${battle.battleName}</h3>
+                                    <p style="margin: 4px 0; font-size: 14px;"><strong>전쟁:</strong> ${war.name}</p>
+                                    <p style="margin: 4px 0; font-size: 14px;"><strong>일시:</strong> ${battle.battleDate}</p>
+                                    <div style="margin-top: 8px; padding-top: 8px; border-top: 1px solid #eee;">
+                                        <p style="margin: 4px 0;"><strong>승리:</strong> ${battle.winnerGeneral}</p>
+                                        <p style="margin: 4px 0;"><strong>패배:</strong> ${battle.loserGeneral}</p>
+                                    </div>
+                                    <p style="margin-top: 8px; font-size: 13px; color: #666;">${battle.details}</p>
+                                </div>
+                            `);
+                    }
                 }
             });
         });
