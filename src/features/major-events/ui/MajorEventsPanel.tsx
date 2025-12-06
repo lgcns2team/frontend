@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { fetchMainEvents, type ParsedMainEvent } from '../../../shared/api/main-events-api';
 import './MajorEventsPanel.css';
 
-import { getEraForYear } from '../../../shared/config/era-theme';
+import { getEraForYear, getEraFrameImage } from '../../../shared/config/era-theme';
 
 interface MajorEventsPanelProps {
     onYearChange?: (year: number) => void;
@@ -38,6 +38,8 @@ export const MajorEventsPanel = ({ onYearChange, onEventClick }: MajorEventsPane
             <div className="major-events-list">
                 {events.map((event) => {
                     const eraConfig = getEraForYear(event.year);
+                    const eraFrame = getEraFrameImage(event.year);
+
                     return (
                         <div
                             key={event.eventId}
@@ -47,7 +49,10 @@ export const MajorEventsPanel = ({ onYearChange, onEventClick }: MajorEventsPane
                                 cursor: 'pointer',
                                 borderColor: eraConfig.color,
                                 backgroundColor: `${eraConfig.color}1A`, // 10% opacity
-                                fontFamily: eraConfig.fontFamily
+                                fontFamily: eraConfig.fontFamily,
+                                ...(eraFrame && {
+                                    '--item-frame-image': `url(${eraFrame})`
+                                } as React.CSSProperties)
                             }}
                         >
                             <div className="event-header">

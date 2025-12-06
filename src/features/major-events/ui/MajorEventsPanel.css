@@ -22,10 +22,37 @@
 
 .major-event-item {
     background-color: var(--ui-bg-secondary);
-    border: 1px solid var(--ui-border);
+    /* border: 1px solid var(--ui-border); -- Replaced by frame */
     border-radius: 8px;
-    padding: 16px;
+    /* Frame usually has its own corners, but keeping for background */
+    padding: 32px;
+    /* Increased padding for frame */
     transition: transform 0.2s, box-shadow 0.2s;
+    position: relative;
+    box-sizing: border-box;
+}
+
+/* Item Frame Overlay */
+.major-event-item::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-image: var(--item-frame-image, none);
+    background-size: 100% 100%;
+    background-repeat: no-repeat;
+    background-position: center;
+    pointer-events: none;
+    z-index: 0;
+    border-radius: 8px;
+}
+
+/* Ensure content is above frame */
+.major-event-item>* {
+    position: relative;
+    z-index: 1;
 }
 
 .major-event-item:hover {

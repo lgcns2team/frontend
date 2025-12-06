@@ -339,12 +339,12 @@ export default function HistoryMap() {
         if (map.current) {
             // 폭탄 숨기기
             setShowFallingBomb(false);
-            
+
             // 현재 줌 레벨 가져오기
             const currentZoom = map.current.getZoom();
             // 기본 줌 6을 기준으로 역보정 계수 계산 (줌 아웃하면 작게)
             const scale = Math.pow(2, currentZoom - 6);
-            
+
             // 폭발 이펙트 추가 (ID만 저장, 좌표는 나중에 계산)
             const newExplosion = { id: Date.now(), x: 0, y: 0, scale };
             setExplosions([newExplosion]);
@@ -357,11 +357,11 @@ export default function HistoryMap() {
 
         const updateExplosionPositions = () => {
             if (!map.current) return;
-            
+
             // 나가사키 좌표: 32.7731° N, 129.8656° E (원폭 투하 지점 - 우라카미)
             const nagasakiLatLng = L.latLng(32.7731, 129.8656);
             const point = map.current.latLngToContainerPoint(nagasakiLatLng);
-            
+
             setExplosions(prev => prev.map(ex => ({
                 ...ex,
                 x: point.x,
@@ -918,7 +918,7 @@ export default function HistoryMap() {
 
             {/* Falling Bomb Animation */}
             {showFallingBomb && (
-                <FallingBomb 
+                <FallingBomb
                     onImpact={handleBombImpact}
                     nagasakiScreenPos={nagasakiScreenPos}
                     mapZoom={currentMapZoom}
@@ -927,12 +927,12 @@ export default function HistoryMap() {
 
             {/* Nuke Explosion Effects */}
             {explosions.map(ex => (
-                <NukeExplosion 
-                    key={ex.id} 
-                    x={ex.x} 
+                <NukeExplosion
+                    key={ex.id}
+                    x={ex.x}
                     y={ex.y}
                     scale={ex.scale}
-                    onComplete={() => removeExplosion(ex.id)} 
+                    onComplete={() => removeExplosion(ex.id)}
                 />
             ))}
         </div>
