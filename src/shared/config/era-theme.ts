@@ -39,6 +39,7 @@ export interface EraConfig {
     color: string;      // 테마 메인 색상
     bgImage?: string;   // 배경 이미지 경로 (Optional)
     timelineImage?: string; // 타임라인 배경 이미지 (Optional)
+    frameImage?: string; // FloatingPanel 프레임 이미지 (Optional)
 }
 
 // 3. 시대별 설정 (Color를 여기서 통합 관리)
@@ -54,6 +55,7 @@ export const ERAS: EraConfig[] = [
         color: '#D7C0AE', // 브론즈 베이지
         bgImage: "/assets/images/gojoseon/timecontrol.png",
         timelineImage: "/assets/images/gojoseon/timeline.png",
+        frameImage: "/assets/images/gojoseon/frame.png",
     },
     {
         id: 'proto-three-kingdoms',
@@ -66,6 +68,7 @@ export const ERAS: EraConfig[] = [
         color: '#E2E8F0', // 연한 올리브 그린/슬레이트
         bgImage: "/assets/images/proto-three-kingdoms/timecontrol.png",
         timelineImage: "/assets/images/proto-three-kingdoms/timeline.png",
+        frameImage: "/assets/images/proto-three-kingdoms/frame.png",
     },
     {
         id: 'three-kingdoms',
@@ -78,6 +81,7 @@ export const ERAS: EraConfig[] = [
         color: '#FDA4AF', // 활기찬 코랄 레드
         bgImage: "/assets/images/three-kingdoms/timecontrol.png",
         timelineImage: "/assets/images/three-kingdoms/timeline.png",
+        frameImage: "/assets/images/three-kingdoms/frame.png",
     },
     {
         id: 'north-south-states',
@@ -90,6 +94,7 @@ export const ERAS: EraConfig[] = [
         color: '#FCD34D', // 화려한 앰버 골드
         bgImage: "/assets/images/north-south-states/timecontrol.png",
         timelineImage: "/assets/images/north-south-states/timeline.png",
+        frameImage: "/assets/images/north-south-states/frame.png",
     },
     {
         id: 'goryeo',
@@ -102,6 +107,7 @@ export const ERAS: EraConfig[] = [
         color: '#5EEAD4', // 비취색/청록색
         bgImage: "/assets/images/goryeo/timecontrol.png",
         timelineImage: "/assets/images/goryeo/timeline.png",
+        frameImage: "/assets/images/goryeo/frame.png",
     },
     {
         id: 'joseon',
@@ -114,6 +120,7 @@ export const ERAS: EraConfig[] = [
         color: '#93C5FD', // 단아한 쪽빛/스카이 블루
         bgImage: "/assets/images/joseon/timecontrol.png",
         timelineImage: "/assets/images/joseon/timeline.png",
+        frameImage: "/assets/images/joseon/frame.png",
     },
     {
         id: 'korean-empire',
@@ -126,6 +133,7 @@ export const ERAS: EraConfig[] = [
         color: '#C084FC', // 고귀한 로얄 퍼플
         bgImage: "/assets/images/korean-empire/timecontrol.png",
         timelineImage: "/assets/images/korean-empire/timeline.png",
+        frameImage: "/assets/images/korean-empire/frame.png",
     },
     {
         id: 'colonial',
@@ -138,6 +146,7 @@ export const ERAS: EraConfig[] = [
         color: '#94A3B8', // 무채색 그레이
         bgImage: "/assets/images/colonial/timecontrol.png",
         timelineImage: "/assets/images/colonial/timeline.png",
+        frameImage: "/assets/images/colonial/frame.png",
     },
     {
         id: 'liberation',
@@ -148,7 +157,9 @@ export const ERAS: EraConfig[] = [
         endYear: ERA_LIMITS.LIBERATION_END - 1,
         fontFamily: "'Pretendard', sans-serif",
         color: '#34d399', // 희망찬 에메랄드 그린
+        bgImage: "/assets/images/liberation/timecontrol.png",
         timelineImage: "/assets/images/liberation/timeline.png",
+        frameImage: "/assets/images/liberation/frame.png",
     },
     {
         id: 'korean-war',
@@ -159,7 +170,9 @@ export const ERAS: EraConfig[] = [
         endYear: ERA_LIMITS.KOREAN_WAR_END - 1,
         fontFamily: "'Pretendard', sans-serif",
         color: '#7f1d1d', // 핏빛 레드/다크 브라운
+        bgImage: "/assets/images/korean-war/timecontrol.png",
         timelineImage: "/assets/images/korean-war/timeline.png",
+        frameImage: "/assets/images/korean-war/frame.png",
     },
     {
         id: 'republic',
@@ -172,6 +185,7 @@ export const ERAS: EraConfig[] = [
         color: '#3B82F6', // 청량하고 맑은 딥 블루
         bgImage: "/assets/images/republic/timecontrol.png",
         timelineImage: "/assets/images/republic/timeline.png",
+        frameImage: "/assets/images/republic/frame.png",
     },
 ];
 
@@ -186,4 +200,8 @@ export const getEraName = (year: number): string => {
 
 export const getEraColor = (year: number): string => {
     return getEraForYear(year).color;
+};
+
+export const getEraFrameImage = (year: number): string | undefined => {
+    return getEraForYear(year).frameImage;
 };

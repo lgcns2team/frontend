@@ -712,6 +712,7 @@ export default function HistoryMap() {
                     isOpen={!!selectedCountry}
                     onClose={() => setSelectedCountry(null)}
                     title={selectedCountry?.name || '국가 정보'}
+                    currentYear={currentYear}
                 >
                     <div className="country-details">
                         <p><strong>연도:</strong> {currentYear > 0 ? currentYear + '년' : 'BC ' + Math.abs(currentYear) + '년'}</p>
