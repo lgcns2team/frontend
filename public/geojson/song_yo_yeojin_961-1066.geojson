@@ -4,6 +4,7 @@
     {
       "type": "Feature",
       "properties": {
+        "CODE": "11",
         "NAME": "Song",
         "name": "Song",
         "color": "#f97316",
@@ -3212,6 +3213,7 @@
     {
       "type": "Feature",
       "properties": {
+        "CODE": "8",
         "NAME": "Liao",
         "name": "Liao",
         "color": "#f59e0b",
@@ -5972,6 +5974,7 @@
     {
       "type": "Feature",
       "properties": {
+        "CODE": "7",
         "NAME": "Jurchen",
         "name": "Jurchen",
         "color": "#a855f7",
@@ -8256,6 +8259,7 @@
     {
       "type": "Feature",
       "properties": {
+        "CODE": "6",
         "NAME": "Goryeo",
         "name": "Goryeo",
         "color": "#ef4444",

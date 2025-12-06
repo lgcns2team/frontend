@@ -4,6 +4,7 @@
     {
       "type": "Feature",
       "properties": {
+        "CODE": "19",
         "NAME": "Five Dynasties",
         "name": "Five Dynasties",
         "color": "#facc15",
@@ -5340,6 +5341,7 @@
     {
       "type": "Feature",
       "properties": {
+        "CODE": "8",
         "NAME": "Liao",
         "name": "Liao",
         "color": "#4ade80",
@@ -10480,6 +10482,7 @@
     {
       "type": "Feature",
       "properties": {
+        "CODE": "6",
         "NAME": "Goryeo",
         "name": "Goryeo",
         "color": "#ef4444",

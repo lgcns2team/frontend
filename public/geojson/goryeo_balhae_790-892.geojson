@@ -4,6 +4,7 @@
     {
       "type": "Feature",
       "properties": {
+        "CODE": "1",
         "NAME": "Silla",
         "name": "Silla",
         "color": "#ef4444",
@@ -1624,6 +1625,7 @@
     {
       "type": "Feature",
       "properties": {
+        "CODE": "2",
         "NAME": "Balhae",
         "name": "Balhae",
         "color": "#ef4444",

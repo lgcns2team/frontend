@@ -4,6 +4,7 @@
     {
       "type": "Feature",
       "properties": {
+        "CODE": "6",
         "NAME": "Goryeo",
         "name": "Goryeo",
         "color": "#ef4444",
@@ -2360,6 +2361,7 @@
     {
       "type": "Feature",
       "properties": {
+        "CODE": "3",
         "NAME": "Hubaekje",
         "name": "Hubaekje",
         "color": "#ef4444",
@@ -4172,6 +4174,7 @@
     {
       "type": "Feature",
       "properties": {
+        "CODE": "1",
         "NAME": "Silla",
         "name": "Silla",
         "color": "#ef4444",
@@ -4492,6 +4495,7 @@
     {
       "type": "Feature",
       "properties": {
+        "CODE": "19",
         "NAME": "Five Dynasties",
         "name": "Five Dynasties",
         "color": "#facc15",
@@ -8024,6 +8028,7 @@
     {
       "type": "Feature",
       "properties": {
+        "CODE": "8",
         "NAME": "Liao",
         "name": "Liao",
         "color": "#f59e0b",

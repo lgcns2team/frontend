@@ -717,9 +717,16 @@ export default function HistoryMap() {
     // Panel Handlers
     const handleSidebarClick = (id: string) => {
         setActivePanel(prev => prev === id ? null : id);
+
         if (id === 'textbook') {
             // Reset width when opening textbook
             setDockingPanelWidth(calculateTextbookWidth(textbookViewMode));
+        } else if (id === 'search') {
+            // Major Events Panel width
+            setDockingPanelWidth(400);
+        } else {
+            // Default width for other panels
+            setDockingPanelWidth(800);
         }
     };
 
@@ -929,6 +936,7 @@ export default function HistoryMap() {
                 initialWidth={800}
                 width={activePanel === 'textbook' ? dockingPanelWidth : 750}
                 minWidth={activePanel === 'textbook' ? 300 : 180}
+                // width={dockingPanelWidth}
                 maxWidth={1600}
                 headerRightContent={activePanel === 'textbook' ? renderTextbookControls() : null}
             >

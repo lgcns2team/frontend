@@ -4,6 +4,7 @@
     {
       "type": "Feature",
       "properties": {
+        "CODE": "10",
         "NAME": "Jin",
         "name": "Jin",
         "color": "#16a34a",
@@ -3856,6 +3857,7 @@
     {
       "type": "Feature",
       "properties": {
+        "CODE": "12",
         "NAME": "Western Xia",
         "name": "Western Xia",
         "color": "#facc15",
@@ -7644,6 +7646,7 @@
     {
       "type": "Feature",
       "properties": {
+        "CODE": "20",
         "NAME": "Southern Song",
         "name": "Southern Song",
         "color": "#3b82f6",
@@ -12272,6 +12275,7 @@
     {
       "type": "Feature",
       "properties": {
+        "CODE": "6",
         "NAME": "Goryeo",
         "name": "Goryeo",
         "color": "#ef4444",

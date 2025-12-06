@@ -4,6 +4,7 @@
     {
       "type": "Feature",
       "properties": {
+        "CODE": "8",
         "NAME": "Liao",
         "name": "Liao",
         "color": "#f59e0b",
@@ -4972,6 +4973,7 @@
     {
       "type": "Feature",
       "properties": {
+        "CODE": "12",
         "NAME": "Western Xia",
         "name": "Western Xia",
         "color": "#84cc16",
@@ -7096,6 +7098,7 @@
     {
       "type": "Feature",
       "properties": {
+        "CODE": "11",
         "NAME": "Song",
         "name": "Song",
         "color": "#f97316",
@@ -10300,6 +10303,7 @@
     {
       "type": "Feature",
       "properties": {
+        "CODE": "6",
         "NAME": "Goryeo",
         "name": "Goryeo",
         "color": "#ef4444",
