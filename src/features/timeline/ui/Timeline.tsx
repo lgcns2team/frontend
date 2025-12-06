@@ -11,7 +11,8 @@ interface TimelineProps {
 
 const GLOBAL_MIN_YEAR = -2333;
 const GLOBAL_MAX_YEAR = 2024;
-const WINDOW_SIZE = 500; // Show 500 years at a time
+const NORMAL_WINDOW_SIZE = 500;
+const MODERN_WINDOW_SIZE = 100; // Zoom in for modern era
 
 export const Timeline = ({ currentYear, onYearChange }: TimelineProps) => {
     const thumbColor = getEraColor(currentYear);
@@ -21,38 +22,86 @@ export const Timeline = ({ currentYear, onYearChange }: TimelineProps) => {
         fetchMainEvents().then(setMainEvents);
     }, []);
 
+    // Target window size based on current year
+    const getTargetWindowSize = (year: number) => {
+        const TRANSITION_START = 1850;
+        const TRANSITION_END = 1910;
+
+        if (year >= TRANSITION_END) return MODERN_WINDOW_SIZE;
+        if (year <= TRANSITION_START) return NORMAL_WINDOW_SIZE;
+
+        const progress = (year - TRANSITION_START) / (TRANSITION_END - TRANSITION_START);
+        return NORMAL_WINDOW_SIZE - (NORMAL_WINDOW_SIZE - MODERN_WINDOW_SIZE) * progress;
+    };
+
+    // Use state for the actual display window size (smoothly animated)
+    const [displayWindowSize, setDisplayWindowSize] = useState(() => getTargetWindowSize(currentYear));
+    const targetWindowSize = getTargetWindowSize(currentYear);
+
     // Initialize view window centered on current year
     const [viewStart, setViewStart] = useState(() => {
-        const start = currentYear - WINDOW_SIZE / 2;
-        return Math.max(GLOBAL_MIN_YEAR, Math.min(start, GLOBAL_MAX_YEAR - WINDOW_SIZE));
+        const start = currentYear - displayWindowSize / 2;
+        return Math.max(GLOBAL_MIN_YEAR, Math.min(start, GLOBAL_MAX_YEAR - displayWindowSize));
     });
 
-    const viewEnd = Math.min(GLOBAL_MAX_YEAR, viewStart + WINDOW_SIZE);
+    const viewEnd = Math.min(GLOBAL_MAX_YEAR, viewStart + displayWindowSize);
 
     const [isDragging, setIsDragging] = useState(false);
-    const scrollDirection = useRef<number>(0); // -1: left, 0: stop, 1: right
+    const scrollDirection = useRef<number>(0);
     const animationFrameId = useRef<number | null>(null);
+
+    // Smoothly animate window size
+    useEffect(() => {
+        let animationId: number;
+
+        const animate = () => {
+            setDisplayWindowSize(prev => {
+                const diff = targetWindowSize - prev;
+                if (Math.abs(diff) < 0.1) return targetWindowSize;
+
+                // Lerp factor: 0.1 for smooth transition
+                const next = prev + diff * 0.1;
+
+                // Adjust viewStart to keep relative position
+                setViewStart(currentViewStart => {
+                    const center = currentViewStart + prev / 2;
+                    // Keep the center roughly stable during zoom
+                    const newStart = center - next / 2;
+                    return Math.max(GLOBAL_MIN_YEAR, Math.min(newStart, GLOBAL_MAX_YEAR - next));
+                });
+
+                return next;
+            });
+
+            if (Math.abs(displayWindowSize - targetWindowSize) >= 0.1) {
+                animationId = requestAnimationFrame(animate);
+            }
+        };
+
+        animationId = requestAnimationFrame(animate);
+        return () => cancelAnimationFrame(animationId);
+    }, [targetWindowSize, displayWindowSize]);
 
     // Update view window if currentYear goes out of bounds (e.g. from auto-play or external change)
     useEffect(() => {
         if (!isDragging) {
             if (currentYear < viewStart) {
-                setViewStart(Math.max(GLOBAL_MIN_YEAR, currentYear - WINDOW_SIZE * 0.1));
+                setViewStart(Math.max(GLOBAL_MIN_YEAR, currentYear - displayWindowSize * 0.1));
             } else if (currentYear > viewEnd) {
-                setViewStart(Math.min(GLOBAL_MAX_YEAR - WINDOW_SIZE, currentYear - WINDOW_SIZE * 0.9));
+                setViewStart(Math.min(GLOBAL_MAX_YEAR - displayWindowSize, currentYear - displayWindowSize * 0.9));
             }
         }
-    }, [currentYear, viewStart, viewEnd, isDragging]);
+    }, [currentYear, viewStart, viewEnd, isDragging, displayWindowSize]);
     // Continuous scroll loop
     useEffect(() => {
         const scroll = () => {
             if (scrollDirection.current !== 0) {
-                const step = 10; // Scroll speed
+                const step = displayWindowSize / 100; // Scroll speed: 1% of window per frame (5 years or 1 year)
 
                 setViewStart(prev => {
                     let nextStart = prev;
                     if (scrollDirection.current === 1) {
-                        nextStart = Math.min(GLOBAL_MAX_YEAR - WINDOW_SIZE, prev + step);
+                        nextStart = Math.min(GLOBAL_MAX_YEAR - displayWindowSize, prev + step);
                         // Also push currentYear if we are scrolling right
                         if (nextStart > prev) {
                             onYearChange(Math.min(GLOBAL_MAX_YEAR, currentYear + step));
@@ -88,13 +137,13 @@ export const Timeline = ({ currentYear, onYearChange }: TimelineProps) => {
                 cancelAnimationFrame(animationFrameId.current);
             }
         };
-    }, [isDragging, currentYear, onYearChange]);
+    }, [isDragging, currentYear, onYearChange, displayWindowSize]);
 
     const handleSliderChange = (newYear: number) => {
         onYearChange(newYear);
 
         // Detect scroll zone
-        const margin = WINDOW_SIZE * 0.1; // 10% margin
+        const margin = displayWindowSize * 0.1; // 10% margin
 
         if (newYear > viewEnd - margin && viewEnd < GLOBAL_MAX_YEAR) {
             scrollDirection.current = 1;
