@@ -297,15 +297,15 @@ export default function HistoryMap() {
 
     // Nuke Explosion Effect for Nagasaki in 1945
     useEffect(() => {
-        if (currentYear === 1945 && map.current) {
+        if (currentYear === 1945 && layerType === 'battles' && map.current) {
             // 폭탄 낙하 시작
             setShowFallingBomb(true);
         } else {
-            // 다른 년도에는 폭발 이펙트 제거
+            // 다른 년도나 다른 탭에서는 폭발 이펙트 제거
             setShowFallingBomb(false);
             setExplosions([]);
         }
-    }, [currentYear]);
+    }, [currentYear, layerType]);
 
     // 나가사키 화면 좌표 실시간 업데이트 (지도 이동/줌 시)
     useEffect(() => {
