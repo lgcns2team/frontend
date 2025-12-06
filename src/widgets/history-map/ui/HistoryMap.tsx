@@ -23,6 +23,8 @@ import { TextbookPanel } from '../../../features/textbook-panel';
 import { MajorEventsPanel, EventModal } from '../../../features/major-events';
 import type { ParsedMainEvent } from '../../../shared/api/main-events-api';
 import { NotificationBox } from '../../../features/notification-box';
+import { NukeExplosion } from '../../../features/nuke-explosion';
+import { FallingBomb } from '../../../features/falling-bomb';
 
 // Fix Leaflet marker icon issue
 import icon from 'leaflet/dist/images/marker-icon.png';
@@ -120,6 +122,12 @@ export default function HistoryMap() {
 
     // Cloud Transition State
     // const { isCloudTransitionActive, handleTransitionComplete } = useEraTransition(currentYear);
+
+    // Nuke Explosion State
+    const [explosions, setExplosions] = useState<{ id: number; x: number; y: number; scale: number }[]>([]);
+    const [showFallingBomb, setShowFallingBomb] = useState(false);
+    const [nagasakiScreenPos, setNagasakiScreenPos] = useState({ x: 0, y: 0 });
+    const [currentMapZoom, setCurrentMapZoom] = useState(6);
 
     // War Layer Hook
     // War Layer Hook
@@ -286,6 +294,101 @@ export default function HistoryMap() {
         speed: speed,
         currentYear: currentYear
     });
+
+    // Nuke Explosion Effect for Nagasaki in 1945
+    useEffect(() => {
+        if (currentYear === 1945 && map.current) {
+            // 폭탄 낙하 시작
+            setShowFallingBomb(true);
+        } else {
+            // 다른 년도에는 폭발 이펙트 제거
+            setShowFallingBomb(false);
+            setExplosions([]);
+        }
+    }, [currentYear]);
+
+    // 나가사키 화면 좌표 실시간 업데이트 (지도 이동/줌 시)
+    useEffect(() => {
+        if (!map.current) return;
+
+        const updateNagasakiPosition = () => {
+            if (!map.current) return;
+            const nagasakiLatLng = L.latLng(32.7731, 129.8656); // 나가사키 원폭 투하 지점 (우라카미)
+            const point = map.current.latLngToContainerPoint(nagasakiLatLng);
+            setNagasakiScreenPos({ x: point.x, y: point.y });
+            setCurrentMapZoom(map.current.getZoom());
+        };
+
+        // 초기 위치 설정
+        updateNagasakiPosition();
+
+        // 지도 이동/줌 시 업데이트
+        map.current.on('move', updateNagasakiPosition);
+        map.current.on('zoom', updateNagasakiPosition);
+
+        return () => {
+            if (map.current) {
+                map.current.off('move', updateNagasakiPosition);
+                map.current.off('zoom', updateNagasakiPosition);
+            }
+        };
+    }, []);
+
+    // 폭탄 충돌 시 폭발 이펙트 트리거
+    const handleBombImpact = () => {
+        if (map.current) {
+            // 폭탄 숨기기
+            setShowFallingBomb(false);
+            
+            // 현재 줌 레벨 가져오기
+            const currentZoom = map.current.getZoom();
+            // 기본 줌 6을 기준으로 역보정 계수 계산 (줌 아웃하면 작게)
+            const scale = Math.pow(2, currentZoom - 6);
+            
+            // 폭발 이펙트 추가 (ID만 저장, 좌표는 나중에 계산)
+            const newExplosion = { id: Date.now(), x: 0, y: 0, scale };
+            setExplosions([newExplosion]);
+        }
+    };
+
+    // 폭발 이펙트를 나가사키 좌표에 고정시키는 useEffect
+    useEffect(() => {
+        if (!map.current || explosions.length === 0) return;
+
+        const updateExplosionPositions = () => {
+            if (!map.current) return;
+            
+            // 나가사키 좌표: 32.7731° N, 129.8656° E (원폭 투하 지점 - 우라카미)
+            const nagasakiLatLng = L.latLng(32.7731, 129.8656);
+            const point = map.current.latLngToContainerPoint(nagasakiLatLng);
+            
+            setExplosions(prev => prev.map(ex => ({
+                ...ex,
+                x: point.x,
+                y: point.y
+                // scale은 그대로 유지
+            })));
+        };
+
+        // 초기 위치 설정
+        updateExplosionPositions();
+
+        // 지도 이동/줌 시 위치 업데이트
+        map.current.on('move', updateExplosionPositions);
+        map.current.on('zoom', updateExplosionPositions);
+
+        return () => {
+            if (map.current) {
+                map.current.off('move', updateExplosionPositions);
+                map.current.off('zoom', updateExplosionPositions);
+            }
+        };
+    }, [explosions.length]);
+
+    // 폭발이 끝나면 배열에서 제거하는 함수
+    const removeExplosion = (id: number) => {
+        setExplosions(prev => prev.filter(ex => ex.id !== id));
+    };
 
     const updateMapForYear = async (year: number) => {
         if (!map.current) return;
@@ -812,6 +915,26 @@ export default function HistoryMap() {
                 isActive={isCloudTransitionActive}
                 onAnimationComplete={handleTransitionComplete}
             /> */}
+
+            {/* Falling Bomb Animation */}
+            {showFallingBomb && (
+                <FallingBomb 
+                    onImpact={handleBombImpact}
+                    nagasakiScreenPos={nagasakiScreenPos}
+                    mapZoom={currentMapZoom}
+                />
+            )}
+
+            {/* Nuke Explosion Effects */}
+            {explosions.map(ex => (
+                <NukeExplosion 
+                    key={ex.id} 
+                    x={ex.x} 
+                    y={ex.y}
+                    scale={ex.scale}
+                    onComplete={() => removeExplosion(ex.id)} 
+                />
+            ))}
         </div>
     );
 }

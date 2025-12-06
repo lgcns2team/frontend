@@ -1,0 +1,125 @@
+.falling-bomb-container {
+  width: 60px;
+  height: 200px;
+  animation: bombFall 1.5s ease-in forwards;
+}
+
+@keyframes bombFall {
+  0% {
+    transform: scale(1.2);
+    opacity: 0.8;
+  }
+  30% {
+    transform: scale(1);
+    opacity: 0.9;
+  }
+  60% {
+    transform: scale(0.7);
+    opacity: 0.95;
+  }
+  100% {
+    transform: scale(0.3);
+    opacity: 1;
+  }
+}
+
+.bomb {
+  position: relative;
+  width: 100%;
+  height: 100%;
+}
+
+/* 폭탄 몸체 (Fat Man 스타일 - 둥근 형태) */
+.bomb-body {
+  position: absolute;
+  top: 30%;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 60px;
+  height: 80px;
+  background: linear-gradient(135deg, #4a4a4a 0%, #2a2a2a 50%, #1a1a1a 100%);
+  border-radius: 50% 50% 40% 40%;
+  box-shadow: 
+    inset -5px -5px 15px rgba(0, 0, 0, 0.5),
+    inset 5px 5px 10px rgba(255, 255, 255, 0.1),
+    0 10px 30px rgba(0, 0, 0, 0.8);
+}
+
+.bomb-body::before {
+  content: '';
+  position: absolute;
+  top: 10%;
+  left: 10%;
+  width: 80%;
+  height: 30%;
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.2), transparent);
+  border-radius: 50%;
+}
+
+.bomb-body::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 40px;
+  height: 3px;
+  background: #ff4400;
+  box-shadow: 0 0 10px #ff4400;
+}
+
+/* 폭탄 꼬리 */
+.bomb-tail {
+  position: absolute;
+  top: 55%;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 30px;
+  height: 60px;
+  background: linear-gradient(180deg, #3a3a3a 0%, #2a2a2a 100%);
+  clip-path: polygon(30% 0%, 70% 0%, 100% 100%, 0% 100%);
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.6);
+}
+
+/* 폭탄 날개들 */
+.bomb-fins {
+  position: absolute;
+  top: 58%;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 80px;
+  height: 80px;
+}
+
+.fin {
+  position: absolute;
+  width: 30px;
+  height: 40px;
+  background: linear-gradient(135deg, #555 0%, #333 100%);
+  clip-path: polygon(50% 0%, 100% 100%, 0% 100%);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.6);
+}
+
+.fin-1 {
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%) rotate(0deg);
+}
+
+.fin-2 {
+  top: 50%;
+  left: 100%;
+  transform: translate(-50%, -50%) rotate(90deg);
+}
+
+.fin-3 {
+  top: 100%;
+  left: 50%;
+  transform: translate(-50%, -100%) rotate(180deg);
+}
+
+.fin-4 {
+  top: 50%;
+  left: 0;
+  transform: translate(-50%, -50%) rotate(270deg);
+}
