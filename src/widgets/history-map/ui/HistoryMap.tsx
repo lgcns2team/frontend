@@ -125,7 +125,9 @@ export default function HistoryMap() {
 
     // Nuke Explosion State
     const [explosions, setExplosions] = useState<{ id: number; x: number; y: number; scale: number }[]>([]);
-    const [showFallingBomb, setShowFallingBomb] = useState(false);
+    const [showHiroshimaBomb, setShowHiroshimaBomb] = useState(false);
+    const [showNagasakiBomb, setShowNagasakiBomb] = useState(false);
+    const [hiroshimaScreenPos, setHiroshimaScreenPos] = useState({ x: 0, y: 0 });
     const [nagasakiScreenPos, setNagasakiScreenPos] = useState({ x: 0, y: 0 });
     const [currentMapZoom, setCurrentMapZoom] = useState(6);
 
@@ -295,79 +297,159 @@ export default function HistoryMap() {
         currentYear: currentYear
     });
 
-    // Nuke Explosion Effect for Nagasaki in 1945
+    // Nuke Explosion Effect for Hiroshima and Nagasaki in 1945
     useEffect(() => {
         if (currentYear === 1945 && layerType === 'battles' && map.current) {
-            // 폭탄 낙하 시작
-            setShowFallingBomb(true);
+            // 1. 히로시마 폭탄 먼저 낙하
+            setShowHiroshimaBomb(true);
+            
+            // 2. 3초 후 나가사키 폭탄 낙하
+            const nagasakiTimer = setTimeout(() => {
+                setShowNagasakiBomb(true);
+            }, 3000);
+            
+            return () => clearTimeout(nagasakiTimer);
         } else {
             // 다른 년도나 다른 탭에서는 폭발 이펙트 제거
-            setShowFallingBomb(false);
+            setShowHiroshimaBomb(false);
+            setShowNagasakiBomb(false);
             setExplosions([]);
         }
     }, [currentYear, layerType]);
 
-    // 나가사키 화면 좌표 실시간 업데이트 (지도 이동/줌 시)
+    // 히로시마/나가사키 화면 좌표 실시간 업데이트 (지도 이동/줌 시)
     useEffect(() => {
         if (!map.current) return;
 
-        const updateNagasakiPosition = () => {
+        const updateBombPositions = () => {
             if (!map.current) return;
-            const nagasakiLatLng = L.latLng(32.7731, 129.8656); // 나가사키 원폭 투하 지점 (우라카미)
-            const point = map.current.latLngToContainerPoint(nagasakiLatLng);
-            setNagasakiScreenPos({ x: point.x, y: point.y });
+            
+            // 히로시마 원폭 투하 지점: 34.3946° N, 132.4537° E (원폭 돔)
+            const hiroshimaLatLng = L.latLng(34.3946, 132.4537);
+            const hiroshimaPoint = map.current.latLngToContainerPoint(hiroshimaLatLng);
+            setHiroshimaScreenPos({ x: hiroshimaPoint.x, y: hiroshimaPoint.y });
+            
+            // 나가사키 원폭 투하 지점: 32.7731° N, 129.8656° E (우라카미)
+            const nagasakiLatLng = L.latLng(32.7731, 129.8656);
+            const nagasakiPoint = map.current.latLngToContainerPoint(nagasakiLatLng);
+            setNagasakiScreenPos({ x: nagasakiPoint.x, y: nagasakiPoint.y });
+            
             setCurrentMapZoom(map.current.getZoom());
         };
 
         // 초기 위치 설정
-        updateNagasakiPosition();
+        updateBombPositions();
 
         // 지도 이동/줌 시 업데이트
-        map.current.on('move', updateNagasakiPosition);
-        map.current.on('zoom', updateNagasakiPosition);
+        map.current.on('move', updateBombPositions);
+        map.current.on('zoom', updateBombPositions);
 
         return () => {
             if (map.current) {
-                map.current.off('move', updateNagasakiPosition);
-                map.current.off('zoom', updateNagasakiPosition);
+                map.current.off('move', updateBombPositions);
+                map.current.off('zoom', updateBombPositions);
             }
         };
     }, []);
 
-    // 폭탄 충돌 시 폭발 이펙트 트리거
-    const handleBombImpact = () => {
+    // 히로시마 폭탄 충돌 시 폭발 이펙트 트리거
+    const handleHiroshimaBombImpact = () => {
         if (map.current) {
             // 폭탄 숨기기
-            setShowFallingBomb(false);
+            setShowHiroshimaBomb(false);
 
             // 현재 줌 레벨 가져오기
             const currentZoom = map.current.getZoom();
             // 기본 줌 6을 기준으로 역보정 계수 계산 (줌 아웃하면 작게)
             const scale = Math.pow(2, currentZoom - 6);
 
-            // 폭발 이펙트 추가 (ID만 저장, 좌표는 나중에 계산)
-            const newExplosion = { id: Date.now(), x: 0, y: 0, scale };
-            setExplosions([newExplosion]);
+            // 히로시마 좌표로 폭발 이펙트 추가
+            const hiroshimaLatLng = L.latLng(34.3946, 132.4537);
+            const point = map.current.latLngToContainerPoint(hiroshimaLatLng);
+
+            const newExplosion = {
+                id: Date.now(),
+                x: point.x,
+                y: point.y,
+                scale: scale
+            };
+
+            setExplosions(prev => [...prev, newExplosion]);
+
+            // 2.3초 후 폭발 이펙트 제거
+            setTimeout(() => {
+                setExplosions(prev => prev.filter(ex => ex.id !== newExplosion.id));
+            }, 2300);
+        }
+    };
+
+    // 나가사키 폭탄 충돌 시 폭발 이펙트 트리거
+    const handleNagasakiBombImpact = () => {
+        if (map.current) {
+            // 폭탄 숨기기
+            setShowNagasakiBomb(false);
+
+            // 현재 줌 레벨 가져오기
+            const currentZoom = map.current.getZoom();
+            // 기본 줌 6을 기준으로 역보정 계수 계산 (줌 아웃하면 작게)
+            const scale = Math.pow(2, currentZoom - 6);
+
+            // 나가사키 좌표로 폭발 이펙트 추가
+            const nagasakiLatLng = L.latLng(32.7731, 129.8656);
+            const point = map.current.latLngToContainerPoint(nagasakiLatLng);
+
+            const newExplosion = {
+                id: Date.now() + 1,
+                x: point.x,
+                y: point.y,
+                scale: scale
+            };
+
+            setExplosions(prev => [...prev, newExplosion]);
+
+            // 2.3초 후 폭발 이펙트 제거
+            setTimeout(() => {
+                setExplosions(prev => prev.filter(ex => ex.id !== newExplosion.id));
+            }, 2300);
         }
     };
 
     // 폭발 이펙트를 나가사키 좌표에 고정시키는 useEffect
+    // 폭발 이펙트 위치 업데이트 (지도 이동/줌 시)
     useEffect(() => {
         if (!map.current || explosions.length === 0) return;
 
         const updateExplosionPositions = () => {
             if (!map.current) return;
 
-            // 나가사키 좌표: 32.7731° N, 129.8656° E (원폭 투하 지점 - 우라카미)
-            const nagasakiLatLng = L.latLng(32.7731, 129.8656);
-            const point = map.current.latLngToContainerPoint(nagasakiLatLng);
-
-            setExplosions(prev => prev.map(ex => ({
-                ...ex,
-                x: point.x,
-                y: point.y
-                // scale은 그대로 유지
-            })));
+            setExplosions(prev => prev.map(ex => {
+                // 각 폭발의 원래 지리 좌표를 저장하고 화면 좌표로 변환
+                let latLng: L.LatLng;
+                
+                // 폭발 ID를 기반으로 원래 위치 판단 (간단한 방법으로 ID가 홀수면 히로시마, 짝수면 나가사키)
+                // 더 정확하게는 폭발 생성 시 지리 좌표를 저장해야 하지만, 이미 생성된 폭발의 위치를 추적
+                // 히로시마 좌표 범위에 있으면 히로시마, 아니면 나가사키
+                const hiroshimaLatLng = L.latLng(34.3946, 132.4537);
+                const nagasakiLatLng = L.latLng(32.7731, 129.8656);
+                
+                // 현재 폭발 위치가 히로시마에 가까운지 확인
+                const hiroshimaPoint = map.current!.latLngToContainerPoint(hiroshimaLatLng);
+                const nagasakiPoint = map.current!.latLngToContainerPoint(nagasakiLatLng);
+                
+                // 현재 폭발이 어느 위치에 더 가까운지 판단
+                const distToHiroshima = Math.sqrt(Math.pow(ex.x - hiroshimaPoint.x, 2) + Math.pow(ex.y - hiroshimaPoint.y, 2));
+                const distToNagasaki = Math.sqrt(Math.pow(ex.x - nagasakiPoint.x, 2) + Math.pow(ex.y - nagasakiPoint.y, 2));
+                
+                latLng = distToHiroshima < distToNagasaki ? hiroshimaLatLng : nagasakiLatLng;
+                
+                const point = map.current!.latLngToContainerPoint(latLng);
+                
+                return {
+                    ...ex,
+                    x: point.x,
+                    y: point.y
+                };
+            }));
         };
 
         // 초기 위치 설정
@@ -917,10 +999,18 @@ export default function HistoryMap() {
             /> */}
 
             {/* Falling Bomb Animation */}
-            {showFallingBomb && (
+            {showHiroshimaBomb && (
                 <FallingBomb
-                    onImpact={handleBombImpact}
-                    nagasakiScreenPos={nagasakiScreenPos}
+                    onImpact={handleHiroshimaBombImpact}
+                    targetScreenPos={hiroshimaScreenPos}
+                    mapZoom={currentMapZoom}
+                />
+            )}
+            
+            {showNagasakiBomb && (
+                <FallingBomb
+                    onImpact={handleNagasakiBombImpact}
+                    targetScreenPos={nagasakiScreenPos}
                     mapZoom={currentMapZoom}
                 />
             )}

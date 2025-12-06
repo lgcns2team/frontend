@@ -3,11 +3,11 @@ import './FallingBomb.css';
 
 interface FallingBombProps {
   onImpact: () => void;
-  nagasakiScreenPos: { x: number; y: number };
+  targetScreenPos: { x: number; y: number };
   mapZoom: number;
 }
 
-export default function FallingBomb({ onImpact, nagasakiScreenPos, mapZoom }: FallingBombProps) {
+export default function FallingBomb({ onImpact, targetScreenPos, mapZoom }: FallingBombProps) {
   const [isFalling, setIsFalling] = useState(true);
   
   // 줌 레벨에 따른 역보정 (기준 줌 6)
@@ -30,8 +30,8 @@ export default function FallingBomb({ onImpact, nagasakiScreenPos, mapZoom }: Fa
       className="falling-bomb-container"
       style={{
         position: 'absolute',
-        left: nagasakiScreenPos.x,
-        top: nagasakiScreenPos.y,
+        left: targetScreenPos.x,
+        top: targetScreenPos.y,
         transform: `translate(-50%, -50%) scale(${scale})`,
         pointerEvents: 'none',
         zIndex: 998,
