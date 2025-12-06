@@ -302,12 +302,12 @@ export default function HistoryMap() {
         if (currentYear === 1945 && layerType === 'battles' && map.current) {
             // 1. 히로시마 폭탄 먼저 낙하
             setShowHiroshimaBomb(true);
-            
+
             // 2. 3초 후 나가사키 폭탄 낙하
             const nagasakiTimer = setTimeout(() => {
                 setShowNagasakiBomb(true);
             }, 3000);
-            
+
             return () => clearTimeout(nagasakiTimer);
         } else {
             // 다른 년도나 다른 탭에서는 폭발 이펙트 제거
@@ -323,17 +323,17 @@ export default function HistoryMap() {
 
         const updateBombPositions = () => {
             if (!map.current) return;
-            
+
             // 히로시마 원폭 투하 지점: 34.3946° N, 132.4537° E (원폭 돔)
             const hiroshimaLatLng = L.latLng(34.3946, 132.4537);
             const hiroshimaPoint = map.current.latLngToContainerPoint(hiroshimaLatLng);
             setHiroshimaScreenPos({ x: hiroshimaPoint.x, y: hiroshimaPoint.y });
-            
+
             // 나가사키 원폭 투하 지점: 32.7731° N, 129.8656° E (우라카미)
             const nagasakiLatLng = L.latLng(32.7731, 129.8656);
             const nagasakiPoint = map.current.latLngToContainerPoint(nagasakiLatLng);
             setNagasakiScreenPos({ x: nagasakiPoint.x, y: nagasakiPoint.y });
-            
+
             setCurrentMapZoom(map.current.getZoom());
         };
 
@@ -425,25 +425,25 @@ export default function HistoryMap() {
             setExplosions(prev => prev.map(ex => {
                 // 각 폭발의 원래 지리 좌표를 저장하고 화면 좌표로 변환
                 let latLng: L.LatLng;
-                
+
                 // 폭발 ID를 기반으로 원래 위치 판단 (간단한 방법으로 ID가 홀수면 히로시마, 짝수면 나가사키)
                 // 더 정확하게는 폭발 생성 시 지리 좌표를 저장해야 하지만, 이미 생성된 폭발의 위치를 추적
                 // 히로시마 좌표 범위에 있으면 히로시마, 아니면 나가사키
                 const hiroshimaLatLng = L.latLng(34.3946, 132.4537);
                 const nagasakiLatLng = L.latLng(32.7731, 129.8656);
-                
+
                 // 현재 폭발 위치가 히로시마에 가까운지 확인
                 const hiroshimaPoint = map.current!.latLngToContainerPoint(hiroshimaLatLng);
                 const nagasakiPoint = map.current!.latLngToContainerPoint(nagasakiLatLng);
-                
+
                 // 현재 폭발이 어느 위치에 더 가까운지 판단
                 const distToHiroshima = Math.sqrt(Math.pow(ex.x - hiroshimaPoint.x, 2) + Math.pow(ex.y - hiroshimaPoint.y, 2));
                 const distToNagasaki = Math.sqrt(Math.pow(ex.x - nagasakiPoint.x, 2) + Math.pow(ex.y - nagasakiPoint.y, 2));
-                
+
                 latLng = distToHiroshima < distToNagasaki ? hiroshimaLatLng : nagasakiLatLng;
-                
+
                 const point = map.current!.latLngToContainerPoint(latLng);
-                
+
                 return {
                     ...ex,
                     x: point.x,
@@ -927,7 +927,8 @@ export default function HistoryMap() {
                 onClose={handleClosePanel}
                 title={getPanelTitle(activePanel)}
                 initialWidth={800}
-                width={activePanel === 'textbook' ? dockingPanelWidth : undefined}
+                width={activePanel === 'textbook' ? dockingPanelWidth : 750}
+                minWidth={activePanel === 'textbook' ? 300 : 180}
                 maxWidth={1600}
                 headerRightContent={activePanel === 'textbook' ? renderTextbookControls() : null}
             >
@@ -1006,7 +1007,7 @@ export default function HistoryMap() {
                     mapZoom={currentMapZoom}
                 />
             )}
-            
+
             {showNagasakiBomb && (
                 <FallingBomb
                     onImpact={handleNagasakiBombImpact}
