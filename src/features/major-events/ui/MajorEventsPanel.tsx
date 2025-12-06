@@ -61,10 +61,7 @@ export const MajorEventsPanel = ({ onYearChange, onEventClick }: MajorEventsPane
                             </div>
                             <h3 className="event-name">{event.eventName}</h3>
                             <div className="event-country">{event.countryName}</div>
-                            <div className="event-description">
-                                <p><strong>개요:</strong> {event.description.summary}</p>
-                                <p><strong>의의:</strong> {event.description.significance}</p>
-                            </div>
+                            {/* Detailed description removed for list view */}
                         </div>
                     );
                 })}

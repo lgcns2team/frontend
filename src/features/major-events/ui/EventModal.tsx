@@ -40,13 +40,8 @@ export const EventModal = ({ event, onClose }: EventModalProps) => {
                     </div>
 
                     <div className="event-modal-section">
-                        <h3>개요</h3>
-                        <p>{event.description.summary}</p>
-                    </div>
-
-                    <div className="event-modal-section">
-                        <h3>의의</h3>
-                        <p>{event.description.significance}</p>
+                        <h3>설명</h3>
+                        <p>{event.summary}</p>
                     </div>
                 </div>
             </div>
