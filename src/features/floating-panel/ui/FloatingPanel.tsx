@@ -1,5 +1,6 @@
 import type { ReactNode } from 'react';
 import './FloatingPanel.css';
+import { getEraFrameImage } from '../../../shared/config/era-theme';
 
 interface FloatingPanelProps {
     isOpen: boolean;
@@ -7,6 +8,7 @@ interface FloatingPanelProps {
     title: string;
     children: ReactNode;
     width?: number;
+    currentYear: number;
 }
 
 export const FloatingPanel = ({
@@ -14,12 +16,23 @@ export const FloatingPanel = ({
     onClose,
     title,
     children,
-    width = 350
+    width,
+    currentYear
 }: FloatingPanelProps) => {
     if (!isOpen) return null;
 
+    const frameImage = getEraFrameImage(currentYear);
+
     return (
-        <div className="floating-panel" style={{ width: `${width}px` }}>
+        <div
+            className="floating-panel"
+            style={{
+                ...(width && { width: `${width}px` }),
+                ...(frameImage && {
+                    '--frame-image': `url(${frameImage})`
+                } as React.CSSProperties)
+            }}
+        >
             <div className="floating-panel-header">
                 <h3 className="floating-panel-title">{title}</h3>
                 <button className="floating-panel-close" onClick={onClose}>×</button>

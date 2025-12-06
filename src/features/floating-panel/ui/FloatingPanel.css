@@ -5,6 +5,13 @@
     flex-direction: column;
     max-height: calc(100vh - 350px);
     overflow: hidden;
+    position: relative;
+
+    /* Match TimeControls sizing */
+    min-width: 300px;
+    width: 25vw;
+    max-width: 600px;
+    box-sizing: border-box;
 
     /* Theming & Visuals */
     background: var(--ui-bg, rgba(255, 255, 255, 0.85));
@@ -26,6 +33,23 @@
     font-family: inherit;
 }
 
+/* Frame overlay - doesn't affect layout */
+.floating-panel::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-image: var(--frame-image, none);
+    background-size: 100% 100%;
+    background-repeat: no-repeat;
+    background-position: center;
+    pointer-events: none;
+    z-index: 0;
+    border-radius: 16px;
+}
+
 @keyframes panelSlideIn {
     from {
         opacity: 0;
@@ -40,10 +64,12 @@
 
 /* Header Section */
 .floating-panel-header {
+    position: relative;
+    z-index: 1;
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 16px 20px;
+    padding: 24px 32px;
     border-bottom: 1px solid var(--ui-border, rgba(0, 0, 0, 0.1));
     background: rgba(255, 255, 255, 0.1);
     /* Subtle overlay */
@@ -86,7 +112,9 @@
 
 /* Content Section */
 .floating-panel-content {
-    padding: 20px;
+    position: relative;
+    z-index: 1;
+    padding: 32px;
     overflow-y: auto;
     color: var(--ui-text, #334155);
     font-size: 0.95rem;
