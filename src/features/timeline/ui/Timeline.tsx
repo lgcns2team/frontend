@@ -7,6 +7,7 @@ import { getEraColor, ERA_LIMITS, ERAS } from '../../../shared/config/era-theme'
 interface TimelineProps {
     currentYear: number;
     onYearChange: (year: number) => void;
+    onEventClick?: (event: ParsedMainEvent) => void;
 }
 
 const GLOBAL_MIN_YEAR = -2333;
@@ -14,7 +15,7 @@ const GLOBAL_MAX_YEAR = 2024;
 const NORMAL_WINDOW_SIZE = 500;
 const MODERN_WINDOW_SIZE = 100; // Zoom in for modern era
 
-export const Timeline = ({ currentYear, onYearChange }: TimelineProps) => {
+export const Timeline = ({ currentYear, onYearChange, onEventClick }: TimelineProps) => {
     const thumbColor = getEraColor(currentYear);
     const [mainEvents, setMainEvents] = useState<ParsedMainEvent[]>([]);
 
@@ -271,7 +272,11 @@ export const Timeline = ({ currentYear, onYearChange }: TimelineProps) => {
                                     key={event.eventId}
                                     className="event-marker"
                                     style={{ left: `${percent}%` }}
-                                    onClick={() => onYearChange(event.year)}
+                                    onClick={(e) => {
+                                        e.stopPropagation();
+                                        onYearChange(event.year);
+                                        if (onEventClick) onEventClick(event);
+                                    }}
                                 >
                                     <div className="event-marker-dot" style={{ backgroundColor: getEraColor(event.year) }}></div>
                                     <div className="event-marker-label" style={{ borderColor: getEraColor(event.year) }}>

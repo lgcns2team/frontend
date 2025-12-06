@@ -21,6 +21,7 @@ import { FloatingPanel } from '../../../features/floating-panel/ui/FloatingPanel
 import { ChatbotTrigger, ChatbotPanel } from '../../../features/chatbot';
 import { TextbookPanel } from '../../../features/textbook-panel';
 import { MajorEventsPanel, EventModal } from '../../../features/major-events';
+import { fetchCountryByCode, type CountryData } from '../../../shared/api/country-api';
 import type { ParsedMainEvent } from '../../../shared/api/main-events-api';
 import { NotificationBox } from '../../../features/notification-box';
 import { NukeExplosion } from '../../../features/nuke-explosion';
@@ -48,6 +49,10 @@ interface TimelineEvent {
     regnalName: string | null;
 }
 
+// Assuming TimelineData is the same as TimelineEvent for now, or it will be defined elsewhere.
+// If it's a different type, it should be imported or defined.
+type TimelineData = TimelineEvent;
+
 export default function HistoryMap() {
     const mapContainer = useRef<HTMLDivElement>(null);
     const map = useRef<L.Map | null>(null);
@@ -57,7 +62,7 @@ export default function HistoryMap() {
     const lastRequestedYear = useRef<number>(326);
     const layerCache = useRef<Map<number, L.Layer>>(new Map());
     const abortController = useRef<AbortController | null>(null);
-    const [timelineData, setTimelineData] = useState<TimelineEvent[]>([]);
+    const [timelineData, setTimelineData] = useState<TimelineData[]>([]);
     const [activeTradeRoutes, setActiveTradeRoutes] = useState<TradeRouteWithColor[]>([]);
 
     // Helper to normalize country names to ID
@@ -103,6 +108,7 @@ export default function HistoryMap() {
         return (savedLayer as 'default' | 'battles' | 'trade' | 'people') || 'default';
     });
     const [selectedCountry, setSelectedCountry] = useState<{ name: string; properties: any } | null>(null);
+    const [selectedCountryData, setSelectedCountryData] = useState<CountryData | null>(null);
     const [isChatbotOpen, setIsChatbotOpen] = useState(false);
     const [chatbotState, setChatbotState] = useState<{
         x: number;
@@ -497,8 +503,16 @@ export default function HistoryMap() {
                 // However, the 'click' listener closure captures the state at creation time.
                 // Since 'setSelectedCountry' is stable, this is fine.
             } else {
-                newLayer = await loadHistoricalBorders(year, (name, props) => {
+                newLayer = await loadHistoricalBorders(year, async (name, props) => {
                     setSelectedCountry({ name, properties: props });
+                    setSelectedCountryData(null); // Reset previous data
+
+                    if (props.CODE) {
+                        const data = await fetchCountryByCode(props.CODE);
+                        if (data) {
+                            setSelectedCountryData(data);
+                        }
+                    }
                 });
 
                 // If aborted during await, stop here
@@ -911,11 +925,26 @@ export default function HistoryMap() {
                 >
                     <div className="country-details">
                         <p><strong>연도:</strong> {currentYear > 0 ? currentYear + '년' : 'BC ' + Math.abs(currentYear) + '년'}</p>
-                        {selectedCountry?.properties && (
-                            <>
-                                {/* Add more properties here as available in GeoJSON */}
-                                <p>{selectedCountry.name}에 대한 상세 정보가 여기에 표시됩니다.</p>
-                            </>
+
+                        {selectedCountryData ? (
+                            <div className="country-info-content">
+                                <h4 style={{ margin: '10px 0 5px', fontSize: '1.1em', color: '#2c3e50' }}>{selectedCountryData.title}</h4>
+                                <div style={{ fontSize: '0.9em', color: '#666', marginBottom: '10px' }}>
+                                    {selectedCountryData.foundationYear} ~ {selectedCountryData.endedYear}
+                                </div>
+                                <p style={{ whiteSpace: 'pre-line', lineHeight: '1.5', margin: '5px 0' }}>
+                                    {selectedCountryData.description}
+                                </p>
+                                <div style={{ marginTop: '10px', padding: '10px', backgroundColor: '#f8f9fa', borderRadius: '4px', fontSize: '0.9em' }}>
+                                    <strong>요약:</strong> {selectedCountryData.summary}
+                                </div>
+                            </div>
+                        ) : (
+                            selectedCountry?.properties && (
+                                <>
+                                    <p>{selectedCountry.name}에 대한 상세 정보가 없습니다.</p>
+                                </>
+                            )
                         )}
                     </div>
                 </FloatingPanel>
@@ -998,6 +1027,7 @@ export default function HistoryMap() {
                 <Timeline
                     currentYear={currentYear}
                     onYearChange={handleYearChange}
+                    onEventClick={setSelectedEvent}
                 />
             </div>
 
