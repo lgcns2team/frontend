@@ -20,7 +20,9 @@ import { DockingPanel } from '../../../features/docking-panel/ui/DockingPanel';
 import { FloatingPanel } from '../../../features/floating-panel/ui/FloatingPanel';
 import { ChatbotTrigger, ChatbotPanel } from '../../../features/chatbot';
 import { TextbookPanel } from '../../../features/textbook-panel';
-import { MajorEventsPanel } from '../../../features/major-events';
+import { MajorEventsPanel, EventModal } from '../../../features/major-events';
+import type { ParsedMainEvent } from '../../../shared/api/main-events-api';
+import { NotificationBox } from '../../../features/notification-box';
 
 // Fix Leaflet marker icon issue
 import icon from 'leaflet/dist/images/marker-icon.png';
@@ -112,6 +114,9 @@ export default function HistoryMap() {
     const [textbookViewMode, setTextbookViewMode] = useState<'single' | 'double'>('single');
     const [dockingPanelWidth, setDockingPanelWidth] = useState(800);
     const [pageInput, setPageInput] = useState('');
+
+    // Event Popup State
+    const [selectedEvent, setSelectedEvent] = useState<ParsedMainEvent | null>(null);
 
     // Cloud Transition State
     // const { isCloudTransitionActive, handleTransitionComplete } = useEraTransition(currentYear);
@@ -456,9 +461,7 @@ export default function HistoryMap() {
 
         // Legacy data layers (battles, trade points, people) have been removed.
         // Logic for these layers is temporarily disabled until new data sources are integrated.
-        if (layerType === 'battles') {
-            // TODO: Integrate new battles data source
-        } else if (layerType === 'trade') {
+        if (layerType === 'trade') {
             // Trade routes are handled separately by tradeLayer and useTradeAnimation
         } else if (layerType === 'people') {
             // TODO: Integrate new people data source
@@ -728,6 +731,7 @@ export default function HistoryMap() {
             {/* Top Right: Search & Menu */}
             <div className="top-right-overlay">
                 <SearchYear currentYear={currentYear} />
+                <NotificationBox />
                 <SidebarMenu onItemClick={handleSidebarClick} currentYear={currentYear} />
             </div>
 
@@ -747,7 +751,13 @@ export default function HistoryMap() {
                         viewMode={textbookViewMode}
                     />
                 ) : activePanel === 'search' ? (
-                    <MajorEventsPanel onYearChange={handleYearChange} />
+                    <MajorEventsPanel
+                        onYearChange={handleYearChange}
+                        onEventClick={(event) => {
+                            setSelectedEvent(event);
+                            setActivePanel(null); // Close docking panel
+                        }}
+                    />
                 ) : (
                     <div style={{ padding: '20px', textAlign: 'center', color: 'var(--ui-text)' }}>
                         <p>{getPanelTitle(activePanel)} 패널 내용이 여기에 표시됩니다.</p>
@@ -767,6 +777,14 @@ export default function HistoryMap() {
                     initialPosition={chatbotState ? { x: chatbotState.x, y: chatbotState.y } : undefined}
                     initialSize={chatbotState ? { width: chatbotState.width, height: chatbotState.height } : undefined}
                     onStateChange={(newState) => setChatbotState(newState)}
+                />
+            )}
+
+            {/* Event Popup */}
+            {selectedEvent && (
+                <EventModal
+                    event={selectedEvent}
+                    onClose={() => setSelectedEvent(null)}
                 />
             )}
 

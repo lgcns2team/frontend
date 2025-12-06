@@ -1,0 +1,134 @@
+.event-modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 2000;
+    /* Higher than other overlays */
+    /* backdrop-filter: blur(4px); removed */
+    animation: fadeIn 0.2s ease-out;
+}
+
+.event-modal-content {
+    background: var(--ui-bg, #fff);
+    width: 600px;
+    max-width: 90%;
+    max-height: 90vh;
+    border-radius: 12px;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+    overflow: hidden;
+    position: relative;
+    animation: scaleIn 0.2s ease-out;
+    display: flex;
+    flex-direction: column;
+}
+
+.event-modal-header {
+    padding: 16px 24px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+}
+
+.event-modal-year {
+    font-size: 1.25rem;
+    font-weight: 700;
+}
+
+.event-modal-era {
+    font-size: 1rem;
+    opacity: 0.9;
+    margin-right: auto;
+}
+
+.event-modal-close {
+    background: none;
+    border: none;
+    color: white;
+    font-size: 24px;
+    cursor: pointer;
+    padding: 0;
+    line-height: 1;
+    opacity: 0.8;
+    transition: opacity 0.2s;
+}
+
+.event-modal-close:hover {
+    opacity: 1;
+}
+
+.event-modal-body {
+    padding: 24px;
+    overflow-y: auto;
+    color: var(--ui-text, #333);
+}
+
+.event-modal-title {
+    margin: 0 0 16px 0;
+    font-size: 1.8rem;
+    font-weight: 800;
+}
+
+.event-modal-subtitle {
+    margin-bottom: 24px;
+}
+
+.country-badge {
+    background: rgba(0, 0, 0, 0.05);
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-weight: 600;
+    font-size: 0.9rem;
+    color: var(--ui-text-muted, #666);
+}
+
+.event-modal-section {
+    margin-bottom: 24px;
+}
+
+.event-modal-section:last-child {
+    margin-bottom: 0;
+}
+
+.event-modal-section h3 {
+    margin: 0 0 8px 0;
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: var(--ui-text, #333);
+    border-bottom: 2px solid rgba(0, 0, 0, 0.1);
+    padding-bottom: 4px;
+    display: inline-block;
+}
+
+.event-modal-section p {
+    margin: 0;
+    line-height: 1.6;
+    font-size: 1rem;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+
+    to {
+        opacity: 1;
+    }
+}
+
+@keyframes scaleIn {
+    from {
+        transform: scale(0.95);
+        opacity: 0;
+    }
+
+    to {
+        transform: scale(1);
+        opacity: 1;
+    }
+}

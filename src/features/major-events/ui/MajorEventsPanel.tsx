@@ -6,9 +6,10 @@ import { getEraForYear } from '../../../shared/config/era-theme';
 
 interface MajorEventsPanelProps {
     onYearChange?: (year: number) => void;
+    onEventClick?: (event: ParsedMainEvent) => void;
 }
 
-export const MajorEventsPanel = ({ onYearChange }: MajorEventsPanelProps) => {
+export const MajorEventsPanel = ({ onYearChange, onEventClick }: MajorEventsPanelProps) => {
     const [events, setEvents] = useState<ParsedMainEvent[]>([]);
     const [loading, setLoading] = useState(true);
 
@@ -27,6 +28,11 @@ export const MajorEventsPanel = ({ onYearChange }: MajorEventsPanelProps) => {
         return <div className="major-events-loading">로딩 중...</div>;
     }
 
+    const handleEventClick = (event: ParsedMainEvent) => {
+        onYearChange?.(event.year);
+        onEventClick?.(event);
+    };
+
     return (
         <div className="major-events-panel">
             <div className="major-events-list">
@@ -36,7 +42,7 @@ export const MajorEventsPanel = ({ onYearChange }: MajorEventsPanelProps) => {
                         <div
                             key={event.eventId}
                             className="major-event-item"
-                            onClick={() => onYearChange?.(event.year)}
+                            onClick={() => handleEventClick(event)}
                             style={{
                                 cursor: 'pointer',
                                 borderColor: eraConfig.color,
