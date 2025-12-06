@@ -46,8 +46,20 @@
     color: var(--ui-text-timecontrol, rgb(248, 248, 248));
     /* Use theme text color or black as requested? User said black. */
     font-variant-numeric: tabular-nums;
-    white-space: normal;
+    white-space: nowrap;
+    /* Prevent line breaks */
     overflow: visible;
+}
+
+/* Tablet adjustments for Year Text */
+@media (max-width: 1024px) {
+    .year-text {
+        font-size: 42px;
+        /* Smaller font for tablets */
+        letter-spacing: -2px;
+        /* Tighter letter spacing */
+        line-height: 50px;
+    }
 }
 
 .year-sub-row {

@@ -1,5 +1,5 @@
 import type { ParsedMainEvent } from '../../../shared/api/main-events-api';
-import { getEraForYear } from '../../../shared/config/era-theme';
+import { getEraForYear, getEraFrameImage } from '../../../shared/config/era-theme';
 import './EventModal.css';
 
 interface EventModalProps {
@@ -9,6 +9,7 @@ interface EventModalProps {
 
 export const EventModal = ({ event, onClose }: EventModalProps) => {
     const eraConfig = getEraForYear(event.year);
+    const frameImage = getEraFrameImage(event.year);
 
     return (
         <div className="event-modal-overlay" onClick={onClose}>
@@ -16,9 +17,13 @@ export const EventModal = ({ event, onClose }: EventModalProps) => {
                 className="event-modal-content"
                 onClick={(e) => e.stopPropagation()}
                 style={{
-                    fontFamily: eraConfig.fontFamily
+                    fontFamily: eraConfig.fontFamily,
+                    ...(frameImage && {
+                        '--modal-frame-image': `url(${frameImage})`
+                    } as React.CSSProperties)
                 }}
             >
+                <button className="event-modal-close" onClick={onClose}>&times;</button>
                 <div
                     className="event-modal-header"
                     style={{
@@ -28,11 +33,10 @@ export const EventModal = ({ event, onClose }: EventModalProps) => {
                 >
                     <span className="event-modal-year">{event.year}년</span>
                     <span className="event-modal-era">{event.era}</span>
-                    <button className="event-modal-close" onClick={onClose}>&times;</button>
                 </div>
 
                 <div className="event-modal-body">
-                    <h2 className="event-modal-title" style={{ color: eraConfig.color }}>
+                    <h2 className="event-modal-title">
                         {event.eventName}
                     </h2>
                     <div className="event-modal-subtitle">

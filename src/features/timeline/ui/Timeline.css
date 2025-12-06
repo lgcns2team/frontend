@@ -450,7 +450,8 @@
 
 .event-marker {
     position: absolute;
-    top: 50%;
+    top: calc(50% + 18px);
+    /* Moved down by approx 0.5cm */
     transform: translate(-50%, -50%);
     cursor: pointer;
     pointer-events: auto;

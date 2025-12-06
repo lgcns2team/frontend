@@ -48,8 +48,8 @@ export const MajorEventsPanel = ({ onYearChange, onEventClick }: MajorEventsPane
                             style={{
                                 cursor: 'pointer',
                                 borderColor: eraConfig.color,
-                                backgroundColor: `${eraConfig.color}1A`, // 10% opacity
-                                fontFamily: eraConfig.fontFamily,
+                                backgroundColor: '#FFFEF5', // Very pale yellow
+                                fontFamily: "'Noto Serif KR', serif", // Fixed font family (Three Kingdoms style)
                                 ...(eraFrame && {
                                     '--item-frame-image': `url(${eraFrame})`
                                 } as React.CSSProperties)
@@ -58,7 +58,7 @@ export const MajorEventsPanel = ({ onYearChange, onEventClick }: MajorEventsPane
                             <div className="event-header">
                                 <span
                                     className="event-year"
-                                    style={{ color: eraConfig.color }}
+                                    style={{ color: '#000000' }} // Black color
                                 >
                                     {event.year}년
                                 </span>

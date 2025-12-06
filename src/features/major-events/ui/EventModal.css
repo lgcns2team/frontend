@@ -22,22 +22,47 @@
     box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
     overflow: hidden;
     position: relative;
+    top: -100px;
     animation: scaleIn 0.2s ease-out;
     display: flex;
     flex-direction: column;
 }
 
+/* Frame overlay */
+.event-modal-content::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-image: var(--modal-frame-image, none);
+    background-size: 100% 100%;
+    background-repeat: no-repeat;
+    background-position: center;
+    pointer-events: none;
+    z-index: 50;
+    /* Above content (header/body are 20) */
+    border-radius: 12px;
+}
+
 .event-modal-header {
-    padding: 16px 24px;
+    padding: 24px 32px;
+    /* Increased padding for frame */
     display: flex;
     align-items: center;
     justify-content: space-between;
     gap: 12px;
+    position: relative;
+    z-index: 20;
+    /* content layer */
 }
 
 .event-modal-year {
     font-size: 1.25rem;
     font-weight: 700;
+    margin-top: 3px;
+    margin-bottom: -15px;
 }
 
 .event-modal-era {
@@ -47,9 +72,15 @@
 }
 
 .event-modal-close {
+    position: absolute;
+    top: 24px;
+    right: 24px;
+    z-index: 60;
+    /* Above frame (z=50) */
     background: none;
     border: none;
     color: white;
+    /* Adjust color if needed depending on background */
     font-size: 24px;
     cursor: pointer;
     padding: 0;
@@ -63,15 +94,21 @@
 }
 
 .event-modal-body {
-    padding: 24px;
+    padding: 32px;
+    /* Increased padding for frame */
     overflow-y: auto;
     color: var(--ui-text, #333);
+    position: relative;
+    z-index: 20;
+    /* Above frame */
+    margin-top: -40px;
 }
 
 .event-modal-title {
-    margin: 0 0 16px 0;
+    margin: 20px 0 16px 0;
     font-size: 1.8rem;
     font-weight: 800;
+    color: #000000;
 }
 
 .event-modal-subtitle {
