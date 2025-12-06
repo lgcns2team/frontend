@@ -80,26 +80,52 @@ export const useWarLayer = (map: L.Map | null, currentYear: number, isVisible: b
                     // Smooth the path using Catmull-Rom Spline
                     const smoothedLatLngs = interpolateCatmullRom(latLngs);
 
-                    // Get route color from battle data, default to red
-                    const routeColor = battle.routeColor || '#ef4444';
+                    // Get route color from battle data (from backend)
+                    const routeColor = battle.routeColor || '#ef4444'; // Default to red if not provided
                     const routeColorHover = battle.routeColor
-                        ? (battle.routeColor === '#3b82f6' ? '#2563eb' : '#dc2626')
+                        ? (battle.routeColor.includes('blue') || battle.routeColor.includes('#3') ? '#2563eb' : '#dc2626')
                         : '#dc2626';
 
-                    // 1. Draw the route (Dashed Polyline)
-                    const routeLayer = L.polyline(smoothedLatLngs, {
-                        color: routeColor,
-                        weight: 3,
-                        dashArray: '10, 10',
-                        opacity: 0, // Start invisible for fade-in
+                    // 1. Draw the border/outline first (HoI4 style black border)
+                    const borderLayer = L.polyline(smoothedLatLngs, {
+                        color: '#000000',
+                        weight: 10,
+                        opacity: 0.4,
                         pane: 'warPane',
-                        interactive: true
+                        interactive: false,
+                        lineCap: 'round',
+                        lineJoin: 'round'
                     }).addTo(warLayer.current!);
 
-                    // Animate Opacity: Fade In
+                    // 2. Draw the main route on top (Solid thick line HoI4 style)
+                    const routeLayer = L.polyline(smoothedLatLngs, {
+                        color: routeColor,
+                        weight: 7,
+                        opacity: 0.7,
+                        pane: 'warPane',
+                        interactive: true,
+                        lineCap: 'round',
+                        lineJoin: 'round'
+                    }).addTo(warLayer.current!);
+
+                    // Animate drawing effect: line flows from start to end
                     const startAnimation = () => {
+                        const borderPath = borderLayer.getElement() as SVGPathElement;
+                        const routePath = routeLayer.getElement() as SVGPathElement;
+                        
+                        if (!borderPath || !routePath) return;
+
+                        const borderLength = borderPath.getTotalLength();
+                        const routeLength = routePath.getTotalLength();
+
+                        // Set initial state: line is hidden by dash offset
+                        borderPath.style.strokeDasharray = `${borderLength}`;
+                        borderPath.style.strokeDashoffset = `${borderLength}`;
+                        routePath.style.strokeDasharray = `${routeLength}`;
+                        routePath.style.strokeDashoffset = `${routeLength}`;
+
                         const startTime = performance.now();
-                        const duration = 1000;
+                        const duration = 3500; // 2 seconds for the drawing animation
 
                         const animate = () => {
                             if (!warLayer.current?.hasLayer(routeLayer)) return;
@@ -108,45 +134,68 @@ export const useWarLayer = (map: L.Map | null, currentYear: number, isVisible: b
                             const elapsed = now - startTime;
                             const progress = Math.min(elapsed / duration, 1);
 
-                            routeLayer.setStyle({ opacity: 0.8 * progress });
+                            // Ease out cubic for smoother animation
+                            const easeProgress = 1 - Math.pow(1 - progress, 3);
+
+                            const borderOffset = borderLength * (1 - easeProgress);
+                            const routeOffset = routeLength * (1 - easeProgress);
+
+                            borderPath.style.strokeDashoffset = `${borderOffset}`;
+                            routePath.style.strokeDashoffset = `${routeOffset}`;
 
                             if (progress < 1) {
                                 requestAnimationFrame(animate);
+                            } else {
+                                // Remove dash array after animation completes for proper rendering
+                                borderPath.style.strokeDasharray = 'none';
+                                routePath.style.strokeDasharray = 'none';
                             }
                         };
                         requestAnimationFrame(animate);
                     };
-                    startAnimation();
+                    
+                    // Start animation after a small delay to ensure SVG is rendered
+                    setTimeout(startAnimation, 50);
 
                     // Add hover effects
                     routeLayer.on('mouseover', function (e) {
                         const layer = e.target;
                         layer.setStyle({
-                            opacity: 1,
-                            color: routeColorHover
+                            opacity: 0.9,
+                            color: routeColorHover,
+                            weight: 8
+                        });
+                        borderLayer.setStyle({
+                            opacity: 0.5,
+                            weight: 11
                         });
                     });
 
                     routeLayer.on('mouseout', function (e) {
                         const layer = e.target;
                         layer.setStyle({
-                            opacity: 0.8,
-                            color: routeColor
+                            opacity: 0.7,
+                            color: routeColor,
+                            weight: 7
+                        });
+                        borderLayer.setStyle({
+                            opacity: 0.4,
+                            weight: 10
                         });
                     });
 
-                    // 2. Start Point (Green Circle)
+                    // 2. Start Point (HoI4 style - larger circle with glow)
                     const startPoint = latLngs[0]; // Use original start point
                     L.circleMarker(startPoint, {
-                        radius: 6,
-                        fillColor: '#10b981', // Green
+                        radius: 8,
+                        fillColor: '#fbbf24', // Amber/Yellow like HoI4
                         color: '#ffffff',
-                        weight: 2,
+                        weight: 3,
                         opacity: 1,
-                        fillOpacity: 1,
+                        fillOpacity: 0.9,
                         pane: 'warPane' // Use custom pane
                     }).addTo(warLayer.current!)
-                        .bindPopup(`<b>${battle.battleName}</b> (시작)`);
+                        .bindPopup(`<b>${battle.battleName}</b> (출발지)`);
 
                     // 3. End Point (Fortress)
                     const endPoint = smoothedLatLngs[smoothedLatLngs.length - 1];

@@ -71,7 +71,7 @@ export const getColorByCountry = (name: string) => {
         '신라': '#f59e0b', 'Silla': '#f59e0b', 'Silia': '#f59e0b',
         '가야': '#10b981', 'Gaya': '#10b981',
         '발해': '#6366f1', 'Balhae': '#6366f1', 'Parhae': '#6366f1',
-        '고려': '#ef4444', 'Goryeo': '#ef4444',
+        '고려': '#08af91ff', 'Goryeo': '#08af91ff',
         '조선': '#10b981', 'Joseon': '#10b981', 'Korea': '#10b981',
         '대한제국': '#10b981',
         'Korea (USA)': '#3b82f6',
