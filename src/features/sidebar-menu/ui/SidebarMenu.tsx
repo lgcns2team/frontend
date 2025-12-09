@@ -17,7 +17,7 @@ export const SidebarMenu = ({ onItemClick, currentYear }: SidebarMenuProps) => {
         { id: 'textbook', icon: `/assets/images/${era.id}/book.png`, label: '교과서' },
         { id: 'people', icon: `/assets/images/${era.id}/human.png`, label: '인물' },
         { id: 'discussion', icon: `/assets/images/${era.id}/discussion.png`, label: '토론' },
-        { id: 'settings', icon: `/assets/images/${era.id}/set.png`, label: '설정' },
+
     ];
 
     return (
