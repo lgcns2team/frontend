@@ -229,7 +229,12 @@ export const loadHistoricalBorders = async (
                     const countryName = feature.properties?.NAME || feature.properties?.name;
 
                     if (countryName) {
-                        const displayName = countryName === 'gojoseon' ? '고조선' : countryName;
+                        // 국가명을 한글로 변환
+                        let displayName = countryName;
+                        if (countryName === 'gojoseon') displayName = '고조선';
+                        else if (countryName === 'Korea' && year >= 1392 && year <= 1910) displayName = '조선';
+                        else if (countryName === 'Korea' && year >= 918 && year < 1392) displayName = '고려';
+                        else if (countryName === 'Joseon') displayName = '조선';
 
                         layer.bindPopup(
                             `<div style="font-family: sans-serif; padding: 8px;">

@@ -202,8 +202,8 @@ export default function HistoryMap() {
         markersLayer.current = L.layerGroup().addTo(map.current);
         tradeLayer.current = L.layerGroup().addTo(map.current);
 
-        // Load timeline data
-        fetch('/assets/images/country-summary/history-timeline.json')
+        // Load timeline data from API
+        fetch('http://localhost:8080/api/timeline/events')
             .then(res => res.json())
             .then(data => {
                 setTimelineData(data);
