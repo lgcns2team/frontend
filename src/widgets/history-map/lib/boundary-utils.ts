@@ -160,6 +160,20 @@ export const loadHistoricalBorders = async (
         filesToLoad.push('geojson/japan.geojson');
     }
 
+    // Goryeo Territory Override Logic
+    let goryeoOverrideFile: string | null = null;
+    if (year >= 936 && year <= 992) {
+        // Early Goryeo (Unified Goryeo + Hubaekje + Silla)
+        goryeoOverrideFile = 'geojson/goryeo_early_936-992.geojson';
+    } else if (year >= 993 && year <= 1350) {
+        // Standard Goryeo map
+        goryeoOverrideFile = 'geojson/goryeo_936-1350.geojson';
+    }
+
+    if (goryeoOverrideFile) {
+        filesToLoad.push(goryeoOverrideFile);
+    }
+
     try {
         const responses = await Promise.all(filesToLoad.map(file => fetch(`/${file}`)));
         const validResponses = responses.filter(res => res.ok);
@@ -169,9 +183,23 @@ export const loadHistoricalBorders = async (
         const datas = await Promise.all(validResponses.map(res => res.json()));
 
         let allFeatures: any[] = [];
-        datas.forEach(data => {
+        datas.forEach((data, index) => {
             if (data && data.features) {
-                allFeatures = [...allFeatures, ...data.features];
+                let features = data.features;
+
+                // If we are using a Goryeo override file, remove 'Goryeo' from other files
+                // to prevent duplicates/overlaps.
+                if (goryeoOverrideFile) {
+                    const currentFile = filesToLoad[index];
+                    if (currentFile !== goryeoOverrideFile) {
+                        features = features.filter((f: any) => {
+                            const name = f.properties?.NAME || f.properties?.name;
+                            return name !== 'Goryeo';
+                        });
+                    }
+                }
+
+                allFeatures = [...allFeatures, ...features];
             }
         });
 
