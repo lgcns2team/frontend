@@ -175,15 +175,30 @@
     flex-shrink: 0;
 }
 
-.nav-btn:hover {
-    background: var(--ui-accent, #eff6ff);
-    color: var(--ui-bg, white);
-    transform: translateY(-2px);
-    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+@media (hover: hover) {
+    .nav-btn:hover {
+        background: var(--ui-accent, #eff6ff);
+        color: var(--ui-bg, white);
+        transform: translateY(-2px);
+        box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+    }
+}
+
+/* Explicitly reset hover on touch devices to prevent stickiness */
+@media (pointer: coarse) {
+    .nav-btn:hover {
+        background: var(--ui-bg, white);
+        color: var(--ui-accent, #3b82f6);
+        transform: none;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
 }
 
 .nav-btn:active {
     transform: translateY(0);
+    background: var(--ui-accent, #eff6ff);
+    color: var(--ui-bg, white);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 /* Era Markers */

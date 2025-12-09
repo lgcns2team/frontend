@@ -8,6 +8,7 @@ interface FloatingPanelProps {
     title: string;
     children: ReactNode;
     width?: number;
+    subtitle?: ReactNode;
     currentYear: number;
 }
 
@@ -15,6 +16,7 @@ export const FloatingPanel = ({
     isOpen,
     onClose,
     title,
+    subtitle,
     children,
     width,
     currentYear
@@ -34,7 +36,10 @@ export const FloatingPanel = ({
             }}
         >
             <div className="floating-panel-header">
-                <h3 className="floating-panel-title">{title}</h3>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                    <h3 className="floating-panel-title">{title}</h3>
+                    {subtitle && <div className="floating-panel-subtitle">{subtitle}</div>}
+                </div>
                 <button className="floating-panel-close" onClick={onClose}>×</button>
             </div>
             <div className="floating-panel-content">

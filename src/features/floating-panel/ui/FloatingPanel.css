@@ -1,11 +1,14 @@
 .floating-panel {
     /* Layout & Positioning */
-    margin-top: 16px;
+    margin-top: 0;
     display: flex;
     flex-direction: column;
-    max-height: calc(100vh - 350px);
+    max-height: 350px;
     overflow: hidden;
-    position: relative;
+    position: absolute;
+    top: 145px;
+    left: 0;
+    z-index: 20;
 
     /* Match TimeControls sizing */
     min-width: 300px;
@@ -46,7 +49,7 @@
     background-repeat: no-repeat;
     background-position: center;
     pointer-events: none;
-    z-index: 0;
+    z-index: 10;
     border-radius: 16px;
 }
 
@@ -69,7 +72,8 @@
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 24px 32px;
+    justify-content: space-between;
+    padding: 32px 32px 8px 32px;
     border-bottom: 1px solid var(--ui-border, rgba(0, 0, 0, 0.1));
     background: rgba(255, 255, 255, 0.1);
     /* Subtle overlay */
@@ -84,6 +88,12 @@
     display: flex;
     align-items: center;
     gap: 8px;
+}
+
+.floating-panel-subtitle {
+    font-size: 0.9em;
+    color: #666;
+    font-weight: 500;
 }
 
 /* Close Button */
@@ -114,7 +124,7 @@
 .floating-panel-content {
     position: relative;
     z-index: 1;
-    padding: 32px;
+    padding: 8px 32px 50px 32px;
     overflow-y: auto;
     color: var(--ui-text, #334155);
     font-size: 0.95rem;

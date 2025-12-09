@@ -210,9 +210,68 @@ export const Timeline = ({ currentYear, onYearChange, onEventClick }: TimelinePr
         return Array.from({ length: tickCount }, (_, i) => Math.round(viewStart + i * step));
     }, [viewStart, viewEnd]);
 
+    // Navigation Press-and-Hold Logic
+    const latestYearRef = useRef(currentYear);
+    const navInterval = useRef<number | null>(null);
+    const activeDirection = useRef<number | null>(null);
+
+    useEffect(() => {
+        latestYearRef.current = currentYear;
+    }, [currentYear]);
+
+    const startNav = (direction: number) => {
+        // If already navigating in a different direction, stop it first
+        if (activeDirection.current !== null && activeDirection.current !== direction) {
+            if (navInterval.current) {
+                clearInterval(navInterval.current);
+                navInterval.current = null;
+            }
+        }
+
+        // Set active direction
+        activeDirection.current = direction;
+
+        if (navInterval.current) return;
+
+        // Immediate move
+        onYearChange(latestYearRef.current + direction);
+
+        // Continuous move
+        navInterval.current = window.setInterval(() => {
+            onYearChange(latestYearRef.current + direction);
+        }, 100); // 100ms interval for fast scrolling
+    };
+
+    const stopNav = (direction: number) => {
+        // Only stop if the stopped button matches the active direction
+        if (activeDirection.current === direction) {
+            if (navInterval.current) {
+                clearInterval(navInterval.current);
+                navInterval.current = null;
+            }
+            activeDirection.current = null;
+        }
+    };
+
+    // Cleanup on mount/unmount
+    useEffect(() => {
+        return () => {
+            if (navInterval.current) clearInterval(navInterval.current);
+        };
+    }, []);
+
     return (
         <div className="timeline-container">
-            <button className="nav-btn prev-btn" onClick={() => onYearChange(currentYear - 1)} aria-label="Previous 1 year">
+            <button
+                className="nav-btn prev-btn"
+                onMouseDown={() => startNav(-1)}
+                onMouseUp={() => stopNav(-1)}
+                onMouseLeave={() => stopNav(-1)}
+                onTouchStart={(e) => { e.preventDefault(); startNav(-1); }}
+                onTouchEnd={(e) => { e.preventDefault(); stopNav(-1); }}
+                onTouchCancel={() => stopNav(-1)}
+                aria-label="Previous 1 year"
+            >
                 <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                     <path d="M15 18L9 12L15 6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
                 </svg>
@@ -314,7 +373,16 @@ export const Timeline = ({ currentYear, onYearChange, onEventClick }: TimelinePr
                 </div>
             </div>
 
-            <button className="nav-btn next-btn" onClick={() => onYearChange(currentYear + 1)} aria-label="Next 1 year">
+            <button
+                className="nav-btn next-btn"
+                onMouseDown={() => startNav(1)}
+                onMouseUp={() => stopNav(1)}
+                onMouseLeave={() => stopNav(1)}
+                onTouchStart={(e) => { e.preventDefault(); startNav(1); }}
+                onTouchEnd={(e) => { e.preventDefault(); stopNav(1); }}
+                onTouchCancel={() => stopNav(1)}
+                aria-label="Next 1 year"
+            >
                 <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                     <path d="M9 18L15 12L9 6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
                 </svg>

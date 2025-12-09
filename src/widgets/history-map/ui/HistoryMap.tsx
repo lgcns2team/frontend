@@ -229,6 +229,18 @@ export default function HistoryMap() {
         localStorage.setItem('historyMapYear', currentYear.toString());
     }, [currentYear]);
 
+    // Auto-close FloatingPanel if currentYear is outside the selected country's range
+    useEffect(() => {
+        if (selectedCountryData) {
+            const { foundationYear, endedYear } = selectedCountryData;
+            // Check if currentYear is strictly outside the range
+            if (currentYear < foundationYear || currentYear > endedYear) {
+                setSelectedCountry(null);
+                setSelectedCountryData(null);
+            }
+        }
+    }, [currentYear, selectedCountryData]);
+
     // Save layerType to localStorage
     useEffect(() => {
         localStorage.setItem('historyMapLayer', layerType);
@@ -902,37 +914,18 @@ export default function HistoryMap() {
 
             {/* Top Left: Year, Play, Speed, Layers */}
             <div className="top-left-overlay">
-                <TimeControls
-                    currentYear={currentYear}
-                    isPlaying={isPlaying}
-                    speed={speed}
-                    onTogglePlay={() => setIsPlaying(!isPlaying)}
-                    onToggleSpeed={toggleSpeed}
-                />
-
-                <MapLayers
-                    activeLayer={layerType}
-                    onLayerChange={setLayerType}
-                    currentYear={currentYear}
-                />
-
                 {/* Floating Info Panel (Left) */}
                 <FloatingPanel
                     isOpen={!!selectedCountry}
                     onClose={() => setSelectedCountry(null)}
                     title={selectedCountry?.name || '국가 정보'}
+                    subtitle={selectedCountryData ? `${selectedCountryData.foundationYear} ~ ${selectedCountryData.endedYear}` : currentYear > 0 ? currentYear + '년' : 'BC ' + Math.abs(currentYear) + '년'}
                     currentYear={currentYear}
                 >
                     <div className="country-details">
-                        <p><strong>연도:</strong> {currentYear > 0 ? currentYear + '년' : 'BC ' + Math.abs(currentYear) + '년'}</p>
-
                         {selectedCountryData ? (
                             <div className="country-info-content">
-                                <h4 style={{ margin: '10px 0 5px', fontSize: '1.1em', color: '#2c3e50' }}>{selectedCountryData.title}</h4>
-                                <div style={{ fontSize: '0.9em', color: '#666', marginBottom: '10px' }}>
-                                    {selectedCountryData.foundationYear} ~ {selectedCountryData.endedYear}
-                                </div>
-                                <p style={{ whiteSpace: 'pre-line', lineHeight: '1.5', margin: '5px 0' }}>
+                                <p style={{ whiteSpace: 'pre-line', lineHeight: '1.5', margin: '0 0 5px 0' }}>
                                     {selectedCountryData.description}
                                 </p>
                                 <div style={{ marginTop: '10px', padding: '10px', backgroundColor: '#f8f9fa', borderRadius: '4px', fontSize: '0.9em' }}>
@@ -948,6 +941,22 @@ export default function HistoryMap() {
                         )}
                     </div>
                 </FloatingPanel>
+
+                <TimeControls
+                    currentYear={currentYear}
+                    isPlaying={isPlaying}
+                    speed={speed}
+                    onTogglePlay={() => setIsPlaying(!isPlaying)}
+                    onToggleSpeed={toggleSpeed}
+                />
+
+                <MapLayers
+                    activeLayer={layerType}
+                    onLayerChange={setLayerType}
+                    currentYear={currentYear}
+                />
+
+
             </div>
 
             {/* Top Right: Search & Menu */}
