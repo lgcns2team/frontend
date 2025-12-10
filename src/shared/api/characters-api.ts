@@ -12,6 +12,7 @@ export interface Character {
     countryId?: string;
     imagePath?: string;
     promptId?: string;
+    greetingMessage?: string;
 }
 
 export type ParsedCharacter = Character;
@@ -96,7 +97,8 @@ export const fetchCharacters = async (): Promise<Character[]> => {
                 occupation: item.occupation || null,
                 countryName: item.countryName || item.country || '',
                 imagePath: item.imagePath || item.image || item.img || fallbackImage,
-                promptId: item.promptID || item.promptId || item.id // promptID 매핑
+                promptId: item.promptID || item.promptId || item.id, // promptID 매핑
+                greetingMessage: item.greetingMessage || item.greeting || null
             };
         });
 
@@ -108,7 +110,7 @@ export const fetchCharacters = async (): Promise<Character[]> => {
     }
 };
 
-export const fetchCharacterDetail = async (promptId: string): Promise<{ summary?: string }> => {
+export const fetchCharacterDetail = async (promptId: string): Promise<{ summary?: string, greetingMessage?: string }> => {
     try {
         const response = await fetch(`/api/ai-person/${promptId}`, {
             headers: {
@@ -121,14 +123,23 @@ export const fetchCharacterDetail = async (promptId: string): Promise<{ summary?
         const data = await response.json();
         console.log(`Fetched detail for ${promptId}:`, data);
 
-        // 데이터 구조에 따라 summary 추출
+        // 데이터 구조에 따라 summary 및 greeting 추출
         let summary = '';
+        let greetingMessage = '';
+
+        // Summary Extraction
         if (data.summary) summary = data.summary;
         else if (data.description) summary = data.description;
         else if (data.data && data.data.summary) summary = data.data.summary;
         else if (data.result && data.result.summary) summary = data.result.summary;
 
-        return { summary };
+        // Greeting Extraction
+        if (data.greetingMessage) greetingMessage = data.greetingMessage;
+        else if (data.greeting) greetingMessage = data.greeting;
+        else if (data.data && data.data.greetingMessage) greetingMessage = data.data.greetingMessage;
+        else if (data.result && data.result.greetingMessage) greetingMessage = data.result.greetingMessage;
+
+        return { summary, greetingMessage };
     } catch (error) {
         console.error(`Error fetching detail for ${promptId}:`, error);
         return {};

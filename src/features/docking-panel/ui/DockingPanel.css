@@ -4,7 +4,13 @@
     top: 0;
     right: 0;
     height: 100vh;
-    background: var(--ui-bg, white);
+    background-color: var(--ui-bg, white);
+    background-image: url('/assets/images/background.png');
+    background-size: auto;
+    background-repeat: repeat;
+    background-position: right bottom !important;
+    background-attachment: fixed;
+    background-blend-mode: multiply;
     color: var(--ui-text, #333);
     border-left: 5px solid var(--ui-border, #ccc);
     /* box-shadow: -4px 0 12px rgba(0, 0, 0, 0.1); */

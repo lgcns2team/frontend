@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from 'react';
-import { type ParsedCharacter } from '../../../shared/api/characters-api';
+import { type ParsedCharacter, fetchCharacterDetail } from '../../../shared/api/characters-api';
 import { ERAS } from '../../../shared/config/era-theme';
 import './ChatPanel.css';
 
@@ -20,16 +20,43 @@ export const ChatPanel = ({ character }: ChatPanelProps) => {
 
     // 캐릭터 변경 시 초기화
     useEffect(() => {
-        setMessages([
-            {
-                id: 1,
-                text: `안녕하세요. ${character.characterName}입니다. 무엇이 궁금하신가요?`,
-                sender: 'bot'
+        let isMounted = true;
+
+        const initChat = async () => {
+            // 초기화
+            setMessages([]);
+            setInput('');
+            setIsLoading(false);
+
+            let greeting = character.greetingMessage;
+
+            // API에서 인사말 가져오기 시도
+            if (!greeting && character.promptId) {
+                try {
+                    const detail = await fetchCharacterDetail(character.promptId);
+                    if (detail.greetingMessage) {
+                        greeting = detail.greetingMessage;
+                    }
+                } catch (e) {
+                    console.error("Failed to fetch greeting", e);
+                }
             }
-        ]);
-        setInput('');
-        setIsLoading(false);
-    }, [character.characterId, character.characterName]);
+
+            if (isMounted) {
+                setMessages([
+                    {
+                        id: 1,
+                        text: greeting || `안녕하세요. ${character.characterName}입니다. 무엇이 궁금하신가요?`,
+                        sender: 'bot'
+                    }
+                ]);
+            }
+        };
+
+        initChat();
+
+        return () => { isMounted = false; };
+    }, [character.characterId, character.characterName, character.promptId]);
 
     // 타이핑 효과 관련 Ref
     const typingBufferRef = useRef<string>('');
@@ -182,8 +209,10 @@ export const ChatPanel = ({ character }: ChatPanelProps) => {
                         />
                     )}
                 </div>
-                <h3 className="chat-profile-name">{character.characterName}</h3>
-                {character.summary && <p className="chat-profile-desc">{character.summary}</p>}
+                <div className="chat-profile-info">
+                    <h3 className="chat-profile-name">{character.characterName}</h3>
+                    {character.summary && <p className="chat-profile-desc">{character.summary}</p>}
+                </div>
             </div>
 
             {/* 대화 영역 */}

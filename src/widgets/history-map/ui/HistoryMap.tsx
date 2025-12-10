@@ -862,31 +862,34 @@ export default function HistoryMap() {
             <div style={{
                 display: 'flex',
                 alignItems: 'center',
-                gap: isSinglePage ? '6px' : '8px',
+                gap: isSinglePage ? '2px' : '8px',
                 letterSpacing: isSinglePage ? '-0.5px' : 'normal',
-                fontSize: isSinglePage ? '13px' : '14px'
+                fontSize: '14px',
+                flexWrap: 'nowrap'
             }}>
                 <button
                     onClick={handleTextbookPrev}
                     disabled={textbookPage === 0}
                     style={{
-                        padding: isSinglePage ? '4px 6px' : '4px 8px',
+                        padding: isSinglePage ? '4px 4px' : '4px 8px',
                         backgroundColor: 'var(--ui-primary)',
                         color: 'white',
                         border: 'none',
                         borderRadius: '4px',
                         cursor: 'pointer',
                         opacity: textbookPage === 0 ? 0.5 : 1,
-                        letterSpacing: isSinglePage ? '-0.3px' : 'normal',
-                        whiteSpace: 'nowrap'
+                        letterSpacing: isSinglePage ? '-0.5px' : 'normal',
+                        whiteSpace: 'nowrap',
+                        fontSize: '14px'
                     }}
                 >
                     이전
                 </button>
                 <span style={{
-                    fontSize: isSinglePage ? '13px' : '14px',
+                    fontSize: '14px',
                     fontWeight: 500,
-                    minWidth: '60px',
+                    minWidth: isSinglePage ? 'auto' : '60px',
+                    padding: isSinglePage ? '0 4px' : '0',
                     textAlign: 'center',
                     color: 'var(--ui-text)',
                     whiteSpace: 'nowrap'
@@ -903,49 +906,51 @@ export default function HistoryMap() {
                             : textbookPage >= totalPages - 2
                     }
                     style={{
-                        padding: isSinglePage ? '4px 6px' : '4px 8px',
+                        padding: isSinglePage ? '4px 4px' : '4px 8px',
                         backgroundColor: 'var(--ui-primary)',
                         color: 'white',
                         border: 'none',
                         borderRadius: '4px',
                         cursor: 'pointer',
                         opacity: (textbookViewMode === 'single' ? textbookPage === totalPages - 1 : textbookPage >= totalPages - 2) ? 0.5 : 1,
-                        letterSpacing: isSinglePage ? '-0.3px' : 'normal',
-                        whiteSpace: 'nowrap'
+                        letterSpacing: isSinglePage ? '-0.5px' : 'normal',
+                        whiteSpace: 'nowrap',
+                        fontSize: '14px'
                     }}
                 >
                     다음
                 </button>
 
-                <div style={{ display: 'flex', alignItems: 'center', gap: '4px', marginLeft: isSinglePage ? '6px' : '8px' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '2px', marginLeft: isSinglePage ? '2px' : '8px' }}>
                     <input
                         type="text"
                         value={pageInput}
                         onChange={(e) => setPageInput(e.target.value)}
                         onKeyDown={(e) => e.key === 'Enter' && handlePageInputSubmit()}
-                        placeholder="페이지"
+                        placeholder={isSinglePage ? "" : "페이지"}
                         style={{
-                            width: isSinglePage ? '45px' : '50px',
+                            width: isSinglePage ? '30px' : '50px',
                             padding: '4px',
                             borderRadius: '4px',
                             border: '1px solid var(--ui-border)',
                             backgroundColor: 'var(--ui-bg)',
                             color: 'var(--ui-text)',
                             textAlign: 'center',
-                            fontSize: isSinglePage ? '12px' : '13px'
+                            fontSize: isSinglePage ? '13px' : '13px'
                         }}
                     />
                     <button
                         onClick={handlePageInputSubmit}
                         style={{
-                            padding: isSinglePage ? '4px 6px' : '4px 8px',
+                            padding: isSinglePage ? '4px 4px' : '4px 8px',
                             backgroundColor: 'var(--ui-primary)',
                             color: 'white',
                             border: 'none',
                             borderRadius: '4px',
                             cursor: 'pointer',
                             letterSpacing: isSinglePage ? '-0.3px' : 'normal',
-                            whiteSpace: 'nowrap'
+                            whiteSpace: 'nowrap',
+                            fontSize: '14px'
                         }}
                     >
                         이동
@@ -954,16 +959,17 @@ export default function HistoryMap() {
 
                 <button
                     onClick={handleVoiceChat}
+                    disabled={isConversationMode}
                     style={{
-                        padding: isSinglePage ? '4px 5px' : '4px 8px',
+                        padding: isSinglePage ? '4px 4px' : '4px 8px',
                         backgroundColor: 'transparent',
-                        border: '1px solid var(--ui-primary)',
-                        color: 'var(--ui-primary)',
+                        border: `1px solid ${isConversationMode ? '#ccc' : 'var(--ui-primary)'}`,
+                        color: isConversationMode ? '#ccc' : 'var(--ui-primary)',
                         borderRadius: '4px',
-                        cursor: 'pointer',
-                        marginLeft: isSinglePage ? '4px' : '8px',
-                        letterSpacing: isSinglePage ? '-0.4px' : 'normal',
-                        fontSize: isSinglePage ? '12px' : '14px',
+                        cursor: isConversationMode ? 'not-allowed' : 'pointer',
+                        marginLeft: isSinglePage ? '2px' : '8px',
+                        letterSpacing: isSinglePage ? '-0.5px' : 'normal',
+                        fontSize: '14px',
                         whiteSpace: 'nowrap'
                     }}
                 >
@@ -972,16 +978,17 @@ export default function HistoryMap() {
 
                 <button
                     onClick={toggleTextbookViewMode}
+                    disabled={isConversationMode}
                     style={{
-                        padding: isSinglePage ? '4px 5px' : '4px 8px',
+                        padding: isSinglePage ? '4px 4px' : '4px 8px',
                         backgroundColor: 'transparent',
-                        border: '1px solid var(--ui-primary)',
-                        color: 'var(--ui-primary)',
+                        border: `1px solid ${isConversationMode ? '#ccc' : 'var(--ui-primary)'}`,
+                        color: isConversationMode ? '#ccc' : 'var(--ui-primary)',
                         borderRadius: '4px',
-                        cursor: 'pointer',
-                        marginLeft: isSinglePage ? '4px' : '8px',
-                        letterSpacing: isSinglePage ? '-0.4px' : 'normal',
-                        fontSize: isSinglePage ? '12px' : '14px',
+                        cursor: isConversationMode ? 'not-allowed' : 'pointer',
+                        marginLeft: isSinglePage ? '2px' : '8px',
+                        letterSpacing: isSinglePage ? '-0.5px' : 'normal',
+                        fontSize: '14px',
                         whiteSpace: 'nowrap'
                     }}
                 >
@@ -1055,19 +1062,25 @@ export default function HistoryMap() {
             <DockingPanel
                 isOpen={!!activePanel}
                 onClose={() => {
-                    setActivePanel(null);
-                    setIsConversationMode(false);
+                    if (activePanel === 'textbook' && isConversationMode) {
+                        setActivePanel('people');
+                        setIsConversationMode(false);
+                    } else {
+                        setActivePanel(null);
+                        setIsConversationMode(false);
+                        setChatCharacter(null);
+                    }
                 }}
-                title={getPanelTitle(activePanel)}
-                style={activePanel === 'textbook' && isConversationMode ? { right: '600px', borderRight: '1px solid #ccc' } : undefined}
-                width={activePanel === 'textbook' ? dockingPanelWidth : undefined}
+                title={activePanel === 'people' && chatCharacter ? "대화" : getPanelTitle(activePanel)}
+                style={activePanel === 'textbook' && isConversationMode ? { right: '50%', borderRight: '1px solid #ccc' } : undefined}
+                width={dockingPanelWidth}
                 minWidth={activePanel === 'textbook' ? 300 : 180}
                 maxWidth={1600}
                 headerRightContent={
                     activePanel === 'textbook'
                         ? renderTextbookControls()
                         : activePanel === 'people'
-                            ? characterPanelToggle
+                            ? (chatCharacter ? null : characterPanelToggle)
                             : null
                 }
             >
@@ -1085,11 +1098,16 @@ export default function HistoryMap() {
                         }}
                     />
                 ) : activePanel === 'people' ? (
-                    <CharactersPanel
-                        onYearChange={handleYearChange}
-                        currentYear={currentYear}
-                        renderToggle={setCharacterPanelToggle}
-                    />
+                    chatCharacter ? (
+                        <ChatPanel character={chatCharacter} />
+                    ) : (
+                        <CharactersPanel
+                            onYearChange={handleYearChange}
+                            onCharacterClick={handleCharacterSelect}
+                            currentYear={currentYear}
+                            renderToggle={setCharacterPanelToggle}
+                        />
+                    )
                 ) : (
                     <div style={{ padding: '20px', textAlign: 'center', color: 'var(--ui-text)' }}>
                         <p>{getPanelTitle(activePanel)} 패널 내용이 여기에 표시됩니다.</p>
@@ -1106,7 +1124,7 @@ export default function HistoryMap() {
                         setChatCharacter(null); // Reset chat
                     }}
                     title={chatCharacter ? "대화" : "인물 대화"}
-                    width={600}
+                    width={window.innerWidth * 0.5}
                     style={{ right: 0 }}
                     headerRightContent={chatCharacter ? undefined : characterPanelToggle}
                 >

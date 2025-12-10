@@ -15,7 +15,13 @@
     /* Animation */
     transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
     position: relative;
-    background: var(--ui-bg, white);
+    background-color: var(--ui-bg, white);
+    background-image: url('/assets/images/background.png');
+    background-size: auto;
+    background-repeat: repeat;
+    background-position: right bottom !important;
+    background-attachment: fixed;
+    background-blend-mode: multiply;
     z-index: 900;
     /* High z-index */
 }

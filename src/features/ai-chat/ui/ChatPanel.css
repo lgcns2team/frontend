@@ -9,20 +9,24 @@
 /* Character Profile Header */
 .chat-profile-area {
     display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    padding: 24px;
-    background-color: var(--ui-bg-secondary);
+    flex-direction: row;
+    align-items: flex-start;
+    justify-content: flex-start;
+    padding: 20px;
+    background-color: rgba(255, 255, 255, 0.6);
     border-bottom: 1px solid var(--ui-border);
     flex-shrink: 0;
+    gap: 16px;
+    max-height: 25%;
+    /* Restrict header height to approx 25% */
 }
 
 .chat-profile-image-container {
     position: relative;
-    width: 120px;
-    height: 120px;
-    margin-bottom: 25px;
+    width: 90px;
+    height: 90px;
+    margin-bottom: 0;
+    flex-shrink: 0;
 }
 
 .chat-profile-image {
@@ -36,12 +40,12 @@
 
 .chat-profile-frame {
     position: absolute;
-    top: -10px;
-    left: -10px;
-    right: -10px;
-    bottom: -10px;
-    width: calc(100% + 20px);
-    height: calc(100% + 20px);
+    top: -8px;
+    left: -8px;
+    right: -8px;
+    bottom: -8px;
+    width: calc(100% + 16px);
+    height: calc(100% + 16px);
     background-size: 100% 100%;
     background-repeat: no-repeat;
     background-position: center;
@@ -49,18 +53,27 @@
     z-index: 2;
 }
 
+.chat-profile-info {
+    display: flex;
+    flex-direction: column;
+    overflow-y: auto;
+    padding-right: 4px;
+}
+
 .chat-profile-name {
-    font-size: 1.25rem;
+    font-size: 1.2rem;
     font-weight: 700;
     color: var(--ui-text-highlight);
-    margin: 0;
+    margin: 0 0 6px 0;
+    text-align: left;
 }
 
 .chat-profile-desc {
     font-size: 0.9rem;
     color: var(--ui-text);
-    margin-top: 4px;
-    text-align: center;
+    margin: 0;
+    text-align: left;
+    line-height: 1.5;
 }
 
 /* Chat Body */
@@ -71,7 +84,7 @@
     display: flex;
     flex-direction: column;
     gap: 16px;
-    background-color: var(--ui-bg);
+    background-color: transparent;
 }
 
 .chat-message {
@@ -87,22 +100,25 @@
 .chat-message.bot {
     align-self: flex-start;
     background-color: var(--ui-bg-secondary);
-    color: var(--ui-text);
+    color: black;
+    /* Force black */
     border-bottom-left-radius: 4px;
     border: 1px solid var(--ui-border);
 }
 
 .chat-message.user {
     align-self: flex-end;
-    background-color: var(--ui-primary);
-    color: white;
+    background-color: #e0e7ff;
+    /* Light indigo/blue */
+    color: black;
     border-bottom-right-radius: 4px;
+    border: 1px solid #c7d2fe;
 }
 
 /* Chat Input Area */
 .chat-input-area {
     padding: 16px;
-    background-color: var(--ui-bg-secondary);
+    background-color: rgba(255, 255, 255, 0.6);
     border-top: 1px solid var(--ui-border);
     display: flex;
     gap: 10px;
@@ -115,7 +131,8 @@
     border-radius: 8px;
     border: 1px solid var(--ui-border);
     background-color: var(--ui-bg);
-    color: var(--ui-text);
+    color: black;
+    /* Force black */
     font-size: 1rem;
     outline: none;
     transition: border-color 0.2s;

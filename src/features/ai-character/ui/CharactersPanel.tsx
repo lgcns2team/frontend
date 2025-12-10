@@ -112,6 +112,9 @@ export const CharactersPanel = ({ onYearChange, onCharacterClick, currentYear = 
     }
 
     const handleCharacterClick = (character: ParsedCharacter) => {
+        // 채팅 패널로 전환을 먼저 수행
+        onCharacterClick?.(character);
+
         if (character.birthYear) {
             let targetYear = character.birthYear;
 
@@ -126,7 +129,6 @@ export const CharactersPanel = ({ onYearChange, onCharacterClick, currentYear = 
 
             onYearChange?.(targetYear);
         }
-        onCharacterClick?.(character);
     };
 
     // 현재 시대 정보 가져오기
