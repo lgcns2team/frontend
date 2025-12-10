@@ -18,6 +18,7 @@ const MODERN_WINDOW_SIZE = 100; // Zoom in for modern era
 export const Timeline = ({ currentYear, onYearChange, onEventClick }: TimelineProps) => {
     const thumbColor = getEraColor(currentYear);
     const [mainEvents, setMainEvents] = useState<ParsedMainEvent[]>([]);
+    const [isVisible, setIsVisible] = useState(true);
 
     useEffect(() => {
         fetchMainEvents().then(setMainEvents);
@@ -204,12 +205,21 @@ export const Timeline = ({ currentYear, onYearChange, onEventClick }: TimelinePr
         return gradient;
     }, [viewStart, viewEnd]);
 
-    // Generate ticks based on view window
-    const ticks = useMemo(() => {
-        const tickCount = 5;
-        const step = (viewEnd - viewStart) / (tickCount - 1);
-        return Array.from({ length: tickCount }, (_, i) => Math.round(viewStart + i * step));
-    }, [viewStart, viewEnd]);
+
+    // Random decorations (Old Houses)
+    const decorations = useMemo(() => {
+        const items = [];
+        const count = 40; // Number of houses to scatter across history
+        for (let i = 0; i < count; i++) {
+            // Random year between MIN and MAX
+            const year = Math.floor(Math.random() * (GLOBAL_MAX_YEAR - GLOBAL_MIN_YEAR + 1)) + GLOBAL_MIN_YEAR;
+            // Lane: 0, 1, or 2 (three invisible lines)
+            // 0: Lowest, 1: Middle, 2: Highest
+            const lane = Math.floor(Math.random() * 3);
+            items.push({ id: `house-${i}`, year, lane });
+        }
+        return items.sort((a, b) => a.year - b.year);
+    }, []);
 
     // Navigation Press-and-Hold Logic
     const latestYearRef = useRef(currentYear);
@@ -262,7 +272,31 @@ export const Timeline = ({ currentYear, onYearChange, onEventClick }: TimelinePr
     }, []);
 
     return (
-        <div className="timeline-container">
+        <div className={`timeline-container ${!isVisible ? 'timeline-hidden' : ''}`}>
+            {/* Toggle Button */}
+            <button
+                className="timeline-toggle-btn"
+                onClick={() => setIsVisible(!isVisible)}
+                aria-label={isVisible ? "Hide timeline" : "Show timeline"}
+            >
+                <svg
+                    width="24"
+                    height="24"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    style={{
+                        transform: isVisible ? 'rotate(0deg)' : 'rotate(180deg)',
+                        transition: 'transform 0.3s ease'
+                    }}
+                >
+                    <path d="M6 9l6 6 6-6" />
+                </svg>
+            </button>
+
             <button
                 className="nav-btn prev-btn"
                 onMouseDown={() => startNav(-1)}
@@ -280,7 +314,6 @@ export const Timeline = ({ currentYear, onYearChange, onEventClick }: TimelinePr
 
             <div className="timeline-wrapper">
                 <div className="timeline-slider-container">
-                    <div className="timeline-ruler-ticks"></div>
 
                     {/* Era Markers */}
                     <div className="timeline-era-markers">
@@ -347,6 +380,37 @@ export const Timeline = ({ currentYear, onYearChange, onEventClick }: TimelinePr
                         })}
                     </div>
 
+                    {/* Background Decorations (Houses) */}
+                    <div className="timeline-decorations">
+                        {decorations.map((item) => {
+                            const totalRange = viewEnd - viewStart;
+                            const percent = ((item.year - viewStart) / totalRange) * 100;
+
+                            // Slightly wider buffer to avoid popping
+                            if (percent < -15 || percent > 115) return null;
+
+                            // Lane offsets: Distribute them vertically
+                            // Lane 0: 10px
+                            // Lane 1: 20px
+                            // Lane 2: 30px
+                            const laneOffset = 10 + (item.lane * 10);
+
+                            return (
+                                <img
+                                    key={item.id}
+                                    src="/assets/images/test/oldhouse.png"
+                                    alt=""
+                                    className="timeline-decoration-house"
+                                    style={{
+                                        left: `${percent}%`,
+                                        marginBottom: `${laneOffset}px`
+                                    }}
+                                    aria-hidden="true"
+                                />
+                            );
+                        })}
+                    </div>
+
                     <input
                         type="range"
                         min={viewStart}
@@ -364,13 +428,6 @@ export const Timeline = ({ currentYear, onYearChange, onEventClick }: TimelinePr
                         className="timeline-track-bg"
                         style={{ background: trackGradient }}
                     ></div>
-                </div>
-                <div className="timeline-labels">
-                    {ticks.map(tick => (
-                        <span key={tick}>
-                            {tick <= 0 ? `BC ${Math.abs(tick)}` : tick}
-                        </span>
-                    ))}
                 </div>
             </div>
 

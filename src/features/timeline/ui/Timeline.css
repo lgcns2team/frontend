@@ -11,7 +11,53 @@
     /* Optional: Rounded corners for the container */
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
     /* Optional: Shadow for depth */
+
+    /* Animation */
+    transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+    background: var(--ui-bg, white);
+    z-index: 900;
+    /* High z-index */
 }
+
+/* When hidden, slide down. 
+   Note: transform: translateY(100%) moves it down by its own height. 
+   Assuming it is docked at the bottom visually.
+*/
+.timeline-container.timeline-hidden {
+    transform: translateY(100%);
+}
+
+/* Toggle Button */
+.timeline-toggle-btn {
+    position: absolute;
+    top: -32px;
+    /* Pull it up outside */
+    left: 50%;
+    transform: translateX(-50%);
+    /* Start centered */
+    width: 60px;
+    height: 32px;
+    background: var(--ui-bg, white);
+    border: 1px solid var(--ui-border, #ddd);
+    border-bottom: none;
+    border-radius: 12px 12px 0 0;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--ui-text, #666);
+    box-shadow: 0 -4px 10px rgba(0, 0, 0, 0.05);
+    /* Does not need high z-index because it is inside container? 
+       No, if container overflows hidden, it might clip. 
+       Usually default overflow is visible. */
+}
+
+.timeline-toggle-btn:hover {
+    background: var(--ui-accent-light, #f9fafb);
+    color: var(--ui-accent, #3b82f6);
+}
+
 
 .timeline-wrapper {
     flex: 1;
@@ -47,25 +93,7 @@
 }
 
 /* Ruler Ticks */
-.timeline-ruler-ticks {
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    z-index: 2;
-    background-image:
-        repeating-linear-gradient(90deg, var(--ui-text, #47351D) 0px, var(--ui-text, #47351D) 2px, transparent 2px, transparent 20px),
-        /* Major ticks */
-        repeating-linear-gradient(90deg, rgba(71, 53, 29, 0.3) 0px, rgba(71, 53, 29, 0.3) 1px, transparent 1px, transparent 4px);
-    /* Minor ticks */
-    background-size: 100% 16px, 100% 8px;
-    /* Taller ticks */
-    background-position: bottom, bottom;
-    background-repeat: no-repeat;
-    pointer-events: none;
-    opacity: 0.6;
-}
+
 
 /* Custom Slider Track */
 .timeline-track-bg {
@@ -136,16 +164,7 @@
     transform: scale(1.15);
 }
 
-.timeline-labels {
-    display: flex;
-    justify-content: space-between;
-    color: var(--ui-text, #666);
-    font-size: 14px;
-    /* Larger font */
-    font-weight: 600;
-    padding: 0 4px;
-    opacity: 0.8;
-}
+
 
 .nav-btn {
     width: 56px;
@@ -245,42 +264,25 @@
     -webkit-appearance: none;
     appearance: none;
     width: 100%;
-    height: 100%;
+    height: 48px;
     background: transparent;
     outline: none;
     z-index: 3;
     margin: 0;
     position: absolute;
-    top: 0;
+    top: 80%;
     left: 0;
+    transform: translateY(-50%);
     cursor: pointer;
 }
 
 /* Ruler Ticks */
-.timeline-ruler-ticks {
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    z-index: 2;
-    background-image:
-        repeating-linear-gradient(90deg, var(--ui-text, #47351D) 0px, var(--ui-text, #47351D) 2px, transparent 2px, transparent 20px),
-        /* Major ticks */
-        repeating-linear-gradient(90deg, rgba(71, 53, 29, 0.3) 0px, rgba(71, 53, 29, 0.3) 1px, transparent 1px, transparent 4px);
-    /* Minor ticks */
-    background-size: 100% 16px, 100% 8px;
-    /* Taller ticks */
-    background-position: bottom, bottom;
-    background-repeat: no-repeat;
-    pointer-events: none;
-    opacity: 0.6;
-}
+
 
 /* Custom Slider Track */
 .timeline-track-bg {
     position: absolute;
-    top: 50%;
+    top: 80%;
     left: 0;
     right: 0;
     height: 16px;
@@ -346,16 +348,7 @@
     transform: scale(1.15);
 }
 
-.timeline-labels {
-    display: flex;
-    justify-content: space-between;
-    color: var(--ui-text, #666);
-    font-size: 14px;
-    /* Larger font */
-    font-weight: 600;
-    padding: 0 4px;
-    opacity: 0.8;
-}
+
 
 .nav-btn {
     width: 56px;
@@ -461,6 +454,7 @@
     pointer-events: none;
     z-index: 5;
     /* Above slider (z-index: 3) */
+    overflow: hidden;
 }
 
 .event-marker {
@@ -517,4 +511,30 @@
 .event-marker:hover .event-marker-label {
     opacity: 1;
     visibility: visible;
+}
+
+/* Decorations */
+.timeline-decorations {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    pointer-events: none;
+    z-index: 0;
+    /* Behind other interactive elements */
+}
+
+.timeline-decoration-house {
+    position: absolute;
+    /* User said "slightly above scroll line". Scroll line is vertically centered (top: 50%). */
+    bottom: 50%;
+    transform: translateX(-50%);
+    width: 60px;
+    /* Guessing appropriate size */
+    height: auto;
+    margin-bottom: 12px;
+    /* Push up above the track (which is ~16px high) */
+    opacity: 0.9;
+    z-index: 1;
 }

@@ -54,7 +54,7 @@ export const ERAS: EraConfig[] = [
         fontFamily: "'Cinzel', serif", // 고대 느낌
         color: '#D7C0AE', // 브론즈 베이지
         bgImage: "/assets/images/gojoseon/timecontrol.png",
-        timelineImage: "/assets/images/gojoseon/timeline.png",
+        //timelineImage: "/assets/images/gojoseon/timeline.png",
         frameImage: "/assets/images/gojoseon/frame.png",
     },
     {
@@ -67,7 +67,7 @@ export const ERAS: EraConfig[] = [
         fontFamily: "'Noto Serif KR', serif",
         color: '#E2E8F0', // 연한 올리브 그린/슬레이트
         bgImage: "/assets/images/proto-three-kingdoms/timecontrol.png",
-        timelineImage: "/assets/images/proto-three-kingdoms/timeline.png",
+        //timelineImage: "/assets/images/proto-three-kingdoms/timeline.png",
         frameImage: "/assets/images/proto-three-kingdoms/frame.png",
     },
     {
@@ -80,7 +80,7 @@ export const ERAS: EraConfig[] = [
         fontFamily: "'Noto Serif KR', serif",
         color: '#FDA4AF', // 활기찬 코랄 레드
         bgImage: "/assets/images/three-kingdoms/timecontrol.png",
-        timelineImage: "/assets/images/three-kingdoms/timeline.png",
+        //timelineImage: "/assets/images/three-kingdoms/timeline.png",
         frameImage: "/assets/images/three-kingdoms/frame.png",
     },
     {
@@ -93,7 +93,7 @@ export const ERAS: EraConfig[] = [
         fontFamily: "'Noto Serif KR', serif",
         color: '#FCD34D', // 화려한 앰버 골드
         bgImage: "/assets/images/north-south-states/timecontrol.png",
-        timelineImage: "/assets/images/north-south-states/timeline.png",
+        //timelineImage: "/assets/images/north-south-states/timeline.png",
         frameImage: "/assets/images/north-south-states/frame.png",
     },
     {
@@ -106,7 +106,7 @@ export const ERAS: EraConfig[] = [
         fontFamily: "'Nanum Myeongjo', serif", // 우아한 명조체
         color: '#5EEAD4', // 비취색/청록색
         bgImage: "/assets/images/goryeo/timecontrol.png",
-        timelineImage: "/assets/images/goryeo/timeline.png",
+        //timelineImage: "/assets/images/goryeo/timeline.png",
         frameImage: "/assets/images/goryeo/frame.png",
     },
     {
@@ -119,7 +119,7 @@ export const ERAS: EraConfig[] = [
         fontFamily: "'Nanum Myeongjo', serif",
         color: '#93C5FD', // 단아한 쪽빛/스카이 블루
         bgImage: "/assets/images/joseon/timecontrol.png",
-        timelineImage: "/assets/images/joseon/timeline.png",
+        //timelineImage: "/assets/images/joseon/timeline.png",
         frameImage: "/assets/images/joseon/frame.png",
     },
     {
@@ -132,7 +132,7 @@ export const ERAS: EraConfig[] = [
         fontFamily: "'Nanum Myeongjo', serif",
         color: '#C084FC', // 고귀한 로얄 퍼플
         bgImage: "/assets/images/korean-empire/timecontrol.png",
-        timelineImage: "/assets/images/korean-empire/timeline.png",
+        //timelineImage: "/assets/images/korean-empire/timeline.png",
         frameImage: "/assets/images/korean-empire/frame.png",
     },
     {
@@ -145,7 +145,7 @@ export const ERAS: EraConfig[] = [
         fontFamily: "'Pretendard', sans-serif", // 근대적 느낌
         color: '#94A3B8', // 무채색 그레이
         bgImage: "/assets/images/colonial/timecontrol.png",
-        timelineImage: "/assets/images/colonial/timeline.png",
+        //timelineImage: "/assets/images/colonial/timeline.png",
         frameImage: "/assets/images/colonial/frame.png",
     },
     {
@@ -158,7 +158,7 @@ export const ERAS: EraConfig[] = [
         fontFamily: "'Pretendard', sans-serif",
         color: '#34d399', // 희망찬 에메랄드 그린
         bgImage: "/assets/images/liberation/timecontrol.png",
-        timelineImage: "/assets/images/liberation/timeline.png",
+        //timelineImage: "/assets/images/liberation/timeline.png",
         frameImage: "/assets/images/liberation/frame.png",
     },
     {
@@ -171,7 +171,7 @@ export const ERAS: EraConfig[] = [
         fontFamily: "'Pretendard', sans-serif",
         color: '#7f1d1d', // 핏빛 레드/다크 브라운
         bgImage: "/assets/images/korean-war/timecontrol.png",
-        timelineImage: "/assets/images/korean-war/timeline.png",
+        //timelineImage: "/assets/images/korean-war/timeline.png",
         frameImage: "/assets/images/korean-war/frame.png",
     },
     {
@@ -184,7 +184,7 @@ export const ERAS: EraConfig[] = [
         fontFamily: "'Pretendard', sans-serif", // 현대적 느낌
         color: '#3B82F6', // 청량하고 맑은 딥 블루
         bgImage: "/assets/images/republic/timecontrol.png",
-        timelineImage: "/assets/images/republic/timeline.png",
+        //timelineImage: "/assets/images/republic/timeline.png",
         frameImage: "/assets/images/republic/frame.png",
     },
 ];
