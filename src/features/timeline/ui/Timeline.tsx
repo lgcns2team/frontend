@@ -19,9 +19,10 @@ export const Timeline = ({ currentYear, onYearChange, onEventClick }: TimelinePr
     const thumbColor = getEraColor(currentYear);
     const [mainEvents, setMainEvents] = useState<ParsedMainEvent[]>([]);
 
-    useEffect(() => {
-        fetchMainEvents().then(setMainEvents);
-    }, []);
+    // ❌ 비활성화 1: 주요 사건 데이터 가져오기 로직
+    // useEffect(() => {
+    //     fetchMainEvents().then(setMainEvents);
+    // }, []);
 
     // Target window size based on current year
     const getTargetWindowSize = (year: number) => {
@@ -279,8 +280,6 @@ export const Timeline = ({ currentYear, onYearChange, onEventClick }: TimelinePr
 
             <div className="timeline-wrapper">
                 <div className="timeline-slider-container">
-                    <div className="timeline-ruler-ticks"></div>
-
                     {/* Era Markers */}
                     <div className="timeline-era-markers">
                         {ERAS.map((era) => {
@@ -318,8 +317,8 @@ export const Timeline = ({ currentYear, onYearChange, onEventClick }: TimelinePr
                         })}
                     </div>
 
-                    {/* Main Event Markers */}
-                    <div className="timeline-event-markers">
+                    {/* ❌ 비활성화 2: Main Event Markers 렌더링 JSX */}
+                    {/* <div className="timeline-event-markers">
                         {mainEvents.map((event) => {
                             const totalRange = viewEnd - viewStart;
                             const percent = ((event.year - viewStart) / totalRange) * 100;
@@ -344,7 +343,7 @@ export const Timeline = ({ currentYear, onYearChange, onEventClick }: TimelinePr
                                 </div>
                             );
                         })}
-                    </div>
+                    </div> */}
 
                     <input
                         type="range"

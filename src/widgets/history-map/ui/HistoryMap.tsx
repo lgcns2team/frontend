@@ -1026,12 +1026,6 @@ export default function HistoryMap() {
             {/* Bottom Timeline */}
             <div
                 className="bottom-bar"
-                style={{
-                    backgroundImage: `url("${currentEra.timelineImage || '/assets/images/timecontrols/durumagi.png'}")`,
-                    backgroundSize: '100% 100%',
-                    backgroundPosition: 'center',
-                    backgroundRepeat: 'no-repeat'
-                }}
             >
                 <Timeline
                     currentYear={currentYear}
