@@ -19,7 +19,27 @@ export const fetchMainEvents = async (): Promise<MainEvent[]> => {
         if (!response.ok) {
             throw new Error('Failed to fetch main events');
         }
-        const data: MainEvent[] = await response.json();
+        const rawData = await response.json();
+
+        if (!Array.isArray(rawData)) {
+            console.warn("Main events API response is not an array:", rawData);
+            return [];
+        }
+
+        const data: MainEvent[] = rawData
+            .map((item: any) => ({
+                eventId: item.eventId || `event-${Math.random().toString(36).substr(2, 9)}`,
+                eventName: item.eventName || '이름 없는 사건',
+                year: typeof item.year === 'number' ? item.year : parseInt(item.year),
+                era: item.era || null,
+                summary: item.summary || '',
+                type: item.type || 'Event',
+                countryName: item.countryName || '',
+                countryId: item.countryId
+            }))
+            .filter(event => !isNaN(event.year) && event.year !== null);
+
+        console.log("Fetched main events:", data.length);
         return data;
     } catch (error) {
         console.error('Error fetching main events:', error);

@@ -22,6 +22,8 @@ import { ChatbotTrigger, ChatbotPanel } from '../../../features/chatbot';
 import { TextbookPanel } from '../../../features/textbook-panel';
 import { MajorEventsPanel, EventModal } from '../../../features/major-events';
 import { CharactersPanel } from '../../../features/ai-character';
+import { ChatPanel } from '../../../features/ai-chat';
+import type { ParsedCharacter } from '../../../shared/api/characters-api';
 import { fetchCountryByCode, type CountryData } from '../../../shared/api/country-api';
 import type { ParsedMainEvent } from '../../../shared/api/main-events-api';
 import { NotificationBox } from '../../../features/notification-box';
@@ -123,6 +125,8 @@ export default function HistoryMap() {
     const [textbookViewMode, setTextbookViewMode] = useState<'single' | 'double'>('single');
     const [dockingPanelWidth, setDockingPanelWidth] = useState(800);
     const [pageInput, setPageInput] = useState('');
+    const [isConversationMode, setIsConversationMode] = useState(false);
+    const [chatCharacter, setChatCharacter] = useState<ParsedCharacter | null>(null);
 
     // Event Popup State
     const [selectedEvent, setSelectedEvent] = useState<ParsedMainEvent | null>(null);
@@ -229,8 +233,11 @@ export default function HistoryMap() {
     }, [currentYear]);
 
     // Save year to localStorage
+    // Save year to localStorage
     useEffect(() => {
-        localStorage.setItem('historyMapYear', currentYear.toString());
+        if (currentYear !== null && currentYear !== undefined) {
+            localStorage.setItem('historyMapYear', currentYear.toString());
+        }
     }, [currentYear]);
 
     // Handle window resize to update panel width based on screen size
@@ -834,6 +841,15 @@ export default function HistoryMap() {
         }
     };
 
+    const handleVoiceChat = () => {
+        setTextbookViewMode('single');
+        setIsConversationMode(true);
+    };
+
+    const handleCharacterSelect = (character: ParsedCharacter) => {
+        setChatCharacter(character);
+    };
+
     // Dynamic Theme Calculation
     const currentEra = getEraForYear(currentYear);
 
@@ -937,6 +953,24 @@ export default function HistoryMap() {
                 </div>
 
                 <button
+                    onClick={handleVoiceChat}
+                    style={{
+                        padding: isSinglePage ? '4px 5px' : '4px 8px',
+                        backgroundColor: 'transparent',
+                        border: '1px solid var(--ui-primary)',
+                        color: 'var(--ui-primary)',
+                        borderRadius: '4px',
+                        cursor: 'pointer',
+                        marginLeft: isSinglePage ? '4px' : '8px',
+                        letterSpacing: isSinglePage ? '-0.4px' : 'normal',
+                        fontSize: isSinglePage ? '12px' : '14px',
+                        whiteSpace: 'nowrap'
+                    }}
+                >
+                    인물대화
+                </button>
+
+                <button
                     onClick={toggleTextbookViewMode}
                     style={{
                         padding: isSinglePage ? '4px 5px' : '4px 8px',
@@ -1017,15 +1051,17 @@ export default function HistoryMap() {
                 <SidebarMenu onItemClick={handleSidebarClick} currentYear={currentYear} />
             </div>
 
-            {/* Docking Panel */}
+            {/* Right Docking Panel */}
             <DockingPanel
                 isOpen={!!activePanel}
-                onClose={handleClosePanel}
+                onClose={() => {
+                    setActivePanel(null);
+                    setIsConversationMode(false);
+                }}
                 title={getPanelTitle(activePanel)}
-                initialWidth={800}
-                //width={activePanel === 'textbook' ? dockingPanelWidth : 750}
+                style={activePanel === 'textbook' && isConversationMode ? { right: '600px', borderRight: '1px solid #ccc' } : undefined}
+                width={activePanel === 'textbook' ? dockingPanelWidth : undefined}
                 minWidth={activePanel === 'textbook' ? 300 : 180}
-                width={dockingPanelWidth}
                 maxWidth={1600}
                 headerRightContent={
                     activePanel === 'textbook'
@@ -1061,6 +1097,31 @@ export default function HistoryMap() {
                     </div>
                 )}
             </DockingPanel>
+
+            {(activePanel === 'textbook' && isConversationMode) && (
+                <DockingPanel
+                    isOpen={true}
+                    onClose={() => {
+                        setIsConversationMode(false);
+                        setChatCharacter(null); // Reset chat
+                    }}
+                    title={chatCharacter ? "대화" : "인물 대화"}
+                    width={600}
+                    style={{ right: 0 }}
+                    headerRightContent={chatCharacter ? undefined : characterPanelToggle}
+                >
+                    {chatCharacter ? (
+                        <ChatPanel character={chatCharacter} />
+                    ) : (
+                        <CharactersPanel
+                            onYearChange={handleYearChange}
+                            onCharacterClick={handleCharacterSelect}
+                            currentYear={currentYear}
+                            renderToggle={setCharacterPanelToggle}
+                        />
+                    )}
+                </DockingPanel>
+            )}
 
             {/* Bottom Left: Chatbot */}
             <div className="bottom-left-overlay">

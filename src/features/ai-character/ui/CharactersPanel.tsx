@@ -12,7 +12,7 @@ interface CharactersPanelProps {
 
 export const CharactersPanel = ({ onYearChange, onCharacterClick, currentYear = 1244, renderToggle }: CharactersPanelProps) => {
     const [characters, setCharacters] = useState<ParsedCharacter[]>([]);
-    const [showAll, setShowAll] = useState(true); // true: 전체, false: 현재 시대만
+    const [showAll, setShowAll] = useState(false); // true: 전체, false: 현재 시대만
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
 
@@ -113,7 +113,18 @@ export const CharactersPanel = ({ onYearChange, onCharacterClick, currentYear = 
 
     const handleCharacterClick = (character: ParsedCharacter) => {
         if (character.birthYear) {
-            onYearChange?.(character.birthYear);
+            let targetYear = character.birthYear;
+
+            // 해당 시대의 시작 연도보다 이전인지 확인하여 제한
+            if (character.era) {
+                const eraConfig = ERAS.find(e => e.id === character.era);
+                // -Infinity는 제외하고 체크
+                if (eraConfig && eraConfig.startYear !== -Infinity && targetYear < eraConfig.startYear) {
+                    targetYear = eraConfig.startYear;
+                }
+            }
+
+            onYearChange?.(targetYear);
         }
         onCharacterClick?.(character);
     };
