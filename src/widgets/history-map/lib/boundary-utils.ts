@@ -30,6 +30,9 @@ export const getGeojsonFileForYear = (year: number) => {
     if (year <= 1156) return 'geojson/geum_seo_song_1115-1351.geojson';
     if (year <= 1205) return 'geojson/geum_yeojin_song_1157-1205.geojson';
     if (year <= 1214) return 'geojson/monggol_1206-1214.geojson';
+    if (year <= 1234) return 'geojson/monggol_1215-1234.geojson';
+    if (year <= 1279) return 'geojson/monggol_1235-1279.geojson';
+    if (year <= 1368) return 'geojson/mongolempire_1280-1368.geojson';
     if (year <= 1351) return 'geojson/geum_seo_song_1115-1351.geojson'; // Fallback for other years in this range if needed, but user asked for 1156 limit. Keeping this for now as fallback after 1214? No, user said "adjust to 1115-1156".
     // Actually, let's strictly follow the gap.
     // if (year <= 1351) ...

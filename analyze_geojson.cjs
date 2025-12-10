@@ -1,22 +1,42 @@
 const fs = require('fs');
 
-const data = JSON.parse(fs.readFileSync('public/geojson/monggol_1206-1214.geojson', 'utf8'));
+const inputFile = process.argv[2];
 
-data.features.forEach((f, i) => {
-    let minLng = 180, maxLng = -180, minLat = 90, maxLat = -90;
-    const traverse = (coords) => {
-        if (typeof coords[0] === 'number') {
-            const [lng, lat] = coords;
-            if (lng < minLng) minLng = lng;
-            if (lng > maxLng) maxLng = lng;
-            if (lat < minLat) minLat = lat;
-            if (lat > maxLat) maxLat = lat;
-        } else {
-            coords.forEach(traverse);
+if (!inputFile) {
+    console.error('Please provide an input file path.');
+    process.exit(1);
+}
+
+try {
+    const data = JSON.parse(fs.readFileSync(inputFile, 'utf8'));
+
+    console.log(`Analyzing ${inputFile}...`);
+    console.log(`Total features: ${data.features.length}`);
+
+    data.features.forEach((feature, index) => {
+        const name = feature.properties.NAME || feature.properties.name;
+        const geometry = feature.geometry;
+
+        let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
+
+        function processCoords(coords) {
+            if (typeof coords[0] === 'number') {
+                const [x, y] = coords;
+                minX = Math.min(minX, x);
+                minY = Math.min(minY, y);
+                maxX = Math.max(maxX, x);
+                maxY = Math.max(maxY, y);
+            } else {
+                coords.forEach(processCoords);
+            }
         }
-    };
-    traverse(f.geometry.coordinates);
-    console.log(`Feature ${i}: ${f.properties.NAME || f.properties.name}`);
-    console.log(`  BBox: [${minLng.toFixed(2)}, ${minLat.toFixed(2)}] to [${maxLng.toFixed(2)}, ${maxLat.toFixed(2)}]`);
-    console.log(`  Center: [${((minLng + maxLng) / 2).toFixed(2)}, ${((minLat + maxLat) / 2).toFixed(2)}]`);
-});
+
+        processCoords(geometry.coordinates);
+
+        console.log(`Feature ${index + 1}: Name="${name}", BBox=[${minX.toFixed(2)}, ${minY.toFixed(2)}, ${maxX.toFixed(2)}, ${maxY.toFixed(2)}]`);
+    });
+
+} catch (err) {
+    console.error('Error processing GeoJSON:', err);
+    process.exit(1);
+}
