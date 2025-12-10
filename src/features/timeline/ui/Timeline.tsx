@@ -12,6 +12,50 @@ interface TimelineProps {
     onToggleVisibility: () => void;
 }
 
+// Helper for binary search (Windowing optimization)
+function getVisibleItems<T extends { year: number }>(
+    items: T[],
+    minYear: number,
+    maxYear: number
+): T[] {
+    if (items.length === 0) return [];
+
+    // Lower bound: Find first item >= minYear
+    let startIdx = 0;
+    let low = 0;
+    let high = items.length - 1;
+
+    while (low <= high) {
+        const mid = (low + high) >>> 1;
+        if (items[mid].year < minYear) {
+            low = mid + 1;
+        } else {
+            startIdx = mid;
+            high = mid - 1;
+        }
+    }
+
+    // If startIdx is out of bounds, no items are visible
+    if (startIdx >= items.length) return [];
+
+    // Upper bound: Find first item > maxYear
+    let endIdx = items.length;
+    low = startIdx;
+    high = items.length - 1;
+
+    while (low <= high) {
+        const mid = (low + high) >>> 1;
+        if (items[mid].year <= maxYear) {
+            low = mid + 1;
+        } else {
+            endIdx = mid;
+            high = mid - 1;
+        }
+    }
+
+    return items.slice(startIdx, endIdx);
+}
+
 const GLOBAL_MIN_YEAR = -2333;
 const GLOBAL_MAX_YEAR = 2024;
 
@@ -285,6 +329,16 @@ export const Timeline = ({ currentYear, onYearChange, onEventClick, isVisible, o
         return items.sort((a, b) => a.year - b.year);
     }, []);
 
+    // Optimization: Calculate visible decorations using binary search
+    const visibleDecorations = useMemo(() => {
+        const totalRange = viewEnd - viewStart;
+        const buffer = totalRange * 0.15; // 15% buffer
+        const minYear = viewStart - buffer;
+        const maxYear = viewEnd + buffer;
+
+        return getVisibleItems(decorationItems, minYear, maxYear);
+    }, [decorationItems, viewStart, viewEnd]);
+
     return (
         <div className="timeline-component">
             {/* Zoom Controls - Always Visible */}
@@ -417,12 +471,13 @@ export const Timeline = ({ currentYear, onYearChange, onEventClick, isVisible, o
                         </div>
 
                         {/* Background Decorations (Houses) */}
+                        {/* Background Decorations (Houses) */}
                         <div className="timeline-decorations">
-                            {decorationItems.map((item) => {
+                            {visibleDecorations.map((item) => {
                                 const totalRange = viewEnd - viewStart;
                                 const percent = ((item.year - viewStart) / totalRange) * 100;
 
-                                if (percent < -15 || percent > 115) return null;
+                                // Boundary check is already done by binary search windowing
 
                                 const laneOffset = 10 + (item.lane * 7);
 
