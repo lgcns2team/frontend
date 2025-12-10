@@ -25,14 +25,15 @@ export const Timeline = ({ currentYear, onYearChange, onEventClick }: TimelinePr
 
     // Target window size based on current year
     const getTargetWindowSize = (year: number) => {
-        const TRANSITION_START = 1850;
-        const TRANSITION_END = 1910;
+        // const TRANSITION_START = 1850;
+        // const TRANSITION_END = 1910;
 
-        if (year >= TRANSITION_END) return MODERN_WINDOW_SIZE;
-        if (year <= TRANSITION_START) return NORMAL_WINDOW_SIZE;
+        // if (year >= TRANSITION_END) return MODERN_WINDOW_SIZE;
+        // if (year <= TRANSITION_START) return NORMAL_WINDOW_SIZE;
 
-        const progress = (year - TRANSITION_START) / (TRANSITION_END - TRANSITION_START);
-        return NORMAL_WINDOW_SIZE - (NORMAL_WINDOW_SIZE - MODERN_WINDOW_SIZE) * progress;
+        // const progress = (year - TRANSITION_START) / (TRANSITION_END - TRANSITION_START);
+        // return NORMAL_WINDOW_SIZE - (NORMAL_WINDOW_SIZE - MODERN_WINDOW_SIZE) * progress;
+        return NORMAL_WINDOW_SIZE;
     };
 
     // Use state for the actual display window size (smoothly animated)
