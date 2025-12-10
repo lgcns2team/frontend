@@ -11,25 +11,70 @@
     /* Optional: Rounded corners for the container */
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
     /* Optional: Shadow for depth */
+
+    /* Animation */
+    transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+    background: var(--ui-bg, white);
+    z-index: 900;
+    /* High z-index */
 }
+
+/* When hidden, slide down. 
+   Note: transform: translateY(100%) moves it down by its own height. 
+   Assuming it is docked at the bottom visually.
+*/
+.timeline-container.timeline-hidden {
+    transform: translateY(100%);
+}
+
+/* Toggle Button */
+.timeline-toggle-btn {
+    position: absolute;
+    top: -32px;
+    /* Pull it up outside */
+    left: 50%;
+    transform: translateX(-50%);
+    /* Start centered */
+    width: 60px;
+    height: 32px;
+    background: var(--ui-bg, white);
+    border: 1px solid var(--ui-border, #ddd);
+    border-bottom: none;
+    border-radius: 12px 12px 0 0;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--ui-text, #666);
+    box-shadow: 0 -4px 10px rgba(0, 0, 0, 0.05);
+    /* Does not need high z-index because it is inside container? 
+       No, if container overflows hidden, it might clip. 
+       Usually default overflow is visible. */
+}
+
+.timeline-toggle-btn:hover {
+    background: var(--ui-accent-light, #f9fafb);
+    color: var(--ui-accent, #3b82f6);
+}
+
 
 .timeline-wrapper {
     flex: 1;
     display: flex;
     flex-direction: column;
-    gap: 0;
-    /* Changed: Reduced gap to 0 to bring labels closer to the track */
+    gap: 12px;
+    /* Increased gap */
     padding-bottom: 10px;
 }
 
 .timeline-slider-container {
     position: relative;
-    height: 90px;
-    /* Adjusted height for all markers/labels */
+    height: 60px;
+    /* Adjusted height */
     display: flex;
     align-items: center;
-    margin-bottom: 0;
-    /* Changed: Remove bottom margin to bring labels closer */
+    margin-bottom: 5px;
 }
 
 .timeline-slider {
@@ -47,7 +92,8 @@
     cursor: pointer;
 }
 
-/* ❌ 제거됨: 줄눈(눈금)을 위한 .timeline-ruler-ticks 규칙 */
+/* Ruler Ticks */
+
 
 /* Custom Slider Track */
 .timeline-track-bg {
@@ -118,18 +164,7 @@
     transform: scale(1.15);
 }
 
-.timeline-labels {
-    display: flex;
-    justify-content: space-between;
-    color: var(--ui-text, #666);
-    font-size: 14px;
-    /* Larger font */
-    font-weight: 600;
-    padding: 0 4px;
-    opacity: 0.8;
-    margin-top: -30px;
-    /* Changed: Move labels up to be closer to the track. Adjust as needed. */
-}
+
 
 .nav-btn {
     width: 56px;
@@ -201,6 +236,172 @@
 
 .era-label-marker {
     position: absolute;
+    top: -10px;
+    /* Position above the track */
+    transform: translateX(-50%);
+    /* Add side padding */
+}
+
+.timeline-wrapper {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    /* Increased gap */
+    padding-bottom: 10px;
+}
+
+.timeline-slider-container {
+    position: relative;
+    height: 90px;
+    /* Adjusted height */
+    display: flex;
+    align-items: center;
+    margin-bottom: 5px;
+}
+
+.timeline-slider {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 100%;
+    height: 48px;
+    background: transparent;
+    outline: none;
+    z-index: 3;
+    margin: 0;
+    position: absolute;
+    top: 80%;
+    left: 0;
+    transform: translateY(-50%);
+    cursor: pointer;
+}
+
+/* Ruler Ticks */
+
+
+/* Custom Slider Track */
+.timeline-track-bg {
+    position: absolute;
+    top: 80%;
+    left: 0;
+    right: 0;
+    height: 16px;
+    /* Thicker track */
+    transform: translateY(-50%);
+    background: var(--track-bg, #cbd5e1);
+    border: 1px solid var(--ui-border, #47351D);
+    border-radius: 8px;
+    /* More rounded */
+    z-index: 1;
+    box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+/* Lens Thumb */
+.timeline-slider::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 32px;
+    /* Larger thumb */
+    height: 32px;
+    border-radius: 50%;
+    background: var(--thumb-color, #E7903A);
+    cursor: grab;
+    border: 4px solid var(--ui-bg, #fff);
+    /* Thicker border */
+    box-shadow:
+        0 4px 6px rgba(0, 0, 0, 0.2),
+        0 0 0 1px var(--ui-border, #47351D);
+    transition: transform 0.1s, background-color 0.2s, box-shadow 0.2s;
+    margin-top: -8px;
+    /* Center vertically relative to track if needed, but flex aligns it */
+}
+
+.timeline-slider::-webkit-slider-thumb:active {
+    cursor: grabbing;
+    transform: scale(1.1);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.timeline-slider::-webkit-slider-thumb:hover {
+    transform: scale(1.15);
+}
+
+.timeline-slider::-moz-range-thumb {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: var(--thumb-color, #E7903A);
+    cursor: grab;
+    border: 4px solid var(--ui-bg, #fff);
+    box-shadow:
+        0 4px 6px rgba(0, 0, 0, 0.2),
+        0 0 0 1px var(--ui-border, #47351D);
+    transition: transform 0.1s, background-color 0.2s;
+}
+
+.timeline-slider::-moz-range-thumb:active {
+    cursor: grabbing;
+    transform: scale(1.1);
+}
+
+.timeline-slider::-moz-range-thumb:hover {
+    transform: scale(1.15);
+}
+
+
+
+.nav-btn {
+    width: 56px;
+    /* Larger buttons */
+    height: 56px;
+    border-radius: 50%;
+    background: var(--ui-bg, white);
+    border: 2px solid var(--ui-accent, #3b82f6);
+    color: var(--ui-accent, #3b82f6);
+    /* font-size removed */
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    flex-shrink: 0;
+    padding: 0;
+    /* Remove padding to prevent layout shifts */
+}
+
+.nav-btn svg {
+    width: 24px;
+    height: 24px;
+    stroke-width: 2.5px;
+    /* Make it slightly thicker */
+    flex-shrink: 0;
+}
+
+.nav-btn:hover {
+    background: var(--ui-accent, #eff6ff);
+    color: var(--ui-bg, white);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+}
+
+.nav-btn:active {
+    transform: translateY(0);
+}
+
+/* Era Markers */
+.timeline-era-markers {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    pointer-events: none;
+    z-index: 4;
+}
+
+.era-label-marker {
+    position: absolute;
     top: -16px;
     /* Moved up slightly */
     transform: translateX(-50%);
@@ -253,6 +454,7 @@
     pointer-events: none;
     z-index: 5;
     /* Above slider (z-index: 3) */
+    overflow: hidden;
 }
 
 .event-marker {
@@ -309,4 +511,30 @@
 .event-marker:hover .event-marker-label {
     opacity: 1;
     visibility: visible;
+}
+
+/* Decorations */
+.timeline-decorations {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    pointer-events: none;
+    z-index: 0;
+    /* Behind other interactive elements */
+}
+
+.timeline-decoration-house {
+    position: absolute;
+    /* User said "slightly above scroll line". Scroll line is vertically centered (top: 50%). */
+    bottom: 50%;
+    transform: translateX(-50%);
+    width: 60px;
+    /* Guessing appropriate size */
+    height: auto;
+    margin-bottom: 12px;
+    /* Push up above the track (which is ~16px high) */
+    opacity: 0.9;
+    z-index: 1;
 }
