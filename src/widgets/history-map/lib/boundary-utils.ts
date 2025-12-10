@@ -128,7 +128,7 @@ export const getColorByCountry = (name: string) => {
         '청': '#ef4444', 'Qing': '#ef4444', // Red
         '흉노': '#a855f7', 'Xiongnu': '#a855f7',
         '거란': '#f59e0b', 'Khitan': '#f59e0b', 'Liao': '#f59e0b',
-        '여진': '#22d3ee', 'Jurchen': '#22d3ee', 'Jin': '#a855f7', 'newyeojin': '#84cc16', 'yeojin': '#22d3ee', // Jurchen Cyan, Jin (Dynasty) Purple
+        '여진': '#84cc16', 'Jurchen': '#84cc16', 'Jin': '#84cc16', 'newyeojin': '#84cc16', 'yeojin': '#84cc16', // Jurchen Cyan, Jin (Dynasty) Purple
         '후금': '#fa0000ff', 'Later Jin': '#fa0000ff', 'Hugeum': '#fa0000ff', // Dark Red
         '오대십국': '#facc15', 'Five Dynasties': '#facc15', // 'Later Jin': '#facc15' removed to avoid conflict with Manchu Later Jin
         '서하': '#c084fc', 'Western Xia': '#c084fc', 'Seoha': '#c084fc', // Light Purple
