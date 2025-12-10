@@ -839,24 +839,42 @@ export default function HistoryMap() {
 
     const renderTextbookControls = () => {
         const totalPages = 220;
+        // 한면보기일 때 자간 조정
+        const isSinglePage = textbookViewMode === 'single';
+
         return (
-            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <div style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: isSinglePage ? '6px' : '8px',
+                letterSpacing: isSinglePage ? '-0.5px' : 'normal',
+                fontSize: isSinglePage ? '13px' : '14px'
+            }}>
                 <button
                     onClick={handleTextbookPrev}
                     disabled={textbookPage === 0}
                     style={{
-                        padding: '4px 8px',
+                        padding: isSinglePage ? '4px 6px' : '4px 8px',
                         backgroundColor: 'var(--ui-primary)',
                         color: 'white',
                         border: 'none',
                         borderRadius: '4px',
                         cursor: 'pointer',
-                        opacity: textbookPage === 0 ? 0.5 : 1
+                        opacity: textbookPage === 0 ? 0.5 : 1,
+                        letterSpacing: isSinglePage ? '-0.3px' : 'normal',
+                        whiteSpace: 'nowrap'
                     }}
                 >
                     이전
                 </button>
-                <span style={{ fontSize: '14px', fontWeight: 500, minWidth: '60px', textAlign: 'center', color: 'var(--ui-text)' }}>
+                <span style={{
+                    fontSize: isSinglePage ? '13px' : '14px',
+                    fontWeight: 500,
+                    minWidth: '60px',
+                    textAlign: 'center',
+                    color: 'var(--ui-text)',
+                    whiteSpace: 'nowrap'
+                }}>
                     {textbookViewMode === 'single'
                         ? `${textbookPage + 1}p`
                         : `${textbookPage + 1}p - ${textbookPage + 2}p`}
@@ -869,19 +887,21 @@ export default function HistoryMap() {
                             : textbookPage >= totalPages - 2
                     }
                     style={{
-                        padding: '4px 8px',
+                        padding: isSinglePage ? '4px 6px' : '4px 8px',
                         backgroundColor: 'var(--ui-primary)',
                         color: 'white',
                         border: 'none',
                         borderRadius: '4px',
                         cursor: 'pointer',
-                        opacity: (textbookViewMode === 'single' ? textbookPage === totalPages - 1 : textbookPage >= totalPages - 2) ? 0.5 : 1
+                        opacity: (textbookViewMode === 'single' ? textbookPage === totalPages - 1 : textbookPage >= totalPages - 2) ? 0.5 : 1,
+                        letterSpacing: isSinglePage ? '-0.3px' : 'normal',
+                        whiteSpace: 'nowrap'
                     }}
                 >
                     다음
                 </button>
 
-                <div style={{ display: 'flex', alignItems: 'center', gap: '4px', marginLeft: '8px' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '4px', marginLeft: isSinglePage ? '6px' : '8px' }}>
                     <input
                         type="text"
                         value={pageInput}
@@ -889,24 +909,27 @@ export default function HistoryMap() {
                         onKeyDown={(e) => e.key === 'Enter' && handlePageInputSubmit()}
                         placeholder="페이지"
                         style={{
-                            width: '50px',
+                            width: isSinglePage ? '45px' : '50px',
                             padding: '4px',
                             borderRadius: '4px',
                             border: '1px solid var(--ui-border)',
                             backgroundColor: 'var(--ui-bg)',
                             color: 'var(--ui-text)',
-                            textAlign: 'center'
+                            textAlign: 'center',
+                            fontSize: isSinglePage ? '12px' : '13px'
                         }}
                     />
                     <button
                         onClick={handlePageInputSubmit}
                         style={{
-                            padding: '4px 8px',
+                            padding: isSinglePage ? '4px 6px' : '4px 8px',
                             backgroundColor: 'var(--ui-primary)',
                             color: 'white',
                             border: 'none',
                             borderRadius: '4px',
-                            cursor: 'pointer'
+                            cursor: 'pointer',
+                            letterSpacing: isSinglePage ? '-0.3px' : 'normal',
+                            whiteSpace: 'nowrap'
                         }}
                     >
                         이동
@@ -916,13 +939,16 @@ export default function HistoryMap() {
                 <button
                     onClick={toggleTextbookViewMode}
                     style={{
-                        padding: '4px 8px',
+                        padding: isSinglePage ? '4px 5px' : '4px 8px',
                         backgroundColor: 'transparent',
                         border: '1px solid var(--ui-primary)',
                         color: 'var(--ui-primary)',
                         borderRadius: '4px',
                         cursor: 'pointer',
-                        marginLeft: '8px'
+                        marginLeft: isSinglePage ? '4px' : '8px',
+                        letterSpacing: isSinglePage ? '-0.4px' : 'normal',
+                        fontSize: isSinglePage ? '12px' : '14px',
+                        whiteSpace: 'nowrap'
                     }}
                 >
                     {textbookViewMode === 'single' ? '양면보기' : '한면보기'}

@@ -87,6 +87,8 @@
     font-size: 1.25rem;
     font-weight: 600;
     color: var(--ui-text);
+    white-space: nowrap;
+    letter-spacing: -0.3px;
 }
 
 .close-btn {
