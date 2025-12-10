@@ -12,8 +12,6 @@ interface TimelineProps {
 
 const GLOBAL_MIN_YEAR = -2333;
 const GLOBAL_MAX_YEAR = 2024;
-const NORMAL_WINDOW_SIZE = 500;
-const MODERN_WINDOW_SIZE = 100; // Zoom in for modern era
 
 export const Timeline = ({ currentYear, onYearChange, onEventClick }: TimelineProps) => {
     const thumbColor = getEraColor(currentYear);
@@ -24,22 +22,12 @@ export const Timeline = ({ currentYear, onYearChange, onEventClick }: TimelinePr
         fetchMainEvents().then(setMainEvents);
     }, []);
 
-    // Target window size based on current year
-    const getTargetWindowSize = (year: number) => {
-        // const TRANSITION_START = 1850;
-        // const TRANSITION_END = 1910;
+    // Zoom levels: 1x (500), 2x (250), 4x (125), 16x (31.25)
+    // Base window size is 500 years
+    const BASE_WINDOW_SIZE = 500;
+    const [zoomLevel, setZoomLevel] = useState<1 | 2 | 4 | 16>(1);
 
-        // if (year >= TRANSITION_END) return MODERN_WINDOW_SIZE;
-        // if (year <= TRANSITION_START) return NORMAL_WINDOW_SIZE;
-
-        // const progress = (year - TRANSITION_START) / (TRANSITION_END - TRANSITION_START);
-        // return NORMAL_WINDOW_SIZE - (NORMAL_WINDOW_SIZE - MODERN_WINDOW_SIZE) * progress;
-        return NORMAL_WINDOW_SIZE;
-    };
-
-    // Use state for the actual display window size (smoothly animated)
-    const [displayWindowSize, setDisplayWindowSize] = useState(() => getTargetWindowSize(currentYear));
-    const targetWindowSize = getTargetWindowSize(currentYear);
+    const displayWindowSize = BASE_WINDOW_SIZE / zoomLevel;
 
     // Initialize view window centered on current year
     const [viewStart, setViewStart] = useState(() => {
@@ -53,37 +41,7 @@ export const Timeline = ({ currentYear, onYearChange, onEventClick }: TimelinePr
     const scrollDirection = useRef<number>(0);
     const animationFrameId = useRef<number | null>(null);
 
-    // Smoothly animate window size
-    useEffect(() => {
-        let animationId: number;
 
-        const animate = () => {
-            setDisplayWindowSize(prev => {
-                const diff = targetWindowSize - prev;
-                if (Math.abs(diff) < 0.1) return targetWindowSize;
-
-                // Lerp factor: 0.1 for smooth transition
-                const next = prev + diff * 0.1;
-
-                // Adjust viewStart to keep relative position
-                setViewStart(currentViewStart => {
-                    const center = currentViewStart + prev / 2;
-                    // Keep the center roughly stable during zoom
-                    const newStart = center - next / 2;
-                    return Math.max(GLOBAL_MIN_YEAR, Math.min(newStart, GLOBAL_MAX_YEAR - next));
-                });
-
-                return next;
-            });
-
-            if (Math.abs(displayWindowSize - targetWindowSize) >= 0.1) {
-                animationId = requestAnimationFrame(animate);
-            }
-        };
-
-        animationId = requestAnimationFrame(animate);
-        return () => cancelAnimationFrame(animationId);
-    }, [targetWindowSize, displayWindowSize]);
 
     // Update view window if currentYear goes out of bounds (e.g. from auto-play or external change)
     useEffect(() => {
@@ -206,20 +164,7 @@ export const Timeline = ({ currentYear, onYearChange, onEventClick }: TimelinePr
     }, [viewStart, viewEnd]);
 
 
-    // Random decorations (Old Houses)
-    const decorations = useMemo(() => {
-        const items = [];
-        const count = 40; // Number of houses to scatter across history
-        for (let i = 0; i < count; i++) {
-            // Random year between MIN and MAX
-            const year = Math.floor(Math.random() * (GLOBAL_MAX_YEAR - GLOBAL_MIN_YEAR + 1)) + GLOBAL_MIN_YEAR;
-            // Lane: 0, 1, or 2 (three invisible lines)
-            // 0: Lowest, 1: Middle, 2: Highest
-            const lane = Math.floor(Math.random() * 3);
-            items.push({ id: `house-${i}`, year, lane });
-        }
-        return items.sort((a, b) => a.year - b.year);
-    }, []);
+
 
     // Navigation Press-and-Hold Logic
     const latestYearRef = useRef(currentYear);
@@ -271,8 +216,88 @@ export const Timeline = ({ currentYear, onYearChange, onEventClick }: TimelinePr
         };
     }, []);
 
+    // Jittered Grid & Seeded Random for Decorations (Houses & Vehicles)
+    const decorationItems = useMemo(() => {
+        // Simple seeded random generator (Linear Congruential Generator)
+        let seed = 12345; // Fixed seed for stability
+        const seededRandom = () => {
+            seed = (seed * 9301 + 49297) % 233280;
+            return seed / 233280;
+        };
+
+        const items: Array<{ id: string; year: number; lane: number; image: string; type: 'house' | 'vehicle' | 'cloud' }> = [];
+
+        ERAS.forEach((era) => {
+            // Calculate effective range
+            const effectiveStart = era.startYear === -Infinity ? GLOBAL_MIN_YEAR : era.startYear;
+            const effectiveEnd = era.endYear === Infinity ? GLOBAL_MAX_YEAR : era.endYear;
+            const duration = effectiveEnd - effectiveStart;
+
+            // --- 1. Houses (Lanes 2, 3, 4) ---
+            if (era.houseImage) {
+                const HOUSE_DENSITY = 50; // 1 house per 50 years
+                const houseCount = Math.max(1, Math.floor(duration / HOUSE_DENSITY));
+
+                for (let i = 0; i < houseCount; i++) {
+                    // Random year within era
+                    const year = effectiveStart + Math.floor(seededRandom() * (duration + 1));
+
+                    // Lanes 2, 3, 4
+                    const lane = 2 + Math.floor(seededRandom() * 3);
+
+                    items.push({
+                        id: `house-${era.id}-${i}`,
+                        year,
+                        lane,
+                        image: era.houseImage,
+                        type: 'house'
+                    });
+                }
+            }
+
+            // --- 2. Clouds (Lane 4) ---
+            // Randomly placed, disappearing/reappearing
+            const CLOUD_DENSITY = 70; // 1 cloud per 70 years
+            const cloudCount = Math.max(1, Math.floor(duration / CLOUD_DENSITY));
+            const cloudStep = duration / cloudCount;
+
+            for (let i = 0; i < cloudCount; i++) {
+                const jitter = seededRandom(); // 0 to 1
+                const verticalJitter = seededRandom(); // 0 to 1
+                const imageJitter = seededRandom(); // 0 to 1
+                const year = effectiveStart + (cloudStep * i) + (cloudStep * jitter);
+
+                items.push({
+                    id: `cloud-${era.id}-${i}`,
+                    year,
+                    lane: 4 + (verticalJitter * 0.5), // Lane 4 with some vertical variation
+                    image: imageJitter > 0.5 ? '/assets/images/common/cloud1.png' : '/assets/images/common/cloud2.png',
+                    type: 'cloud'
+                });
+            }
+
+
+        });
+
+        return items.sort((a, b) => a.year - b.year);
+    }, []);
+
     return (
         <div className={`timeline-container ${!isVisible ? 'timeline-hidden' : ''}`}>
+            {/* Zoom Controls */}
+            <div className="zoom-controls">
+                {[1, 2, 4, 16].map((zoom) => (
+                    <button
+                        key={zoom}
+                        className={`zoom-btn ${zoomLevel === zoom ? 'active' : ''}`}
+                        onClick={() => setZoomLevel(zoom as 1 | 2 | 4 | 16)}
+                        aria-label={`Zoom ${zoom}x`}
+                    >
+                        {zoom}x
+                    </button>
+                ))}
+            </div>
+
             {/* Toggle Button */}
             <button
                 className="timeline-toggle-btn"
@@ -315,42 +340,7 @@ export const Timeline = ({ currentYear, onYearChange, onEventClick }: TimelinePr
             <div className="timeline-wrapper">
                 <div className="timeline-slider-container">
 
-                    {/* Era Markers */}
-                    <div className="timeline-era-markers">
-                        {ERAS.map((era) => {
-                            // Calculate midpoint
-                            // Handle -Infinity for Gojoseon start: use GLOBAL_MIN_YEAR
-                            const effectiveStart = era.startYear === -Infinity ? GLOBAL_MIN_YEAR : era.startYear;
-                            // Handle Infinity for Republic end: use GLOBAL_MAX_YEAR
-                            const effectiveEnd = era.endYear === Infinity ? GLOBAL_MAX_YEAR : era.endYear;
 
-                            const midYear = (effectiveStart + effectiveEnd) / 2;
-
-                            // Calculate position relative to view
-                            const totalRange = viewEnd - viewStart;
-                            const midPercent = ((midYear - viewStart) / totalRange) * 100;
-
-                            // Check if visible (allow some buffer)
-                            if (midPercent < -20 || midPercent > 120) return null;
-
-                            const eraColor = getEraColor(effectiveEnd - 1);
-
-                            return (
-                                <div
-                                    key={era.id}
-                                    className="era-label-marker"
-                                    style={{
-                                        left: `${midPercent}%`,
-                                        '--era-color': eraColor
-                                    } as React.CSSProperties}
-                                >
-                                    <div className="era-bubble">
-                                        {era.label}
-                                    </div>
-                                </div>
-                            );
-                        })}
-                    </div>
 
                     {/* Main Event Markers */}
                     <div className="timeline-event-markers">
@@ -380,27 +370,80 @@ export const Timeline = ({ currentYear, onYearChange, onEventClick }: TimelinePr
                         })}
                     </div>
 
+                    {/* Vehicles (Era-based End-to-End Movement) */}
+                    <div className="timeline-vehicles">
+                        {ERAS.map((era) => {
+                            if (!era.vehicleImage) return null;
+
+                            // Calculate effective range
+                            const effectiveStart = era.startYear === -Infinity ? GLOBAL_MIN_YEAR : era.startYear;
+                            const effectiveEnd = era.endYear === Infinity ? GLOBAL_MAX_YEAR : era.endYear;
+                            const duration = effectiveEnd - effectiveStart;
+
+                            const totalRange = viewEnd - viewStart;
+                            const leftPercent = ((effectiveStart - viewStart) / totalRange) * 100;
+                            const widthPercent = (duration / totalRange) * 100;
+
+                            // Skip if completely out of view
+                            if (leftPercent + widthPercent < -20 || leftPercent > 120) return null;
+
+                            return (
+                                <div
+                                    key={`vehicles-${era.id}`}
+                                    className="era-vehicle-container"
+                                    style={{
+                                        left: `${leftPercent}%`,
+                                        width: `${widthPercent}%`
+                                    }}
+                                >
+                                    {/* Lane 0: Right to Left */}
+                                    <div className="vehicle-track lane-0">
+                                        <img
+                                            src={era.vehicleImage}
+                                            alt=""
+                                            className="era-vehicle vehicle-rl"
+                                            aria-hidden="true"
+                                        />
+                                    </div>
+
+                                    {/* Lane 1: Left to Right */}
+                                    <div className="vehicle-track lane-1">
+                                        <img
+                                            src={era.vehicleImage}
+                                            alt=""
+                                            className="era-vehicle vehicle-lr"
+                                            aria-hidden="true"
+                                        />
+                                    </div>
+                                </div>
+                            );
+                        })}
+                    </div>
+
                     {/* Background Decorations (Houses) */}
                     <div className="timeline-decorations">
-                        {decorations.map((item) => {
+                        {decorationItems.map((item) => {
                             const totalRange = viewEnd - viewStart;
                             const percent = ((item.year - viewStart) / totalRange) * 100;
 
-                            // Slightly wider buffer to avoid popping
+                            // Optimization: Skip if far out of view
                             if (percent < -15 || percent > 115) return null;
 
-                            // Lane offsets: Distribute them vertically
-                            // Lane 0: 10px
-                            // Lane 1: 20px
-                            // Lane 2: 30px
-                            const laneOffset = 10 + (item.lane * 10);
+                            // Lane offsets:
+                            // Vehicles (0, 1): 10px, 35px
+                            // Houses (2, 3, 4): 60px, 85px, 110px
+                            const laneOffset = 10 + (item.lane * 7);
+
+                            let className = "timeline-decoration-house";
+                            if (item.type === 'vehicle') className = "timeline-decoration-vehicle";
+                            else if (item.type === 'cloud') className = "timeline-decoration-cloud";
 
                             return (
                                 <img
                                     key={item.id}
-                                    src="/assets/images/test/oldhouse.png"
+                                    src={item.image}
                                     alt=""
-                                    className="timeline-decoration-house"
+                                    className={className}
                                     style={{
                                         left: `${percent}%`,
                                         marginBottom: `${laneOffset}px`
