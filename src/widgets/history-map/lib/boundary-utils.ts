@@ -36,7 +36,8 @@ export const getGeojsonFileForYear = (year: number) => {
     if (year <= 1370) return 'geojson/yuan_myeong_goryeo_1369-1370.geojson';
     if (year <= 1391) return 'geojson/goryeo_yuan_myeong_yeojin_1371-1391.geojson';
     if (year <= 1432) return 'geojson/joseon_yuan_myeong_yeojin_1392-1432.geojson';
-    if (year <= 1633) return 'geojson/yuan_myeong_yeojin_josun_1433-1633.geojson';
+    if (year <= 1626) return 'geojson/yuan_myeong_yeojin_josun_1433-1626.geojson';
+    if (year <= 1635) return 'geojson/hugeum_josun_ming_1627-1635.geojson';
     if (year <= 1351) return 'geojson/geum_seo_song_1115-1351.geojson'; // Fallback for other years in this range if needed, but user asked for 1156 limit. Keeping this for now as fallback after 1214? No, user said "adjust to 1115-1156".
     // Actually, let's strictly follow the gap.
     // if (year <= 1351) ...
@@ -127,7 +128,8 @@ export const getColorByCountry = (name: string) => {
         '흉노': '#a855f7', 'Xiongnu': '#a855f7',
         '거란': '#f59e0b', 'Khitan': '#f59e0b', 'Liao': '#f59e0b',
         '여진': '#84cc16', 'Jurchen': '#84cc16', 'Jin': '#a855f7', 'newyeojin': '#84cc16', 'yeojin': '#84cc16', // Jurchen Green, Jin (Dynasty) Purple
-        '오대십국': '#facc15', 'Five Dynasties': '#facc15', 'Later Jin': '#facc15',
+        '후금': '#fa0000ff', 'Later Jin': '#fa0000ff', 'Hugeum': '#fa0000ff', // Dark Red
+        '오대십국': '#facc15', 'Five Dynasties': '#facc15', // 'Later Jin': '#facc15' removed to avoid conflict with Manchu Later Jin
         '서하': '#c084fc', 'Western Xia': '#c084fc', 'Seoha': '#c084fc', // Light Purple
         '금': '#a855f7', 'Jin (Geum)': '#a855f7', 'Geum': '#a855f7', // Jin (Dynasty) Purple
         '남송': '#3b82f6', 'Southern Song': '#3b82f6', 'Namsong': '#3b82f6'
