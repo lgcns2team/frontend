@@ -4,13 +4,9 @@ import { getEraForYear } from '../../../shared/config/era-theme';
 
 interface TimeControlsProps {
     currentYear: number;
-    isPlaying: boolean;
-    speed: number;
-    onTogglePlay: () => void;
-    onToggleSpeed: () => void;
 }
 
-export const TimeControls = ({ currentYear, isPlaying, speed, onTogglePlay, onToggleSpeed }: TimeControlsProps) => {
+export const TimeControls = ({ currentYear }: TimeControlsProps) => {
 
     const eraConfig = getEraForYear(currentYear);
 
@@ -35,21 +31,6 @@ export const TimeControls = ({ currentYear, isPlaying, speed, onTogglePlay, onTo
                     <span className="era-name">{eraConfig.description}</span>
                 </div> */}
             </div>
-
-            {/* Controls Row (Bottom) */}
-            {/* <div className="controls-row">
-                <button
-                    className={`control - btn play - btn ${ isPlaying ? 'playing' : '' } `}
-                    onClick={onTogglePlay}
-                    aria-label={isPlaying ? "Pause" : "Play"}
-                >
-                    {isPlaying ? '⏸' : '▶'}
-                </button>
-
-                <button className="control-btn speed-btn" onClick={onToggleSpeed}>
-                    <span className="speed-value">{speed}x</span>
-                </button>
-            </div> */}
         </div>
     );
 };

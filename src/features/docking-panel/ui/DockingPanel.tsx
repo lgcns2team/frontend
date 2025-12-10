@@ -20,8 +20,9 @@ export const DockingPanel = ({
     minWidth = 300,
     maxWidth = 1600,
     headerRightContent,
-    width: controlledWidth
-}: DockingPanelProps & { headerRightContent?: ReactNode, width?: number }) => {
+    width: controlledWidth,
+    style
+}: DockingPanelProps & { headerRightContent?: ReactNode, width?: number, style?: React.CSSProperties }) => {
     const [width, setWidth] = useState(initialWidth);
     const isResizing = useRef(false);
 
@@ -66,7 +67,7 @@ export const DockingPanel = ({
     return (
         <div
             className={`docking-panel ${isOpen ? 'open' : 'closed'}`}
-            style={{ width: `${width}px` }}
+            style={{ width: `${width}px`, ...style }}
         >
             {/* Resize Handle */}
             <div className="resize-handle" onMouseDown={startResizing}></div>

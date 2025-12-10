@@ -40,6 +40,8 @@ export interface EraConfig {
     bgImage?: string;   // 배경 이미지 경로 (Optional)
     timelineImage?: string; // 타임라인 배경 이미지 (Optional)
     frameImage?: string; // FloatingPanel 프레임 이미지 (Optional)
+    houseImages?: string[]; // 타임라인 데코레이션 이미지 배열
+    vehicleImage?: string; // 타임라인 탈것 이미지 (Optional)
 }
 
 // 3. 시대별 설정 (Color를 여기서 통합 관리)
@@ -51,11 +53,13 @@ export const ERAS: EraConfig[] = [
         description: '청동기 문명의 묵직하고 고전적인 시대',
         startYear: -Infinity,
         endYear: ERA_LIMITS.GOJOSEON_END - 1,
-        fontFamily: "'Cinzel', serif", // 고대 느낌
+        fontFamily: "'Nanum Myeongjo', serif", // 고대 느낌
         color: '#D7C0AE', // 브론즈 베이지
         bgImage: "/assets/images/gojoseon/timecontrol.png",
-        timelineImage: "/assets/images/gojoseon/timeline.png",
+        //timelineImage: "/assets/images/gojoseon/timeline.png",
         frameImage: "/assets/images/gojoseon/frame.png",
+        houseImages: ["/assets/images/gojoseon/house.png"],
+        vehicleImage: "/assets/images/gojoseon/vehicle.png",
     },
     {
         id: 'proto-three-kingdoms',
@@ -64,11 +68,13 @@ export const ERAS: EraConfig[] = [
         description: '여러 소국이 자라나는 태동의 시기',
         startYear: ERA_LIMITS.GOJOSEON_END,
         endYear: ERA_LIMITS.PROTO_THREE_KINGDOMS_END - 1,
-        fontFamily: "'Noto Serif KR', serif",
+        fontFamily: "'Nanum Myeongjo', serif",
         color: '#E2E8F0', // 연한 올리브 그린/슬레이트
         bgImage: "/assets/images/proto-three-kingdoms/timecontrol.png",
-        timelineImage: "/assets/images/proto-three-kingdoms/timeline.png",
+        //timelineImage: "/assets/images/proto-three-kingdoms/timeline.png",
         frameImage: "/assets/images/proto-three-kingdoms/frame.png",
+        houseImages: ["/assets/images/proto-three-kingdoms/house.png"],
+        vehicleImage: "/assets/images/proto-three-kingdoms/vehicle.png",
     },
     {
         id: 'three-kingdoms',
@@ -77,11 +83,13 @@ export const ERAS: EraConfig[] = [
         description: '영토 확장의 열정과 역동성',
         startYear: ERA_LIMITS.PROTO_THREE_KINGDOMS_END,
         endYear: ERA_LIMITS.THREE_KINGDOMS_END - 1,
-        fontFamily: "'Noto Serif KR', serif",
+        fontFamily: "'Nanum Myeongjo', serif",
         color: '#FDA4AF', // 활기찬 코랄 레드
         bgImage: "/assets/images/three-kingdoms/timecontrol.png",
-        timelineImage: "/assets/images/three-kingdoms/timeline.png",
+        //timelineImage: "/assets/images/three-kingdoms/timeline.png",
         frameImage: "/assets/images/three-kingdoms/frame.png",
+        houseImages: ["/assets/images/three-kingdoms/house.png"],
+        vehicleImage: "/assets/images/three-kingdoms/vehicle.png",
     },
     {
         id: 'north-south-states',
@@ -90,11 +98,13 @@ export const ERAS: EraConfig[] = [
         description: '신라의 황금 문화와 발해의 기상',
         startYear: ERA_LIMITS.THREE_KINGDOMS_END,
         endYear: ERA_LIMITS.NORTH_SOUTH_STATES_END - 1,
-        fontFamily: "'Noto Serif KR', serif",
+        fontFamily: "'Nanum Myeongjo', serif",
         color: '#FCD34D', // 화려한 앰버 골드
         bgImage: "/assets/images/north-south-states/timecontrol.png",
-        timelineImage: "/assets/images/north-south-states/timeline.png",
+        //timelineImage: "/assets/images/north-south-states/timeline.png",
         frameImage: "/assets/images/north-south-states/frame.png",
+        houseImages: ["/assets/images/north-south-states/house.png"],
+        vehicleImage: "/assets/images/north-south-states/vehicle.png",
     },
     {
         id: 'goryeo',
@@ -106,8 +116,10 @@ export const ERAS: EraConfig[] = [
         fontFamily: "'Nanum Myeongjo', serif", // 우아한 명조체
         color: '#5EEAD4', // 비취색/청록색
         bgImage: "/assets/images/goryeo/timecontrol.png",
-        timelineImage: "/assets/images/goryeo/timeline.png",
+        //timelineImage: "/assets/images/goryeo/timeline.png",
         frameImage: "/assets/images/goryeo/frame.png",
+        houseImages: ["/assets/images/goryeo/house.png"],
+        vehicleImage: "/assets/images/goryeo/vehicle.png",
     },
     {
         id: 'joseon',
@@ -119,8 +131,10 @@ export const ERAS: EraConfig[] = [
         fontFamily: "'Nanum Myeongjo', serif",
         color: '#93C5FD', // 단아한 쪽빛/스카이 블루
         bgImage: "/assets/images/joseon/timecontrol.png",
-        timelineImage: "/assets/images/joseon/timeline.png",
+        //timelineImage: "/assets/images/joseon/timeline.png",
         frameImage: "/assets/images/joseon/frame.png",
+        houseImages: ["/assets/images/joseon/house.png", "/assets/images/joseon/house2.png"],
+        vehicleImage: "/assets/images/joseon/vehicle.png",
     },
     {
         id: 'korean-empire',
@@ -132,8 +146,10 @@ export const ERAS: EraConfig[] = [
         fontFamily: "'Nanum Myeongjo', serif",
         color: '#C084FC', // 고귀한 로얄 퍼플
         bgImage: "/assets/images/korean-empire/timecontrol.png",
-        timelineImage: "/assets/images/korean-empire/timeline.png",
+        //timelineImage: "/assets/images/korean-empire/timeline.png",
         frameImage: "/assets/images/korean-empire/frame.png",
+        houseImages: ["/assets/images/korean-empire/house.png"],
+        vehicleImage: "/assets/images/korean-empire/vehicle.png",
     },
     {
         id: 'colonial',
@@ -142,11 +158,13 @@ export const ERAS: EraConfig[] = [
         description: '아픔과 저항, 잊지 말아야 할 시간',
         startYear: ERA_LIMITS.KOREAN_EMPIRE_END,
         endYear: 1944, // 1945년 광복 전까지
-        fontFamily: "'Pretendard', sans-serif", // 근대적 느낌
+        fontFamily: "'Nanum Myeongjo', serif", // 근대적 느낌
         color: '#94A3B8', // 무채색 그레이
         bgImage: "/assets/images/colonial/timecontrol.png",
-        timelineImage: "/assets/images/colonial/timeline.png",
+        //timelineImage: "/assets/images/colonial/timeline.png",
         frameImage: "/assets/images/colonial/frame.png",
+        houseImages: ["/assets/images/colonial/house.png"],
+        vehicleImage: "/assets/images/colonial/vehicle.png",
     },
     {
         id: 'liberation',
@@ -155,11 +173,13 @@ export const ERAS: EraConfig[] = [
         description: '빛을 되찾은 기쁨과 환희',
         startYear: ERA_LIMITS.COLONIAL_PERIOD_END,
         endYear: ERA_LIMITS.LIBERATION_END - 1,
-        fontFamily: "'Pretendard', sans-serif",
+        fontFamily: "'Nanum Myeongjo', serif",
         color: '#34d399', // 희망찬 에메랄드 그린
         bgImage: "/assets/images/liberation/timecontrol.png",
-        timelineImage: "/assets/images/liberation/timeline.png",
+        //timelineImage: "/assets/images/liberation/timeline.png",
         frameImage: "/assets/images/liberation/frame.png",
+        houseImages: ["/assets/images/liberation/house.png"],
+        vehicleImage: "/assets/images/liberation/vehicle.png",
     },
     {
         id: 'korean-war',
@@ -168,11 +188,13 @@ export const ERAS: EraConfig[] = [
         description: '동족상잔의 비극과 아픔',
         startYear: ERA_LIMITS.LIBERATION_END,
         endYear: ERA_LIMITS.KOREAN_WAR_END - 1,
-        fontFamily: "'Pretendard', sans-serif",
+        fontFamily: "'Nanum Myeongjo', serif",
         color: '#7f1d1d', // 핏빛 레드/다크 브라운
         bgImage: "/assets/images/korean-war/timecontrol.png",
-        timelineImage: "/assets/images/korean-war/timeline.png",
+        //timelineImage: "/assets/images/korean-war/timeline.png",
         frameImage: "/assets/images/korean-war/frame.png",
+        houseImages: ["/assets/images/korean-war/house.png"],
+        vehicleImage: "/assets/images/korean-war/vehicle.png",
     },
     {
         id: 'republic',
@@ -181,11 +203,13 @@ export const ERAS: EraConfig[] = [
         description: '전쟁의 폐허를 딛고 일어선 기적',
         startYear: ERA_LIMITS.KOREAN_WAR_END,
         endYear: Infinity,
-        fontFamily: "'Pretendard', sans-serif", // 현대적 느낌
+        fontFamily: "'Nanum Myeongjo', serif", // 현대적 느낌
         color: '#3B82F6', // 청량하고 맑은 딥 블루
         bgImage: "/assets/images/republic/timecontrol.png",
-        timelineImage: "/assets/images/republic/timeline.png",
+        //timelineImage: "/assets/images/republic/timeline.png",
         frameImage: "/assets/images/republic/frame.png",
+        houseImages: ["/assets/images/republic/house.png"],
+        vehicleImage: "/assets/images/republic/vehicle.png",
     },
 ];
 
@@ -204,4 +228,26 @@ export const getEraColor = (year: number): string => {
 
 export const getEraFrameImage = (year: number): string | undefined => {
     return getEraForYear(year).frameImage;
+};
+
+export const normalizeEraName = (eraName: string): EraType | null => {
+    if (!eraName) return null;
+
+    // 괄호 및 공백 제거
+    const cleanEra = eraName.replace(/\(.*\)/, '').trim();
+
+    // 특수 케이스 처리
+    if (cleanEra === '대한제국시대') {
+        return 'korean-empire';
+    }
+
+    // ID 매칭
+    const matchedById = ERAS.find(e => e.id === cleanEra);
+    if (matchedById) return matchedById.id;
+
+    // Label 매칭
+    const matchedByLabel = ERAS.find(e => e.label === cleanEra);
+    if (matchedByLabel) return matchedByLabel.id;
+
+    return null;
 };

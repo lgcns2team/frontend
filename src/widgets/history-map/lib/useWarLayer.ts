@@ -112,7 +112,7 @@ export const useWarLayer = (map: L.Map | null, currentYear: number, isVisible: b
                     const startAnimation = () => {
                         const borderPath = borderLayer.getElement() as SVGPathElement;
                         const routePath = routeLayer.getElement() as SVGPathElement;
-                        
+
                         if (!borderPath || !routePath) return;
 
                         const borderLength = borderPath.getTotalLength();
@@ -153,7 +153,7 @@ export const useWarLayer = (map: L.Map | null, currentYear: number, isVisible: b
                         };
                         requestAnimationFrame(animate);
                     };
-                    
+
                     // Start animation after a small delay to ensure SVG is rendered
                     setTimeout(startAnimation, 50);
 
@@ -184,48 +184,62 @@ export const useWarLayer = (map: L.Map | null, currentYear: number, isVisible: b
                         });
                     });
 
-                    // 2. Start Point (HoI4 style - larger circle with glow)
-                    const startPoint = latLngs[0]; // Use original start point
-                    L.circleMarker(startPoint, {
-                        radius: 8,
-                        fillColor: '#fbbf24', // Amber/Yellow like HoI4
-                        color: '#ffffff',
-                        weight: 3,
-                        opacity: 1,
-                        fillOpacity: 0.9,
-                        pane: 'warPane' // Use custom pane
-                    }).addTo(warLayer.current!)
-                        .bindPopup(`<b>${battle.battleName}</b> (출발지)`);
-
-                    // 3. End Point (Fortress)
-                    const endPoint = smoothedLatLngs[smoothedLatLngs.length - 1];
-                    const era = getEraForYear(currentYear);
-
-                    const arrowIcon = L.icon({
-                        iconUrl: `/assets/images/${era.id}/fortress.png`,
-                        iconSize: [36, 36],
-                        iconAnchor: [24, 24]
-                    });
-
-                    L.marker(endPoint, {
-                        icon: arrowIcon,
-                        pane: 'warPane' // Use custom pane
-                    }).addTo(warLayer.current!)
-                        .bindPopup(`
-                            <div style="min-width: 200px;">
-                                <h3 style="margin: 0 0 8px 0; font-size: 16px; font-weight: bold;">${battle.battleName}</h3>
-                                <p style="margin: 4px 0; font-size: 14px;"><strong>전쟁:</strong> ${war.name}</p>
-                                <p style="margin: 4px 0; font-size: 14px;"><strong>일시:</strong> ${battle.battleDate}</p>
-                                <div style="margin-top: 8px; padding-top: 8px; border-top: 1px solid #eee;">
-                                    <p style="margin: 4px 0;"><strong>승리:</strong> ${battle.winnerGeneral}</p>
-                                    <p style="margin: 4px 0;"><strong>패배:</strong> ${battle.loserGeneral}</p>
-                                </div>
-                                <p style="margin-top: 8px; font-size: 13px; color: #666;">${battle.details}</p>
-                            </div>
-                        `);
-
                     // Bind popup to the line as well
-                    routeLayer.bindPopup(`<b>${battle.battleName}</b><br>${battle.details}`);
+                    routeLayer.bindPopup(`
+                        <div style="min-width: 200px;">
+                            <h3 style="margin: 0 0 8px 0; font-size: 16px; font-weight: bold;">${battle.battleName}</h3>
+                            <p style="margin: 4px 0; font-size: 14px;"><strong>전쟁:</strong> ${war.name}</p>
+                            <p style="margin: 4px 0; font-size: 14px;"><strong>일시:</strong> ${battle.battleDate}</p>
+                            <div style="margin-top: 8px; padding-top: 8px; border-top: 1px solid #eee;">
+                                <p style="margin: 4px 0;"><strong>승리:</strong> ${battle.winnerGeneral}</p>
+                                <p style="margin: 4px 0;"><strong>패배:</strong> ${battle.loserGeneral}</p>
+                            </div>
+                            <p style="margin-top: 8px; font-size: 13px; color: #666;">${battle.details}</p>
+                        </div>
+                    `);
+
+                    // Only show start and end markers if latitude/longitude exist (not route-only entries)
+                    if (battle.latitude && battle.longitude) {
+                        // 2. Start Point (HoI4 style - larger circle with glow)
+                        const startPoint = latLngs[0]; // Use original start point
+                        L.circleMarker(startPoint, {
+                            radius: 8,
+                            fillColor: '#fbbf24', // Amber/Yellow like HoI4
+                            color: '#ffffff',
+                            weight: 3,
+                            opacity: 1,
+                            fillOpacity: 0.9,
+                            pane: 'warPane' // Use custom pane
+                        }).addTo(warLayer.current!)
+                            .bindPopup(`<b>${battle.battleName}</b> (출발지)`);
+
+                        // 3. End Point (Fortress)
+                        const endPoint = smoothedLatLngs[smoothedLatLngs.length - 1];
+                        const era = getEraForYear(currentYear);
+
+                        const arrowIcon = L.icon({
+                            iconUrl: `/assets/images/${era.id}/fortress.png`,
+                            iconSize: [36, 36],
+                            iconAnchor: [24, 24]
+                        });
+
+                        L.marker(endPoint, {
+                            icon: arrowIcon,
+                            pane: 'warPane' // Use custom pane
+                        }).addTo(warLayer.current!)
+                            .bindPopup(`
+                                <div style="min-width: 200px;">
+                                    <h3 style="margin: 0 0 8px 0; font-size: 16px; font-weight: bold;">${battle.battleName}</h3>
+                                    <p style="margin: 4px 0; font-size: 14px;"><strong>전쟁:</strong> ${war.name}</p>
+                                    <p style="margin: 4px 0; font-size: 14px;"><strong>일시:</strong> ${battle.battleDate}</p>
+                                    <div style="margin-top: 8px; padding-top: 8px; border-top: 1px solid #eee;">
+                                        <p style="margin: 4px 0;"><strong>승리:</strong> ${battle.winnerGeneral}</p>
+                                        <p style="margin: 4px 0;"><strong>패배:</strong> ${battle.loserGeneral}</p>
+                                    </div>
+                                    <p style="margin-top: 8px; font-size: 13px; color: #666;">${battle.details}</p>
+                                </div>
+                            `);
+                    }
                 } else {
                     // If no route, just show a simple marker at the battle location
                     if (battle.latitude && battle.longitude) {

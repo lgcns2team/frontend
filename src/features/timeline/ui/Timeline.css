@@ -1,17 +1,115 @@
-.timeline-container {
+.timeline-component {
+    position: relative;
+    flex: 1;
+    display: flex;
+    justify-content: center;
+}
+
+.timeline-panel {
     display: flex;
     align-items: center;
     /* Center vertically */
     gap: 24px;
     /* Increased gap */
-    flex: 1;
+    width: 100%;
     padding: 0 20px;
     /* Add side padding */
     border-radius: 16px;
     /* Optional: Rounded corners for the container */
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
     /* Optional: Shadow for depth */
+
+    /* Animation */
+    transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+    background-color: var(--ui-bg, white);
+    background-image: url('/assets/images/background.png');
+    background-size: auto;
+    background-repeat: repeat;
+    background-position: right bottom !important;
+    background-attachment: fixed;
+    background-blend-mode: multiply;
+    z-index: 900;
+    /* High z-index */
 }
+
+/* When hidden, slide down. */
+.timeline-panel.panel-hidden {
+    transform: translateY(100%);
+}
+
+/* Toggle Button */
+.zoom-controls {
+    position: absolute;
+    top: -40px;
+    right: 20px;
+    display: flex;
+    gap: 4px;
+    background: var(--ui-bg, white);
+    padding: 4px;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    border: 1px solid var(--ui-border, #ddd);
+    transition: opacity 0.3s ease, visibility 0.3s ease;
+    z-index: 1000;
+}
+
+.controls-detached {
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+}
+
+.zoom-btn {
+    padding: 4px 8px;
+    border: none;
+    background: transparent;
+    border-radius: 4px;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--ui-text, #666);
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.zoom-btn:hover {
+    background: var(--ui-accent-light, #f0f7ff);
+    color: var(--ui-accent, #3b82f6);
+}
+
+.zoom-btn.active {
+    background: var(--ui-accent, #3b82f6);
+    color: white;
+}
+
+.timeline-toggle-btn {
+    position: absolute;
+    top: -32px;
+    /* Pull it up outside */
+    left: 50%;
+    transform: translateX(-50%);
+    /* Start centered */
+    width: 60px;
+    height: 32px;
+    background: var(--ui-bg, white);
+    border: 1px solid var(--ui-border, #ddd);
+    border-bottom: none;
+    border-radius: 12px 12px 0 0;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--ui-text, #666);
+    box-shadow: 0 -4px 10px rgba(0, 0, 0, 0.05);
+    transition: background-color 0.2s, color 0.2s;
+    z-index: 1000;
+}
+
+.timeline-toggle-btn:hover {
+    background: var(--ui-accent-light, #f9fafb);
+    color: var(--ui-accent, #3b82f6);
+}
+
 
 .timeline-wrapper {
     flex: 1;
@@ -24,7 +122,7 @@
 
 .timeline-slider-container {
     position: relative;
-    height: 60px;
+    height: 90px;
     /* Adjusted height */
     display: flex;
     align-items: center;
@@ -35,42 +133,22 @@
     -webkit-appearance: none;
     appearance: none;
     width: 100%;
-    height: 100%;
+    height: 48px;
     background: transparent;
     outline: none;
     z-index: 3;
     margin: 0;
     position: absolute;
-    top: 0;
+    top: 80%;
     left: 0;
+    transform: translateY(-50%);
     cursor: pointer;
-}
-
-/* Ruler Ticks */
-.timeline-ruler-ticks {
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    z-index: 2;
-    background-image:
-        repeating-linear-gradient(90deg, var(--ui-text, #47351D) 0px, var(--ui-text, #47351D) 2px, transparent 2px, transparent 20px),
-        /* Major ticks */
-        repeating-linear-gradient(90deg, rgba(71, 53, 29, 0.3) 0px, rgba(71, 53, 29, 0.3) 1px, transparent 1px, transparent 4px);
-    /* Minor ticks */
-    background-size: 100% 16px, 100% 8px;
-    /* Taller ticks */
-    background-position: bottom, bottom;
-    background-repeat: no-repeat;
-    pointer-events: none;
-    opacity: 0.6;
 }
 
 /* Custom Slider Track */
 .timeline-track-bg {
     position: absolute;
-    top: 50%;
+    top: 80%;
     left: 0;
     right: 0;
     height: 16px;
@@ -136,16 +214,7 @@
     transform: scale(1.15);
 }
 
-.timeline-labels {
-    display: flex;
-    justify-content: space-between;
-    color: var(--ui-text, #666);
-    font-size: 14px;
-    /* Larger font */
-    font-weight: 600;
-    padding: 0 4px;
-    opacity: 0.8;
-}
+
 
 .nav-btn {
     width: 56px;
@@ -199,201 +268,6 @@
     background: var(--ui-accent, #eff6ff);
     color: var(--ui-bg, white);
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-}
-
-/* Era Markers */
-.timeline-era-markers {
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    pointer-events: none;
-    z-index: 4;
-    /* Above ticks and slider track */
-    /* overflow: hidden; */
-    /* Hide markers outside view */
-}
-
-.era-label-marker {
-    position: absolute;
-    top: -10px;
-    /* Position above the track */
-    transform: translateX(-50%);
-    /* Add side padding */
-}
-
-.timeline-wrapper {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
-    /* Increased gap */
-    padding-bottom: 10px;
-}
-
-.timeline-slider-container {
-    position: relative;
-    height: 90px;
-    /* Adjusted height */
-    display: flex;
-    align-items: center;
-    margin-bottom: 5px;
-}
-
-.timeline-slider {
-    -webkit-appearance: none;
-    appearance: none;
-    width: 100%;
-    height: 100%;
-    background: transparent;
-    outline: none;
-    z-index: 3;
-    margin: 0;
-    position: absolute;
-    top: 0;
-    left: 0;
-    cursor: pointer;
-}
-
-/* Ruler Ticks */
-.timeline-ruler-ticks {
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    z-index: 2;
-    background-image:
-        repeating-linear-gradient(90deg, var(--ui-text, #47351D) 0px, var(--ui-text, #47351D) 2px, transparent 2px, transparent 20px),
-        /* Major ticks */
-        repeating-linear-gradient(90deg, rgba(71, 53, 29, 0.3) 0px, rgba(71, 53, 29, 0.3) 1px, transparent 1px, transparent 4px);
-    /* Minor ticks */
-    background-size: 100% 16px, 100% 8px;
-    /* Taller ticks */
-    background-position: bottom, bottom;
-    background-repeat: no-repeat;
-    pointer-events: none;
-    opacity: 0.6;
-}
-
-/* Custom Slider Track */
-.timeline-track-bg {
-    position: absolute;
-    top: 50%;
-    left: 0;
-    right: 0;
-    height: 16px;
-    /* Thicker track */
-    transform: translateY(-50%);
-    background: var(--track-bg, #cbd5e1);
-    border: 1px solid var(--ui-border, #47351D);
-    border-radius: 8px;
-    /* More rounded */
-    z-index: 1;
-    box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.1);
-}
-
-/* Lens Thumb */
-.timeline-slider::-webkit-slider-thumb {
-    -webkit-appearance: none;
-    appearance: none;
-    width: 32px;
-    /* Larger thumb */
-    height: 32px;
-    border-radius: 50%;
-    background: var(--thumb-color, #E7903A);
-    cursor: grab;
-    border: 4px solid var(--ui-bg, #fff);
-    /* Thicker border */
-    box-shadow:
-        0 4px 6px rgba(0, 0, 0, 0.2),
-        0 0 0 1px var(--ui-border, #47351D);
-    transition: transform 0.1s, background-color 0.2s, box-shadow 0.2s;
-    margin-top: -8px;
-    /* Center vertically relative to track if needed, but flex aligns it */
-}
-
-.timeline-slider::-webkit-slider-thumb:active {
-    cursor: grabbing;
-    transform: scale(1.1);
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
-}
-
-.timeline-slider::-webkit-slider-thumb:hover {
-    transform: scale(1.15);
-}
-
-.timeline-slider::-moz-range-thumb {
-    width: 32px;
-    height: 32px;
-    border-radius: 50%;
-    background: var(--thumb-color, #E7903A);
-    cursor: grab;
-    border: 4px solid var(--ui-bg, #fff);
-    box-shadow:
-        0 4px 6px rgba(0, 0, 0, 0.2),
-        0 0 0 1px var(--ui-border, #47351D);
-    transition: transform 0.1s, background-color 0.2s;
-}
-
-.timeline-slider::-moz-range-thumb:active {
-    cursor: grabbing;
-    transform: scale(1.1);
-}
-
-.timeline-slider::-moz-range-thumb:hover {
-    transform: scale(1.15);
-}
-
-.timeline-labels {
-    display: flex;
-    justify-content: space-between;
-    color: var(--ui-text, #666);
-    font-size: 14px;
-    /* Larger font */
-    font-weight: 600;
-    padding: 0 4px;
-    opacity: 0.8;
-}
-
-.nav-btn {
-    width: 56px;
-    /* Larger buttons */
-    height: 56px;
-    border-radius: 50%;
-    background: var(--ui-bg, white);
-    border: 2px solid var(--ui-accent, #3b82f6);
-    color: var(--ui-accent, #3b82f6);
-    /* font-size removed */
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-    flex-shrink: 0;
-    padding: 0;
-    /* Remove padding to prevent layout shifts */
-}
-
-.nav-btn svg {
-    width: 24px;
-    height: 24px;
-    stroke-width: 2.5px;
-    /* Make it slightly thicker */
-    flex-shrink: 0;
-}
-
-.nav-btn:hover {
-    background: var(--ui-accent, #eff6ff);
-    color: var(--ui-bg, white);
-    transform: translateY(-2px);
-    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
-}
-
-.nav-btn:active {
-    transform: translateY(0);
 }
 
 /* Era Markers */
@@ -461,6 +335,7 @@
     pointer-events: none;
     z-index: 5;
     /* Above slider (z-index: 3) */
+    overflow: hidden;
 }
 
 .event-marker {
@@ -517,4 +392,167 @@
 .event-marker:hover .event-marker-label {
     opacity: 1;
     visibility: visible;
+}
+
+/* Decorations */
+.timeline-decorations {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    pointer-events: none;
+    z-index: 2;
+    /* Changed from 0 to 2 to be above track (z=1) but below markers (z=3,4,5) */
+    /* Behind other interactive elements */
+    transition: opacity 0.3s ease;
+}
+
+.timeline-panel.panel-hidden .timeline-decorations {
+    opacity: 0;
+    visibility: hidden;
+}
+
+.timeline-decoration-house {
+    position: absolute;
+    /* User said "slightly above scroll line". Scroll line is vertically centered (top: 50%). */
+    bottom: 50%;
+    transform: translateX(-50%);
+    width: 40px;
+    height: auto;
+    margin-bottom: 12px;
+    opacity: 0.9;
+    z-index: 2;
+    pointer-events: none;
+}
+
+/* Era Vehicle Container: Spans the full era width */
+.era-vehicle-container {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    pointer-events: none;
+    z-index: 3;
+}
+
+.vehicle-track {
+    position: absolute;
+    width: 100%;
+    /* Track is full era width */
+    height: 0;
+    /* Just a reference line */
+    bottom: 50%;
+    /* Center line */
+}
+
+/* Lane 0: offset 10px */
+.vehicle-track.lane-0 {
+    margin-bottom: 25px;
+    /* Offset from center */
+}
+
+/* Lane 1: offset 35px */
+.vehicle-track.lane-1 {
+    margin-bottom: 50px;
+}
+
+.era-vehicle {
+    position: absolute;
+    width: 48px;
+    height: auto;
+    opacity: 1;
+}
+
+/* Lane 0: Right to Left */
+.vehicle-rl {
+    /* Start at right end */
+    right: 0;
+    transform: scaleX(1);
+    /* Ensure correct facing */
+    animation: driveRL 30s linear infinite;
+}
+
+/* Lane 1: Left to Right */
+.vehicle-lr {
+    /* Start at left end */
+    left: 0;
+    transform: scaleX(-1);
+    /* Flip if image faces left by default */
+    animation: driveLR 30s linear infinite;
+}
+
+@keyframes driveRL {
+    0% {
+        right: 0%;
+        transform: translateX(100%);
+        /* Start completely off-right */
+    }
+
+    100% {
+        right: 100%;
+        transform: translateX(-100%);
+        /* Move to completely off-left */
+    }
+}
+
+@keyframes driveLR {
+    0% {
+        left: 0%;
+        transform: translateX(-100%) scaleX(-1);
+        /* Start off-left, Flipped */
+    }
+
+    100% {
+        left: 100%;
+        transform: translateX(100%) scaleX(-1);
+        /* End off-right, Flipped */
+    }
+}
+
+/* Cloud Decorations */
+.timeline-decoration-cloud {
+    position: absolute;
+    bottom: 50%;
+    /* Center reference */
+    transform: translateX(-50%);
+    width: 80px;
+    /* Slightly larger than houses */
+    height: auto;
+    opacity: 0.8;
+    z-index: 2;
+    pointer-events: none;
+    /* Create a compound animation: float (movement) + fadeCycle (visibility) */
+    animation:
+        floatCloud 8s ease-in-out infinite alternate,
+        fadeCycle 12s ease-in-out infinite;
+}
+
+/* Float animation: gently move up/down and slightly left/right */
+@keyframes floatCloud {
+    0% {
+        transform: translate(-50%, 0px);
+    }
+
+    100% {
+        transform: translate(-55%, -10px);
+    }
+}
+
+/* Fade cycle: appear and disappear */
+@keyframes fadeCycle {
+
+    0%,
+    10% {
+        opacity: 0;
+    }
+
+    20%,
+    80% {
+        opacity: 0.8;
+    }
+
+    90%,
+    100% {
+        opacity: 0;
+    }
 }

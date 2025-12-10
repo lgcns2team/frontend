@@ -12,6 +12,7 @@ import { useWarLayer } from '../lib/useWarLayer';
 
 // Features
 import { TimeControls } from '../../../features/time-controls';
+import { PlayControls } from '../../../features/play-controls';
 import { MapLayers } from '../../../features/map-layers';
 import { SearchYear } from '../../../features/search-year';
 import { SidebarMenu } from '../../../features/sidebar-menu';
@@ -21,9 +22,14 @@ import { FloatingPanel } from '../../../features/floating-panel/ui/FloatingPanel
 import { ChatbotTrigger, ChatbotPanel } from '../../../features/chatbot';
 import { TextbookPanel } from '../../../features/textbook-panel';
 import { MajorEventsPanel, EventModal } from '../../../features/major-events';
+import { CharactersPanel } from '../../../features/ai-character';
+import { ChatPanel } from '../../../features/ai-chat';
+import type { ParsedCharacter } from '../../../shared/api/characters-api';
 import { fetchCountryByCode, type CountryData } from '../../../shared/api/country-api';
 import type { ParsedMainEvent } from '../../../shared/api/main-events-api';
 import { NotificationBox } from '../../../features/notification-box';
+import { ProfileButton } from '../../../features/profile-button';
+import { SettingsButton } from '../../../features/settings-button';
 import { NukeExplosion } from '../../../features/nuke-explosion';
 import { FallingBomb } from '../../../features/falling-bomb';
 
@@ -122,9 +128,14 @@ export default function HistoryMap() {
     const [textbookViewMode, setTextbookViewMode] = useState<'single' | 'double'>('single');
     const [dockingPanelWidth, setDockingPanelWidth] = useState(800);
     const [pageInput, setPageInput] = useState('');
+    const [isConversationMode, setIsConversationMode] = useState(false);
+    const [chatCharacter, setChatCharacter] = useState<ParsedCharacter | null>(null);
 
     // Event Popup State
     const [selectedEvent, setSelectedEvent] = useState<ParsedMainEvent | null>(null);
+
+    // Character Panel Toggle State
+    const [characterPanelToggle, setCharacterPanelToggle] = useState<React.ReactNode>(null);
 
     // Cloud Transition State
     // const { isCloudTransitionActive, handleTransitionComplete } = useEraTransition(currentYear);
@@ -136,7 +147,7 @@ export default function HistoryMap() {
     const [hiroshimaScreenPos, setHiroshimaScreenPos] = useState({ x: 0, y: 0 });
     const [nagasakiScreenPos, setNagasakiScreenPos] = useState({ x: 0, y: 0 });
     const [currentMapZoom, setCurrentMapZoom] = useState(6);
-
+    const [isUIVisible, setIsUIVisible] = useState(true);
     // War Layer Hook
     // War Layer Hook
     useWarLayer(map.current, currentYear, layerType === 'battles');
@@ -225,9 +236,30 @@ export default function HistoryMap() {
     }, [currentYear]);
 
     // Save year to localStorage
+    // Save year to localStorage
     useEffect(() => {
-        localStorage.setItem('historyMapYear', currentYear.toString());
+        if (currentYear !== null && currentYear !== undefined) {
+            localStorage.setItem('historyMapYear', currentYear.toString());
+        }
     }, [currentYear]);
+
+    // Handle window resize to update panel width based on screen size
+    useEffect(() => {
+        const handleResize = () => {
+            if (activePanel && activePanel !== 'textbook') {
+                if (activePanel === 'search') {
+                    setDockingPanelWidth(window.innerWidth * 0.25);
+                } else if (activePanel === 'people') {
+                    setDockingPanelWidth(window.innerWidth * 0.5);
+                } else {
+                    setDockingPanelWidth(window.innerWidth * 0.4);
+                }
+            }
+        };
+
+        window.addEventListener('resize', handleResize);
+        return () => window.removeEventListener('resize', handleResize);
+    }, [activePanel]);
 
     // Auto-close FloatingPanel if currentYear is outside the selected country's range
     useEffect(() => {
@@ -748,17 +780,18 @@ export default function HistoryMap() {
             // Reset width when opening textbook
             setDockingPanelWidth(calculateTextbookWidth(textbookViewMode));
         } else if (id === 'search') {
-            // Major Events Panel width
-            setDockingPanelWidth(400);
+            // Major Events Panel width - 25% of screen width
+            setDockingPanelWidth(window.innerWidth * 0.25);
+        } else if (id === 'people') {
+            // Characters Panel width - 50% of screen width
+            setDockingPanelWidth(window.innerWidth * 0.5);
         } else {
-            // Default width for other panels
-            setDockingPanelWidth(800);
+            // Default width for other panels - 40% of screen width
+            setDockingPanelWidth(window.innerWidth * 0.4);
         }
     };
 
-    const handleClosePanel = () => {
-        setActivePanel(null);
-    };
+
 
     const getPanelTitle = (id: string | null) => {
         switch (id) {
@@ -809,29 +842,59 @@ export default function HistoryMap() {
         }
     };
 
+    const handleVoiceChat = () => {
+        setTextbookViewMode('single');
+        setIsConversationMode(true);
+    };
+
+    const handleCharacterSelect = (character: ParsedCharacter) => {
+        setChatCharacter(character);
+    };
+
     // Dynamic Theme Calculation
     const currentEra = getEraForYear(currentYear);
 
     const renderTextbookControls = () => {
         const totalPages = 220;
+        // 한면보기일 때 자간 조정
+        const isSinglePage = textbookViewMode === 'single';
+
         return (
-            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <div style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: isSinglePage ? '2px' : '8px',
+                letterSpacing: isSinglePage ? '-0.5px' : 'normal',
+                fontSize: '14px',
+                flexWrap: 'nowrap'
+            }}>
                 <button
                     onClick={handleTextbookPrev}
                     disabled={textbookPage === 0}
                     style={{
-                        padding: '4px 8px',
+                        padding: isSinglePage ? '4px 4px' : '4px 8px',
                         backgroundColor: 'var(--ui-primary)',
                         color: 'white',
                         border: 'none',
                         borderRadius: '4px',
                         cursor: 'pointer',
-                        opacity: textbookPage === 0 ? 0.5 : 1
+                        opacity: textbookPage === 0 ? 0.5 : 1,
+                        letterSpacing: isSinglePage ? '-0.5px' : 'normal',
+                        whiteSpace: 'nowrap',
+                        fontSize: '14px'
                     }}
                 >
                     이전
                 </button>
-                <span style={{ fontSize: '14px', fontWeight: 500, minWidth: '60px', textAlign: 'center', color: 'var(--ui-text)' }}>
+                <span style={{
+                    fontSize: '14px',
+                    fontWeight: 500,
+                    minWidth: isSinglePage ? 'auto' : '60px',
+                    padding: isSinglePage ? '0 4px' : '0',
+                    textAlign: 'center',
+                    color: 'var(--ui-text)',
+                    whiteSpace: 'nowrap'
+                }}>
                     {textbookViewMode === 'single'
                         ? `${textbookPage + 1}p`
                         : `${textbookPage + 1}p - ${textbookPage + 2}p`}
@@ -844,44 +907,51 @@ export default function HistoryMap() {
                             : textbookPage >= totalPages - 2
                     }
                     style={{
-                        padding: '4px 8px',
+                        padding: isSinglePage ? '4px 4px' : '4px 8px',
                         backgroundColor: 'var(--ui-primary)',
                         color: 'white',
                         border: 'none',
                         borderRadius: '4px',
                         cursor: 'pointer',
-                        opacity: (textbookViewMode === 'single' ? textbookPage === totalPages - 1 : textbookPage >= totalPages - 2) ? 0.5 : 1
+                        opacity: (textbookViewMode === 'single' ? textbookPage === totalPages - 1 : textbookPage >= totalPages - 2) ? 0.5 : 1,
+                        letterSpacing: isSinglePage ? '-0.5px' : 'normal',
+                        whiteSpace: 'nowrap',
+                        fontSize: '14px'
                     }}
                 >
                     다음
                 </button>
 
-                <div style={{ display: 'flex', alignItems: 'center', gap: '4px', marginLeft: '8px' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '2px', marginLeft: isSinglePage ? '2px' : '8px' }}>
                     <input
                         type="text"
                         value={pageInput}
                         onChange={(e) => setPageInput(e.target.value)}
                         onKeyDown={(e) => e.key === 'Enter' && handlePageInputSubmit()}
-                        placeholder="페이지"
+                        placeholder={isSinglePage ? "" : "페이지"}
                         style={{
-                            width: '50px',
+                            width: isSinglePage ? '30px' : '50px',
                             padding: '4px',
                             borderRadius: '4px',
                             border: '1px solid var(--ui-border)',
                             backgroundColor: 'var(--ui-bg)',
                             color: 'var(--ui-text)',
-                            textAlign: 'center'
+                            textAlign: 'center',
+                            fontSize: isSinglePage ? '13px' : '13px'
                         }}
                     />
                     <button
                         onClick={handlePageInputSubmit}
                         style={{
-                            padding: '4px 8px',
+                            padding: isSinglePage ? '4px 4px' : '4px 8px',
                             backgroundColor: 'var(--ui-primary)',
                             color: 'white',
                             border: 'none',
                             borderRadius: '4px',
-                            cursor: 'pointer'
+                            cursor: 'pointer',
+                            letterSpacing: isSinglePage ? '-0.3px' : 'normal',
+                            whiteSpace: 'nowrap',
+                            fontSize: '14px'
                         }}
                     >
                         이동
@@ -889,15 +959,38 @@ export default function HistoryMap() {
                 </div>
 
                 <button
-                    onClick={toggleTextbookViewMode}
+                    onClick={handleVoiceChat}
+                    disabled={isConversationMode}
                     style={{
-                        padding: '4px 8px',
+                        padding: isSinglePage ? '4px 4px' : '4px 8px',
                         backgroundColor: 'transparent',
-                        border: '1px solid var(--ui-primary)',
-                        color: 'var(--ui-primary)',
+                        border: `1px solid ${isConversationMode ? '#ccc' : 'var(--ui-primary)'}`,
+                        color: isConversationMode ? '#ccc' : 'var(--ui-primary)',
                         borderRadius: '4px',
-                        cursor: 'pointer',
-                        marginLeft: '8px'
+                        cursor: isConversationMode ? 'not-allowed' : 'pointer',
+                        marginLeft: isSinglePage ? '2px' : '8px',
+                        letterSpacing: isSinglePage ? '-0.5px' : 'normal',
+                        fontSize: '14px',
+                        whiteSpace: 'nowrap'
+                    }}
+                >
+                    인물대화
+                </button>
+
+                <button
+                    onClick={toggleTextbookViewMode}
+                    disabled={isConversationMode}
+                    style={{
+                        padding: isSinglePage ? '4px 4px' : '4px 8px',
+                        backgroundColor: 'transparent',
+                        border: `1px solid ${isConversationMode ? '#ccc' : 'var(--ui-primary)'}`,
+                        color: isConversationMode ? '#ccc' : 'var(--ui-primary)',
+                        borderRadius: '4px',
+                        cursor: isConversationMode ? 'not-allowed' : 'pointer',
+                        marginLeft: isSinglePage ? '2px' : '8px',
+                        letterSpacing: isSinglePage ? '-0.5px' : 'normal',
+                        fontSize: '14px',
+                        whiteSpace: 'nowrap'
                     }}
                 >
                     {textbookViewMode === 'single' ? '양면보기' : '한면보기'}
@@ -911,6 +1004,20 @@ export default function HistoryMap() {
     return (
         <div className={`history-map-container theme-${currentEra.id}`}>
             <div id="map" ref={mapContainer}></div>
+
+            {/* Top Center: Play Controls & Search Year */}
+            <div className={`center-controls-group ${!isUIVisible ? 'ui-hidden' : ''}`}>
+                <PlayControls
+                    isPlaying={isPlaying}
+                    speed={speed}
+                    onTogglePlay={() => setIsPlaying(!isPlaying)}
+                    onToggleSpeed={toggleSpeed}
+                />
+                <SearchYear
+                    currentYear={currentYear}
+                    onYearChange={setCurrentYear}
+                />
+            </div>
 
             {/* Top Left: Year, Play, Speed, Layers */}
             <div className="top-left-overlay">
@@ -944,10 +1051,6 @@ export default function HistoryMap() {
 
                 <TimeControls
                     currentYear={currentYear}
-                    isPlaying={isPlaying}
-                    speed={speed}
-                    onTogglePlay={() => setIsPlaying(!isPlaying)}
-                    onToggleSpeed={toggleSpeed}
                 />
 
                 <MapLayers
@@ -959,24 +1062,45 @@ export default function HistoryMap() {
 
             </div>
 
-            {/* Top Right: Search & Menu */}
+            {/* Top Right: Menu */}
             <div className="top-right-overlay">
-                <SearchYear currentYear={currentYear} />
-                <NotificationBox />
+
+                <div className={`header-controls-group ${!isUIVisible ? 'ui-hidden' : ''}`}>
+                    <ProfileButton />
+
+                    <NotificationBox />
+
+                    <SettingsButton onClick={() => setActivePanel('settings')} />
+                </div>
+
                 <SidebarMenu onItemClick={handleSidebarClick} currentYear={currentYear} />
             </div>
 
-            {/* Docking Panel */}
+            {/* Right Docking Panel */}
             <DockingPanel
                 isOpen={!!activePanel}
-                onClose={handleClosePanel}
-                title={getPanelTitle(activePanel)}
-                initialWidth={800}
-                width={activePanel === 'textbook' ? dockingPanelWidth : 750}
+                onClose={() => {
+                    if (activePanel === 'textbook' && isConversationMode) {
+                        setActivePanel('people');
+                        setIsConversationMode(false);
+                    } else {
+                        setActivePanel(null);
+                        setIsConversationMode(false);
+                        setChatCharacter(null);
+                    }
+                }}
+                title={activePanel === 'people' && chatCharacter ? "대화" : getPanelTitle(activePanel)}
+                style={activePanel === 'textbook' && isConversationMode ? { right: '50%', borderRight: '1px solid #ccc' } : undefined}
+                width={dockingPanelWidth}
                 minWidth={activePanel === 'textbook' ? 300 : 180}
-                // width={dockingPanelWidth}
                 maxWidth={1600}
-                headerRightContent={activePanel === 'textbook' ? renderTextbookControls() : null}
+                headerRightContent={
+                    activePanel === 'textbook'
+                        ? renderTextbookControls()
+                        : activePanel === 'people'
+                            ? (chatCharacter ? null : characterPanelToggle)
+                            : null
+                }
             >
                 {activePanel === 'textbook' ? (
                     <TextbookPanel
@@ -991,6 +1115,17 @@ export default function HistoryMap() {
                             setActivePanel(null); // Close docking panel
                         }}
                     />
+                ) : activePanel === 'people' ? (
+                    chatCharacter ? (
+                        <ChatPanel character={chatCharacter} />
+                    ) : (
+                        <CharactersPanel
+                            onYearChange={handleYearChange}
+                            onCharacterClick={handleCharacterSelect}
+                            currentYear={currentYear}
+                            renderToggle={setCharacterPanelToggle}
+                        />
+                    )
                 ) : (
                     <div style={{ padding: '20px', textAlign: 'center', color: 'var(--ui-text)' }}>
                         <p>{getPanelTitle(activePanel)} 패널 내용이 여기에 표시됩니다.</p>
@@ -998,6 +1133,31 @@ export default function HistoryMap() {
                     </div>
                 )}
             </DockingPanel>
+
+            {(activePanel === 'textbook' && isConversationMode) && (
+                <DockingPanel
+                    isOpen={true}
+                    onClose={() => {
+                        setIsConversationMode(false);
+                        setChatCharacter(null); // Reset chat
+                    }}
+                    title={chatCharacter ? "대화" : "인물 대화"}
+                    width={window.innerWidth * 0.5}
+                    style={{ right: 0 }}
+                    headerRightContent={chatCharacter ? undefined : characterPanelToggle}
+                >
+                    {chatCharacter ? (
+                        <ChatPanel character={chatCharacter} />
+                    ) : (
+                        <CharactersPanel
+                            onYearChange={handleYearChange}
+                            onCharacterClick={handleCharacterSelect}
+                            currentYear={currentYear}
+                            renderToggle={setCharacterPanelToggle}
+                        />
+                    )}
+                </DockingPanel>
+            )}
 
             {/* Bottom Left: Chatbot */}
             <div className="bottom-left-overlay">
@@ -1026,17 +1186,13 @@ export default function HistoryMap() {
             {/* Bottom Timeline */}
             <div
                 className="bottom-bar"
-                style={{
-                    backgroundImage: `url("${currentEra.timelineImage || '/assets/images/timecontrols/durumagi.png'}")`,
-                    backgroundSize: '100% 100%',
-                    backgroundPosition: 'center',
-                    backgroundRepeat: 'no-repeat'
-                }}
             >
                 <Timeline
                     currentYear={currentYear}
                     onYearChange={handleYearChange}
                     onEventClick={setSelectedEvent}
+                    isVisible={isUIVisible}
+                    onToggleVisibility={() => setIsUIVisible(!isUIVisible)}
                 />
             </div>
 
