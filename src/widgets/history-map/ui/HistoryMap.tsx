@@ -972,9 +972,9 @@ export default function HistoryMap() {
                 onClose={handleClosePanel}
                 title={getPanelTitle(activePanel)}
                 initialWidth={800}
-                width={activePanel === 'textbook' ? dockingPanelWidth : 750}
+                //width={activePanel === 'textbook' ? dockingPanelWidth : 750}
                 minWidth={activePanel === 'textbook' ? 300 : 180}
-                // width={dockingPanelWidth}
+                width={dockingPanelWidth}
                 maxWidth={1600}
                 headerRightContent={activePanel === 'textbook' ? renderTextbookControls() : null}
             >
