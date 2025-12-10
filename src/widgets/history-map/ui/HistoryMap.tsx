@@ -12,6 +12,7 @@ import { useWarLayer } from '../lib/useWarLayer';
 
 // Features
 import { TimeControls } from '../../../features/time-controls';
+import { PlayControls } from '../../../features/play-controls';
 import { MapLayers } from '../../../features/map-layers';
 import { SearchYear } from '../../../features/search-year';
 import { SidebarMenu } from '../../../features/sidebar-menu';
@@ -27,6 +28,8 @@ import type { ParsedCharacter } from '../../../shared/api/characters-api';
 import { fetchCountryByCode, type CountryData } from '../../../shared/api/country-api';
 import type { ParsedMainEvent } from '../../../shared/api/main-events-api';
 import { NotificationBox } from '../../../features/notification-box';
+import { ProfileButton } from '../../../features/profile-button';
+import { SettingsButton } from '../../../features/settings-button';
 import { NukeExplosion } from '../../../features/nuke-explosion';
 import { FallingBomb } from '../../../features/falling-bomb';
 
@@ -144,7 +147,7 @@ export default function HistoryMap() {
     const [hiroshimaScreenPos, setHiroshimaScreenPos] = useState({ x: 0, y: 0 });
     const [nagasakiScreenPos, setNagasakiScreenPos] = useState({ x: 0, y: 0 });
     const [currentMapZoom, setCurrentMapZoom] = useState(6);
-
+    const [isUIVisible, setIsUIVisible] = useState(true);
     // War Layer Hook
     // War Layer Hook
     useWarLayer(map.current, currentYear, layerType === 'battles');
@@ -788,9 +791,7 @@ export default function HistoryMap() {
         }
     };
 
-    const handleClosePanel = () => {
-        setActivePanel(null);
-    };
+
 
     const getPanelTitle = (id: string | null) => {
         switch (id) {
@@ -1004,6 +1005,20 @@ export default function HistoryMap() {
         <div className={`history-map-container theme-${currentEra.id}`}>
             <div id="map" ref={mapContainer}></div>
 
+            {/* Top Center: Play Controls & Search Year */}
+            <div className={`center-controls-group ${!isUIVisible ? 'ui-hidden' : ''}`}>
+                <PlayControls
+                    isPlaying={isPlaying}
+                    speed={speed}
+                    onTogglePlay={() => setIsPlaying(!isPlaying)}
+                    onToggleSpeed={toggleSpeed}
+                />
+                <SearchYear
+                    currentYear={currentYear}
+                    onYearChange={setCurrentYear}
+                />
+            </div>
+
             {/* Top Left: Year, Play, Speed, Layers */}
             <div className="top-left-overlay">
                 {/* Floating Info Panel (Left) */}
@@ -1036,10 +1051,6 @@ export default function HistoryMap() {
 
                 <TimeControls
                     currentYear={currentYear}
-                    isPlaying={isPlaying}
-                    speed={speed}
-                    onTogglePlay={() => setIsPlaying(!isPlaying)}
-                    onToggleSpeed={toggleSpeed}
                 />
 
                 <MapLayers
@@ -1051,27 +1062,16 @@ export default function HistoryMap() {
 
             </div>
 
-            {/* Top Right: Search & Menu */}
+            {/* Top Right: Menu */}
             <div className="top-right-overlay">
-                <SearchYear currentYear={currentYear} />
 
-                {/* Profile Button */}
-                <button className="header-btn" aria-label="Profile">
-                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                        <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
-                        <circle cx="12" cy="7" r="4" />
-                    </svg>
-                </button>
+                <div className={`header-controls-group ${!isUIVisible ? 'ui-hidden' : ''}`}>
+                    <ProfileButton />
 
-                <NotificationBox />
+                    <NotificationBox />
 
-                {/* Settings Button */}
-                <button className="header-btn" onClick={() => setActivePanel('settings')} aria-label="Settings">
-                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                        <path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.38a2 2 0 0 0-.73-2.73l-.15-.1a2 2 0 0 1-1-1.72v-.51a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z" />
-                        <circle cx="12" cy="12" r="3" />
-                    </svg>
-                </button>
+                    <SettingsButton onClick={() => setActivePanel('settings')} />
+                </div>
 
                 <SidebarMenu onItemClick={handleSidebarClick} currentYear={currentYear} />
             </div>
@@ -1191,6 +1191,8 @@ export default function HistoryMap() {
                     currentYear={currentYear}
                     onYearChange={handleYearChange}
                     onEventClick={setSelectedEvent}
+                    isVisible={isUIVisible}
+                    onToggleVisibility={() => setIsUIVisible(!isUIVisible)}
                 />
             </div>
 

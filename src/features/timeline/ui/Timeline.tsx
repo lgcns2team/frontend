@@ -8,15 +8,17 @@ interface TimelineProps {
     currentYear: number;
     onYearChange: (year: number) => void;
     onEventClick?: (event: ParsedMainEvent) => void;
+    isVisible: boolean;
+    onToggleVisibility: () => void;
 }
 
 const GLOBAL_MIN_YEAR = -2333;
 const GLOBAL_MAX_YEAR = 2024;
 
-export const Timeline = ({ currentYear, onYearChange, onEventClick }: TimelineProps) => {
+export const Timeline = ({ currentYear, onYearChange, onEventClick, isVisible, onToggleVisibility }: TimelineProps) => {
     const thumbColor = getEraColor(currentYear);
     const [mainEvents, setMainEvents] = useState<ParsedMainEvent[]>([]);
-    const [isVisible, setIsVisible] = useState(true);
+    // const [isVisible, setIsVisible] = useState(true); // Moved to parent
 
     useEffect(() => {
         fetchMainEvents().then(setMainEvents);
@@ -219,11 +221,8 @@ export const Timeline = ({ currentYear, onYearChange, onEventClick }: TimelinePr
     // Jittered Grid & Seeded Random for Decorations (Houses & Vehicles)
     const decorationItems = useMemo(() => {
         // Simple seeded random generator (Linear Congruential Generator)
-        let seed = 12345; // Fixed seed for stability
-        const seededRandom = () => {
-            seed = (seed * 9301 + 49297) % 233280;
-            return seed / 233280;
-        };
+        // Use Math.random() for fully random decorations on every mount
+        const seededRandom = () => Math.random();
 
         const items: Array<{ id: string; year: number; lane: number; image: string; type: 'house' | 'vehicle' | 'cloud' }> = [];
 
@@ -234,7 +233,7 @@ export const Timeline = ({ currentYear, onYearChange, onEventClick }: TimelinePr
             const duration = effectiveEnd - effectiveStart;
 
             // --- 1. Houses (Lanes 2, 3, 4) ---
-            if (era.houseImage) {
+            if (era.houseImages && era.houseImages.length > 0) {
                 const HOUSE_DENSITY = 50; // 1 house per 50 years
                 const houseCount = Math.max(1, Math.floor(duration / HOUSE_DENSITY));
 
@@ -245,11 +244,15 @@ export const Timeline = ({ currentYear, onYearChange, onEventClick }: TimelinePr
                     // Lanes 2, 3, 4
                     const lane = 2 + Math.floor(seededRandom() * 3);
 
+                    // Pick random house image from available variants
+                    const imageIndex = Math.floor(seededRandom() * era.houseImages.length);
+                    const image = era.houseImages[imageIndex];
+
                     items.push({
                         id: `house-${era.id}-${i}`,
                         year,
                         lane,
-                        image: era.houseImage,
+                        image: image,
                         type: 'house'
                     });
                 }
@@ -283,9 +286,9 @@ export const Timeline = ({ currentYear, onYearChange, onEventClick }: TimelinePr
     }, []);
 
     return (
-        <div className={`timeline-container ${!isVisible ? 'timeline-hidden' : ''}`}>
-            {/* Zoom Controls */}
-            <div className="zoom-controls">
+        <div className="timeline-component">
+            {/* Zoom Controls - Always Visible */}
+            <div className={`zoom-controls ${!isVisible ? 'controls-detached' : ''}`}>
                 {[1, 2, 4, 16].map((zoom) => (
                     <button
                         key={zoom}
@@ -298,196 +301,186 @@ export const Timeline = ({ currentYear, onYearChange, onEventClick }: TimelinePr
                 ))}
             </div>
 
-            {/* Toggle Button */}
-            <button
-                className="timeline-toggle-btn"
-                onClick={() => setIsVisible(!isVisible)}
-                aria-label={isVisible ? "Hide timeline" : "Show timeline"}
-            >
-                <svg
-                    width="24"
-                    height="24"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    style={{
-                        transform: isVisible ? 'rotate(0deg)' : 'rotate(180deg)',
-                        transition: 'transform 0.3s ease'
-                    }}
+            {/* Sliding Panel */}
+            <div className={`timeline-panel ${!isVisible ? 'panel-hidden' : ''}`}>
+                {/* Toggle Button - Always Visible (Moved Inside) */}
+                <button
+                    className="timeline-toggle-btn"
+                    onClick={onToggleVisibility}
+                    aria-label={isVisible ? "Hide timeline" : "Show timeline"}
                 >
-                    <path d="M6 9l6 6 6-6" />
-                </svg>
-            </button>
+                    <svg
+                        width="24"
+                        height="24"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        style={{
+                            transform: isVisible ? 'rotate(0deg)' : 'rotate(180deg)',
+                            transition: 'transform 0.3s ease'
+                        }}
+                    >
+                        <path d="M6 9l6 6 6-6" />
+                    </svg>
+                </button>
+                <button
+                    className="nav-btn prev-btn"
+                    onMouseDown={() => startNav(-1)}
+                    onMouseUp={() => stopNav(-1)}
+                    onMouseLeave={() => stopNav(-1)}
+                    onTouchStart={(e) => { e.preventDefault(); startNav(-1); }}
+                    onTouchEnd={(e) => { e.preventDefault(); stopNav(-1); }}
+                    onTouchCancel={() => stopNav(-1)}
+                    aria-label="Previous 1 year"
+                >
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M15 18L9 12L15 6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                    </svg>
+                </button>
 
-            <button
-                className="nav-btn prev-btn"
-                onMouseDown={() => startNav(-1)}
-                onMouseUp={() => stopNav(-1)}
-                onMouseLeave={() => stopNav(-1)}
-                onTouchStart={(e) => { e.preventDefault(); startNav(-1); }}
-                onTouchEnd={(e) => { e.preventDefault(); stopNav(-1); }}
-                onTouchCancel={() => stopNav(-1)}
-                aria-label="Previous 1 year"
-            >
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M15 18L9 12L15 6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-                </svg>
-            </button>
+                <div className="timeline-wrapper">
+                    <div className="timeline-slider-container">
+                        {/* Main Event Markers */}
+                        <div className="timeline-event-markers">
+                            {mainEvents.map((event) => {
+                                const totalRange = viewEnd - viewStart;
+                                const percent = ((event.year - viewStart) / totalRange) * 100;
 
-            <div className="timeline-wrapper">
-                <div className="timeline-slider-container">
+                                if (percent < -5 || percent > 105) return null;
 
-
-
-                    {/* Main Event Markers */}
-                    <div className="timeline-event-markers">
-                        {mainEvents.map((event) => {
-                            const totalRange = viewEnd - viewStart;
-                            const percent = ((event.year - viewStart) / totalRange) * 100;
-
-                            if (percent < -5 || percent > 105) return null;
-
-                            return (
-                                <div
-                                    key={event.eventId}
-                                    className="event-marker"
-                                    style={{ left: `${percent}%` }}
-                                    onClick={(e) => {
-                                        e.stopPropagation();
-                                        onYearChange(event.year);
-                                        if (onEventClick) onEventClick(event);
-                                    }}
-                                >
-                                    <div className="event-marker-dot" style={{ backgroundColor: getEraColor(event.year) }}></div>
-                                    <div className="event-marker-label" style={{ borderColor: getEraColor(event.year) }}>
-                                        {event.eventName}
+                                return (
+                                    <div
+                                        key={event.eventId}
+                                        className="event-marker"
+                                        style={{ left: `${percent}%` }}
+                                        onClick={(e) => {
+                                            e.stopPropagation();
+                                            onYearChange(event.year);
+                                            if (onEventClick) onEventClick(event);
+                                        }}
+                                    >
+                                        <div className="event-marker-dot" style={{ backgroundColor: getEraColor(event.year) }}></div>
+                                        <div className="event-marker-label" style={{ borderColor: getEraColor(event.year) }}>
+                                            {event.eventName}
+                                        </div>
                                     </div>
-                                </div>
-                            );
-                        })}
-                    </div>
+                                );
+                            })}
+                        </div>
 
-                    {/* Vehicles (Era-based End-to-End Movement) */}
-                    <div className="timeline-vehicles">
-                        {ERAS.map((era) => {
-                            if (!era.vehicleImage) return null;
+                        {/* Vehicles (Era-based End-to-End Movement) */}
+                        <div className="timeline-vehicles">
+                            {ERAS.map((era) => {
+                                if (!era.vehicleImage) return null;
 
-                            // Calculate effective range
-                            const effectiveStart = era.startYear === -Infinity ? GLOBAL_MIN_YEAR : era.startYear;
-                            const effectiveEnd = era.endYear === Infinity ? GLOBAL_MAX_YEAR : era.endYear;
-                            const duration = effectiveEnd - effectiveStart;
+                                const effectiveStart = era.startYear === -Infinity ? GLOBAL_MIN_YEAR : era.startYear;
+                                const effectiveEnd = era.endYear === Infinity ? GLOBAL_MAX_YEAR : era.endYear;
+                                const duration = effectiveEnd - effectiveStart;
 
-                            const totalRange = viewEnd - viewStart;
-                            const leftPercent = ((effectiveStart - viewStart) / totalRange) * 100;
-                            const widthPercent = (duration / totalRange) * 100;
+                                const totalRange = viewEnd - viewStart;
+                                const leftPercent = ((effectiveStart - viewStart) / totalRange) * 100;
+                                const widthPercent = (duration / totalRange) * 100;
 
-                            // Skip if completely out of view
-                            if (leftPercent + widthPercent < -20 || leftPercent > 120) return null;
+                                if (leftPercent + widthPercent < -20 || leftPercent > 120) return null;
 
-                            return (
-                                <div
-                                    key={`vehicles-${era.id}`}
-                                    className="era-vehicle-container"
-                                    style={{
-                                        left: `${leftPercent}%`,
-                                        width: `${widthPercent}%`
-                                    }}
-                                >
-                                    {/* Lane 0: Right to Left */}
-                                    <div className="vehicle-track lane-0">
-                                        <img
-                                            src={era.vehicleImage}
-                                            alt=""
-                                            className="era-vehicle vehicle-rl"
-                                            aria-hidden="true"
-                                        />
+                                return (
+                                    <div
+                                        key={`vehicles-${era.id}`}
+                                        className="era-vehicle-container"
+                                        style={{
+                                            left: `${leftPercent}%`,
+                                            width: `${widthPercent}%`
+                                        }}
+                                    >
+                                        <div className="vehicle-track lane-0">
+                                            <img
+                                                src={era.vehicleImage}
+                                                alt=""
+                                                className="era-vehicle vehicle-rl"
+                                                aria-hidden="true"
+                                            />
+                                        </div>
+                                        <div className="vehicle-track lane-1">
+                                            <img
+                                                src={era.vehicleImage}
+                                                alt=""
+                                                className="era-vehicle vehicle-lr"
+                                                aria-hidden="true"
+                                            />
+                                        </div>
                                     </div>
+                                );
+                            })}
+                        </div>
 
-                                    {/* Lane 1: Left to Right */}
-                                    <div className="vehicle-track lane-1">
-                                        <img
-                                            src={era.vehicleImage}
-                                            alt=""
-                                            className="era-vehicle vehicle-lr"
-                                            aria-hidden="true"
-                                        />
-                                    </div>
-                                </div>
-                            );
-                        })}
+                        {/* Background Decorations (Houses) */}
+                        <div className="timeline-decorations">
+                            {decorationItems.map((item) => {
+                                const totalRange = viewEnd - viewStart;
+                                const percent = ((item.year - viewStart) / totalRange) * 100;
+
+                                if (percent < -15 || percent > 115) return null;
+
+                                const laneOffset = 10 + (item.lane * 7);
+
+                                let className = "timeline-decoration-house";
+                                if (item.type === 'vehicle') className = "timeline-decoration-vehicle";
+                                else if (item.type === 'cloud') className = "timeline-decoration-cloud";
+
+                                return (
+                                    <img
+                                        key={item.id}
+                                        src={item.image}
+                                        alt=""
+                                        className={className}
+                                        style={{
+                                            left: `${percent}%`,
+                                            marginBottom: `${laneOffset}px`
+                                        }}
+                                        aria-hidden="true"
+                                    />
+                                );
+                            })}
+                        </div>
+
+                        <input
+                            type="range"
+                            min={viewStart}
+                            max={viewEnd}
+                            value={currentYear}
+                            className="timeline-slider"
+                            onChange={(e) => handleSliderChange(parseInt(e.target.value))}
+                            onMouseDown={handleMouseDown}
+                            onMouseUp={handleMouseUp}
+                            onTouchStart={handleMouseDown}
+                            onTouchEnd={handleMouseUp}
+                            style={{ '--thumb-color': thumbColor } as React.CSSProperties}
+                        />
+                        <div
+                            className="timeline-track-bg"
+                            style={{ background: trackGradient }}
+                        ></div>
                     </div>
-
-                    {/* Background Decorations (Houses) */}
-                    <div className="timeline-decorations">
-                        {decorationItems.map((item) => {
-                            const totalRange = viewEnd - viewStart;
-                            const percent = ((item.year - viewStart) / totalRange) * 100;
-
-                            // Optimization: Skip if far out of view
-                            if (percent < -15 || percent > 115) return null;
-
-                            // Lane offsets:
-                            // Vehicles (0, 1): 10px, 35px
-                            // Houses (2, 3, 4): 60px, 85px, 110px
-                            const laneOffset = 10 + (item.lane * 7);
-
-                            let className = "timeline-decoration-house";
-                            if (item.type === 'vehicle') className = "timeline-decoration-vehicle";
-                            else if (item.type === 'cloud') className = "timeline-decoration-cloud";
-
-                            return (
-                                <img
-                                    key={item.id}
-                                    src={item.image}
-                                    alt=""
-                                    className={className}
-                                    style={{
-                                        left: `${percent}%`,
-                                        marginBottom: `${laneOffset}px`
-                                    }}
-                                    aria-hidden="true"
-                                />
-                            );
-                        })}
-                    </div>
-
-                    <input
-                        type="range"
-                        min={viewStart}
-                        max={viewEnd}
-                        value={currentYear}
-                        className="timeline-slider"
-                        onChange={(e) => handleSliderChange(parseInt(e.target.value))}
-                        onMouseDown={handleMouseDown}
-                        onMouseUp={handleMouseUp}
-                        onTouchStart={handleMouseDown}
-                        onTouchEnd={handleMouseUp}
-                        style={{ '--thumb-color': thumbColor } as React.CSSProperties}
-                    />
-                    <div
-                        className="timeline-track-bg"
-                        style={{ background: trackGradient }}
-                    ></div>
                 </div>
-            </div>
 
-            <button
-                className="nav-btn next-btn"
-                onMouseDown={() => startNav(1)}
-                onMouseUp={() => stopNav(1)}
-                onMouseLeave={() => stopNav(1)}
-                onTouchStart={(e) => { e.preventDefault(); startNav(1); }}
-                onTouchEnd={(e) => { e.preventDefault(); stopNav(1); }}
-                onTouchCancel={() => stopNav(1)}
-                aria-label="Next 1 year"
-            >
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M9 18L15 12L9 6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-                </svg>
-            </button>
+                <button
+                    className="nav-btn next-btn"
+                    onMouseDown={() => startNav(1)}
+                    onMouseUp={() => stopNav(1)}
+                    onMouseLeave={() => stopNav(1)}
+                    onTouchStart={(e) => { e.preventDefault(); startNav(1); }}
+                    onTouchEnd={(e) => { e.preventDefault(); stopNav(1); }}
+                    onTouchCancel={() => stopNav(1)}
+                    aria-label="Next 1 year"
+                >
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M9 18L15 12L9 6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                    </svg>
+                </button>
+            </div>
         </div>
     );
 };

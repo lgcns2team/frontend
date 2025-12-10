@@ -65,6 +65,21 @@
     gap: 20px;
 }
 
+/* Center Controls Group */
+.center-controls-group {
+    position: absolute;
+    top: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 1000;
+    pointer-events: auto;
+    display: flex;
+    gap: 12px;
+    gap: 12px;
+    align-items: center;
+    transition: all 0.5s ease;
+}
+
 /* Top Left */
 .top-left-overlay {
     top: 20px;
@@ -72,12 +87,22 @@
     display: flex;
     flex-direction: column;
     gap: 12px;
+    transition: all 0.5s ease;
 }
 
 /* Top Right */
 .top-right-overlay {
     top: 20px;
     right: 20px;
+    display: flex;
+    flex-direction: row;
+    align-items: flex-start;
+    gap: 16px;
+    /* Increased gap between group and sidebar */
+    transition: all 0.5s ease;
+}
+
+.header-controls-group {
     display: flex;
     flex-direction: row;
     align-items: center;
@@ -141,4 +166,11 @@
     background: rgba(0, 0, 0, 0.6);
     transform: scale(1.05);
     border-color: rgba(255, 255, 255, 0.3);
+}
+
+.ui-hidden {
+    transform: translateY(-200%);
+    opacity: 0;
+    pointer-events: none;
+    transition: all 0.5s ease;
 }
