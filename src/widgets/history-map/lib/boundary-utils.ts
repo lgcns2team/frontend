@@ -32,7 +32,11 @@ export const getGeojsonFileForYear = (year: number) => {
     if (year <= 1214) return 'geojson/monggol_1206-1214.geojson';
     if (year <= 1234) return 'geojson/monggol_1215-1234.geojson';
     if (year <= 1279) return 'geojson/monggol_1235-1279.geojson';
-    if (year <= 1368) return 'geojson/mongolempire_1280-1368.geojson';
+    if (year <= 1368) return 'geojson/yuan_1280-1368.geojson';
+    if (year <= 1370) return 'geojson/yuan_myeong_goryeo_1369-1370.geojson';
+    if (year <= 1391) return 'geojson/goryeo_yuan_myeong_yeojin_1371-1391.geojson';
+    if (year <= 1432) return 'geojson/joseon_yuan_myeong_yeojin_1392-1432.geojson';
+    if (year <= 1633) return 'geojson/yuan_myeong_yeojin_josun_1433-1633.geojson';
     if (year <= 1351) return 'geojson/geum_seo_song_1115-1351.geojson'; // Fallback for other years in this range if needed, but user asked for 1156 limit. Keeping this for now as fallback after 1214? No, user said "adjust to 1115-1156".
     // Actually, let's strictly follow the gap.
     // if (year <= 1351) ...
@@ -117,7 +121,7 @@ export const getColorByCountry = (name: string) => {
         '한': '#ea580c', 'Han': '#ea580c',
         '당': '#f97316', 'Tang': '#f97316',
         '송': '#eab308', 'Song': '#eab308', // Yellow
-        '원': '#a855f7', 'Yuan': '#a855f7', 'Mongol': '#22d3ee', 'Mongol Empire': '#22d3ee', // Cyan
+        '원': '#22d3ee', 'Yuan': '#22d3ee', 'Mongol': '#22d3ee', 'Mongol Empire': '#22d3ee', 'Great Yuan': '#22d3ee', 'Northern Yuan': '#22d3ee', // Cyan
         '명': '#eab308', 'Ming': '#eab308',
         '청': '#0ea5e9', 'Qing': '#0ea5e9',
         '흉노': '#a855f7', 'Xiongnu': '#a855f7',
