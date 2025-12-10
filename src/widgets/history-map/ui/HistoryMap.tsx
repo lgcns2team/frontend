@@ -21,6 +21,7 @@ import { FloatingPanel } from '../../../features/floating-panel/ui/FloatingPanel
 import { ChatbotTrigger, ChatbotPanel } from '../../../features/chatbot';
 import { TextbookPanel } from '../../../features/textbook-panel';
 import { MajorEventsPanel, EventModal } from '../../../features/major-events';
+import { CharactersPanel } from '../../../features/ai-character';
 import { fetchCountryByCode, type CountryData } from '../../../shared/api/country-api';
 import type { ParsedMainEvent } from '../../../shared/api/main-events-api';
 import { NotificationBox } from '../../../features/notification-box';
@@ -126,6 +127,9 @@ export default function HistoryMap() {
     // Event Popup State
     const [selectedEvent, setSelectedEvent] = useState<ParsedMainEvent | null>(null);
 
+    // Character Panel Toggle State
+    const [characterPanelToggle, setCharacterPanelToggle] = useState<React.ReactNode>(null);
+
     // Cloud Transition State
     // const { isCloudTransitionActive, handleTransitionComplete } = useEraTransition(currentYear);
 
@@ -228,6 +232,24 @@ export default function HistoryMap() {
     useEffect(() => {
         localStorage.setItem('historyMapYear', currentYear.toString());
     }, [currentYear]);
+
+    // Handle window resize to update panel width based on screen size
+    useEffect(() => {
+        const handleResize = () => {
+            if (activePanel && activePanel !== 'textbook') {
+                if (activePanel === 'search') {
+                    setDockingPanelWidth(window.innerWidth * 0.25);
+                } else if (activePanel === 'people') {
+                    setDockingPanelWidth(window.innerWidth * 0.5);
+                } else {
+                    setDockingPanelWidth(window.innerWidth * 0.4);
+                }
+            }
+        };
+
+        window.addEventListener('resize', handleResize);
+        return () => window.removeEventListener('resize', handleResize);
+    }, [activePanel]);
 
     // Auto-close FloatingPanel if currentYear is outside the selected country's range
     useEffect(() => {
@@ -748,11 +770,14 @@ export default function HistoryMap() {
             // Reset width when opening textbook
             setDockingPanelWidth(calculateTextbookWidth(textbookViewMode));
         } else if (id === 'search') {
-            // Major Events Panel width
-            setDockingPanelWidth(400);
+            // Major Events Panel width - 25% of screen width
+            setDockingPanelWidth(window.innerWidth * 0.25);
+        } else if (id === 'people') {
+            // Characters Panel width - 50% of screen width
+            setDockingPanelWidth(window.innerWidth * 0.5);
         } else {
-            // Default width for other panels
-            setDockingPanelWidth(800);
+            // Default width for other panels - 40% of screen width
+            setDockingPanelWidth(window.innerWidth * 0.4);
         }
     };
 
@@ -976,7 +1001,13 @@ export default function HistoryMap() {
                 minWidth={activePanel === 'textbook' ? 300 : 180}
                 width={dockingPanelWidth}
                 maxWidth={1600}
-                headerRightContent={activePanel === 'textbook' ? renderTextbookControls() : null}
+                headerRightContent={
+                    activePanel === 'textbook'
+                        ? renderTextbookControls()
+                        : activePanel === 'people'
+                            ? characterPanelToggle
+                            : null
+                }
             >
                 {activePanel === 'textbook' ? (
                     <TextbookPanel
@@ -990,6 +1021,12 @@ export default function HistoryMap() {
                             setSelectedEvent(event);
                             setActivePanel(null); // Close docking panel
                         }}
+                    />
+                ) : activePanel === 'people' ? (
+                    <CharactersPanel
+                        onYearChange={handleYearChange}
+                        currentYear={currentYear}
+                        renderToggle={setCharacterPanelToggle}
                     />
                 ) : (
                     <div style={{ padding: '20px', textAlign: 'center', color: 'var(--ui-text)' }}>
