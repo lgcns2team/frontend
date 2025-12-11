@@ -93,7 +93,7 @@
 }
 
 .character-item {
-    background-color: var(--ui-bg-secondary);
+    background-color: white;
     border: 1px solid var(--ui-border);
     border-radius: 8px;
     padding: 16px;
