@@ -58,8 +58,6 @@ export const ERAS: EraConfig[] = [
         bgImage: "/assets/images/gojoseon/timecontrol.png",
         //timelineImage: "/assets/images/gojoseon/timeline.png",
         frameImage: "/assets/images/gojoseon/frame.png",
-        houseImages: ["/assets/images/gojoseon/house.png"],
-        vehicleImage: "/assets/images/gojoseon/vehicle.png",
     },
     {
         id: 'proto-three-kingdoms',
@@ -73,8 +71,6 @@ export const ERAS: EraConfig[] = [
         bgImage: "/assets/images/proto-three-kingdoms/timecontrol.png",
         //timelineImage: "/assets/images/proto-three-kingdoms/timeline.png",
         frameImage: "/assets/images/proto-three-kingdoms/frame.png",
-        houseImages: ["/assets/images/proto-three-kingdoms/house.png"],
-        vehicleImage: "/assets/images/proto-three-kingdoms/vehicle.png",
     },
     {
         id: 'three-kingdoms',
@@ -88,8 +84,6 @@ export const ERAS: EraConfig[] = [
         bgImage: "/assets/images/three-kingdoms/timecontrol.png",
         //timelineImage: "/assets/images/three-kingdoms/timeline.png",
         frameImage: "/assets/images/three-kingdoms/frame.png",
-        houseImages: ["/assets/images/three-kingdoms/house.png"],
-        vehicleImage: "/assets/images/three-kingdoms/vehicle.png",
     },
     {
         id: 'north-south-states',
@@ -103,8 +97,6 @@ export const ERAS: EraConfig[] = [
         bgImage: "/assets/images/north-south-states/timecontrol.png",
         //timelineImage: "/assets/images/north-south-states/timeline.png",
         frameImage: "/assets/images/north-south-states/frame.png",
-        houseImages: ["/assets/images/north-south-states/house.png"],
-        vehicleImage: "/assets/images/north-south-states/vehicle.png",
     },
     {
         id: 'goryeo',
@@ -118,8 +110,6 @@ export const ERAS: EraConfig[] = [
         bgImage: "/assets/images/goryeo/timecontrol.png",
         //timelineImage: "/assets/images/goryeo/timeline.png",
         frameImage: "/assets/images/goryeo/frame.png",
-        houseImages: ["/assets/images/goryeo/house.png"],
-        vehicleImage: "/assets/images/goryeo/vehicle.png",
     },
     {
         id: 'joseon',
@@ -133,8 +123,6 @@ export const ERAS: EraConfig[] = [
         bgImage: "/assets/images/joseon/timecontrol.png",
         //timelineImage: "/assets/images/joseon/timeline.png",
         frameImage: "/assets/images/joseon/frame.png",
-        houseImages: ["/assets/images/joseon/house.png", "/assets/images/joseon/house2.png"],
-        vehicleImage: "/assets/images/joseon/vehicle.png",
     },
     {
         id: 'korean-empire',
@@ -148,8 +136,6 @@ export const ERAS: EraConfig[] = [
         bgImage: "/assets/images/korean-empire/timecontrol.png",
         //timelineImage: "/assets/images/korean-empire/timeline.png",
         frameImage: "/assets/images/korean-empire/frame.png",
-        houseImages: ["/assets/images/korean-empire/house.png"],
-        vehicleImage: "/assets/images/korean-empire/vehicle.png",
     },
     {
         id: 'colonial',
@@ -163,8 +149,6 @@ export const ERAS: EraConfig[] = [
         bgImage: "/assets/images/colonial/timecontrol.png",
         //timelineImage: "/assets/images/colonial/timeline.png",
         frameImage: "/assets/images/colonial/frame.png",
-        houseImages: ["/assets/images/colonial/house.png"],
-        vehicleImage: "/assets/images/colonial/vehicle.png",
     },
     {
         id: 'liberation',
@@ -178,8 +162,6 @@ export const ERAS: EraConfig[] = [
         bgImage: "/assets/images/liberation/timecontrol.png",
         //timelineImage: "/assets/images/liberation/timeline.png",
         frameImage: "/assets/images/liberation/frame.png",
-        houseImages: ["/assets/images/liberation/house.png"],
-        vehicleImage: "/assets/images/liberation/vehicle.png",
     },
     {
         id: 'korean-war',
@@ -193,8 +175,6 @@ export const ERAS: EraConfig[] = [
         bgImage: "/assets/images/korean-war/timecontrol.png",
         //timelineImage: "/assets/images/korean-war/timeline.png",
         frameImage: "/assets/images/korean-war/frame.png",
-        houseImages: ["/assets/images/korean-war/house.png"],
-        vehicleImage: "/assets/images/korean-war/vehicle.png",
     },
     {
         id: 'republic',
@@ -208,8 +188,6 @@ export const ERAS: EraConfig[] = [
         bgImage: "/assets/images/republic/timecontrol.png",
         //timelineImage: "/assets/images/republic/timeline.png",
         frameImage: "/assets/images/republic/frame.png",
-        houseImages: ["/assets/images/republic/house.png"],
-        vehicleImage: "/assets/images/republic/vehicle.png",
     },
 ];
 
