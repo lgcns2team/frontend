@@ -32,6 +32,7 @@ import { ProfileButton } from '../../../features/profile-button';
 import { SettingsButton } from '../../../features/settings-button';
 import { NukeExplosion } from '../../../features/nuke-explosion';
 import { FallingBomb } from '../../../features/falling-bomb';
+import { CloudTransition } from '../../../features/cloud-transition/ui/CloudTransition';
 
 // Fix Leaflet marker icon issue
 import icon from 'leaflet/dist/images/marker-icon.png';
@@ -138,7 +139,27 @@ export default function HistoryMap() {
     const [characterPanelToggle, setCharacterPanelToggle] = useState<React.ReactNode>(null);
 
     // Cloud Transition State
-    // const { isCloudTransitionActive, handleTransitionComplete } = useEraTransition(currentYear);
+    const [isCloudTransitionActive, setIsCloudTransitionActive] = useState(false);
+
+    const handleTransitionComplete = () => {
+        setIsCloudTransitionActive(false);
+    };
+
+    const handleEventClickWithTransition = (event: ParsedMainEvent) => {
+        setIsCloudTransitionActive(true);
+
+        // Schedule the actual navigation to happen when the screen is covered by clouds
+        // Animation is 2.5s total.
+        // 0% -> 30% (0.75s): Fade in + Scale down (Covering starts)
+        // 30% -> 70% (1.75s): Stay covered
+        // 70% -> 100% (2.5s): Fade out
+        // Trigger change at around 1.2s to be safe
+        setTimeout(() => {
+            handleYearChange(event.year);
+            setSelectedEvent(event);
+            setActivePanel(null); // Close docking panel if open (like finding from search)
+        }, 1200);
+    };
 
     // Nuke Explosion State
     const [explosions, setExplosions] = useState<{ id: number; x: number; y: number; scale: number }[]>([]);
@@ -1083,6 +1104,8 @@ export default function HistoryMap() {
                     if (activePanel === 'textbook' && isConversationMode) {
                         setActivePanel('people');
                         setIsConversationMode(false);
+                    } else if (activePanel === 'people' && chatCharacter) {
+                        setChatCharacter(null);
                     } else {
                         setActivePanel(null);
                         setIsConversationMode(false);
@@ -1110,14 +1133,13 @@ export default function HistoryMap() {
                 ) : activePanel === 'search' ? (
                     <MajorEventsPanel
                         onYearChange={handleYearChange}
-                        onEventClick={(event) => {
-                            setSelectedEvent(event);
-                            setActivePanel(null); // Close docking panel
-                        }}
+                        onEventClick={handleEventClickWithTransition}
                     />
                 ) : activePanel === 'people' ? (
                     chatCharacter ? (
-                        <ChatPanel character={chatCharacter} />
+                        <ChatPanel
+                            character={chatCharacter}
+                        />
                     ) : (
                         <CharactersPanel
                             onYearChange={handleYearChange}
@@ -1147,7 +1169,9 @@ export default function HistoryMap() {
                     headerRightContent={chatCharacter ? undefined : characterPanelToggle}
                 >
                     {chatCharacter ? (
-                        <ChatPanel character={chatCharacter} />
+                        <ChatPanel
+                            character={chatCharacter}
+                        />
                     ) : (
                         <CharactersPanel
                             onYearChange={handleYearChange}
@@ -1197,10 +1221,11 @@ export default function HistoryMap() {
             </div>
 
             {/* Cloud Transition Effect */}
-            {/* <CloudTransition
+            {/* Cloud Transition Effect */}
+            <CloudTransition
                 isActive={isCloudTransitionActive}
                 onAnimationComplete={handleTransitionComplete}
-            /> */}
+            />
 
             {/* Falling Bomb Animation */}
             {showHiroshimaBomb && (

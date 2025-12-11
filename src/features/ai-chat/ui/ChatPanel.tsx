@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect } from 'react';
 import { type ParsedCharacter, fetchCharacterDetail } from '../../../shared/api/characters-api';
 import { ERAS } from '../../../shared/config/era-theme';
-import './ChatPanel.css';
+import './ChatPanel.css'; // ✅ 임시 주석 처리 - 실제 CSS 파일명 확인 후 수정
 
 interface ChatMessage {
     id: number;
@@ -132,13 +132,12 @@ export const ChatPanel = ({ character }: ChatPanelProps) => {
 
         try {
             // TODO: 추후 캐릭터별 페르소나 적용 필요 (promptId 등 전송)
-            const response = await fetch('/api/ai/chat', {
+            // userId는 현재 하드코딩 (1) - 실제 로그인 구현 시 변경 필요
+            const response = await fetch(`/api/ai-person/${character.promptId}/chat?userId=1`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                     message: msgToSend,
-                    // characterId: character.characterId,
-                    // promptId: character.promptId 
                 }),
             });
 
@@ -161,14 +160,26 @@ export const ChatPanel = ({ character }: ChatPanelProps) => {
                     if (line.startsWith('data:')) {
                         const dataStr = line.substring(5).trim();
                         if (!dataStr || dataStr === '[DONE]') continue;
+                        
+                        // ✅ 수정: JSON 파싱 시도, 실패하면 순수 텍스트로 처리
                         try {
                             const event = JSON.parse(dataStr);
+                            // JSON 형식인 경우
                             if (event.type === 'content' && event.text) {
                                 typingBufferRef.current += event.text;
                                 startTypingLoop();
+                            } else if (typeof event === 'string') {
+                                // JSON이지만 문자열인 경우
+                                typingBufferRef.current += event;
+                                startTypingLoop();
                             }
                         } catch (e) {
-                            console.error('JSON parse error', e);
+                            // ✅ JSON이 아니면 순수 텍스트로 처리
+                            if (dataStr) {
+                                console.log('📝 Received text chunk:', dataStr);
+                                typingBufferRef.current += dataStr;
+                                startTypingLoop();
+                            }
                         }
                     }
                 }
