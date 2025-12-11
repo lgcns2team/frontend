@@ -1083,6 +1083,8 @@ export default function HistoryMap() {
                     if (activePanel === 'textbook' && isConversationMode) {
                         setActivePanel('people');
                         setIsConversationMode(false);
+                    } else if (activePanel === 'people' && chatCharacter) {
+                        setChatCharacter(null);
                     } else {
                         setActivePanel(null);
                         setIsConversationMode(false);
@@ -1117,7 +1119,9 @@ export default function HistoryMap() {
                     />
                 ) : activePanel === 'people' ? (
                     chatCharacter ? (
-                        <ChatPanel character={chatCharacter} />
+                        <ChatPanel
+                            character={chatCharacter}
+                        />
                     ) : (
                         <CharactersPanel
                             onYearChange={handleYearChange}
@@ -1147,7 +1151,9 @@ export default function HistoryMap() {
                     headerRightContent={chatCharacter ? undefined : characterPanelToggle}
                 >
                     {chatCharacter ? (
-                        <ChatPanel character={chatCharacter} />
+                        <ChatPanel
+                            character={chatCharacter}
+                        />
                     ) : (
                         <CharactersPanel
                             onYearChange={handleYearChange}
