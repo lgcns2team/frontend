@@ -5,6 +5,10 @@
     background-color: var(--ui-bg);
     color: var(--ui-text);
     overflow: hidden;
+    padding: 0;
+    margin: -20px;
+    width: calc(100% + 40px);
+    height: calc(100% + 40px);
 }
 
 .textbook-content {

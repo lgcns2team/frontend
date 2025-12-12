@@ -221,25 +221,47 @@
     cursor: not-allowed;
 }
 
-/* Chat Loading Spinner */
-.chat-spinner {
+/* Chat Typing Indicator (Three Dots) */
+.chat-typing {
     display: flex;
     align-items: center;
     justify-content: center;
+    gap: 4px;
     padding: 8px;
 }
 
-.spinner {
-    width: 20px;
-    height: 20px;
-    border: 3px solid rgba(0, 0, 0, 0.1);
-    border-top-color: var(--ui-text);
+.chat-typing .dot {
+    width: 8px;
+    height: 8px;
+    background-color: var(--ui-text);
     border-radius: 50%;
-    animation: spin 0.8s linear infinite;
+    opacity: 0.4;
+    animation: typing 1.4s infinite;
 }
 
-@keyframes spin {
-    to {
-        transform: rotate(360deg);
+.chat-typing .dot:nth-child(1) {
+    animation-delay: 0s;
+}
+
+.chat-typing .dot:nth-child(2) {
+    animation-delay: 0.2s;
+}
+
+.chat-typing .dot:nth-child(3) {
+    animation-delay: 0.4s;
+}
+
+@keyframes typing {
+
+    0%,
+    60%,
+    100% {
+        opacity: 0.4;
+        transform: scale(1);
+    }
+
+    30% {
+        opacity: 1;
+        transform: scale(1.2);
     }
 }
