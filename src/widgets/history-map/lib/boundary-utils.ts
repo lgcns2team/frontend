@@ -9,14 +9,7 @@ const VIEWPORT_BBOX = {
 };
 
 export const getGeojsonFileForYear = (year: number) => {
-    if (year <= -1000) return 'geojson/world_bc1000.geojson';
-    if (year <= -500) return 'geojson/world_bc500.geojson';
-    if (year <= 0) return 'geojson/world_bc1.geojson';
-    if (year <= 100) return 'geojson/world_100.geojson';
-    if (year <= 200) return 'geojson/world_200.geojson';
-    if (year <= 400) return 'geojson/world_400.geojson';
-    if (year <= 600) return 'geojson/world_600.geojson';
-    if (year < 790) return 'geojson/world_800.geojson';
+
     if (year <= 892) return 'geojson/goryeo_balhae_790-892.geojson';
     if (year <= 900) return 'geojson/silla_hubaekjee_893-900.geojson';
     if (year <= 907) return 'geojson/hugoguryeo_904-917.geojson'; // Tang period (if present) or just pre-5Dyn
@@ -41,51 +34,9 @@ export const getGeojsonFileForYear = (year: number) => {
     if (year <= 1644) return 'geojson/cheong_jo_ming_1636-1644.geojson';
     if (year <= 1655) return 'geojson/cheong_1645-1655.geojson';
     if (year <= 1755) return 'geojson/cheong_jo_1656-1755.geojson';
-    if (year <= 1351) return 'geojson/geum_seo_song_1115-1351.geojson'; // Fallback for other years in this range if needed, but user asked for 1156 limit. Keeping this for now as fallback after 1214? No, user said "adjust to 1115-1156".
-    // Actually, let's strictly follow the gap.
-    // if (year <= 1351) ...
-    // But wait, what about 1215-1351? The original file covered up to 1351.
-    // The user instruction "geum_seo_song_1115-1351.geojson 이 파일의 지도가 반영되는 시기를 1115년에서 1156년으로 조정해줘" implies it should NOT be used after 1156?
-    // Or maybe they just meant the *start* of the Mongol period?
-    // Let's assume they want it back after 1214? Or maybe the Mongol map covers it?
-    // Let's stick to the plan: 1115-1156 for geum_seo_song.
-    // And 1206-1214 for monggol.
-    // For 1215-1351, we might need another file or revert to geum_seo_song.
-    // Given the ambiguity, I'll comment out the 1351 line or leave it for >1214?
-    // Let's leave the 1351 line but it will only be hit if >1214.
-    if (year <= 1351) return 'geojson/geum_seo_song_1115-1351.geojson'; // Keeping this to cover post-1214 if needed, or maybe I should remove it if strictly 1156.
-    // Re-reading: "geum_seo_song_1115-1351.geojson 이 파일의 지도가 반영되는 시기를 1115년에서 1156년으로 조정해줘"
-    // This sounds like a restriction.
-    // But if I remove it for 1215-1351, we have no map.
-    // I will assume the user is building the timeline piece by piece.
-    // So I will use 1156 limit.
-    // And 1206-1214 for Mongol.
-    // And 1351 for... well, let's keep it for now but maybe the user will provide more.
-    // Actually, to be safe and avoid "no map" for 1215+, I will keep the 1351 line.
-    // The user's request "adjust to 1115-1156" might specifically mean "don't show it during the Mongol rise" or something.
-    // But 1206-1214 is the Mongol rise.
-    // Let's try to be smart:
-    // 1115-1156: geum_seo_song
-    // 1157-1205: GAP (falls to world_1200 probably)
-    // 1206-1214: monggol
-    // 1215-1351: geum_seo_song (fallback)
-
+    if (year <= 1351) return 'geojson/geum_seo_song_1115-1351.geojson'; // Fallback for other years in this range if needed, but user asked for 1156 limit. Keeping this for now as fallback after 1214? No, user said "adjust to 1115-1156".    
     if (year <= 1350) return 'geojson/goryeo_936-1350.geojson'; // This might be redundant now if 1351 covers it, but keeping for safety if year range overlaps weirdly
     if (year <= 1391) return 'geojson/goryeomal_1351-1391.geojson';
-    if (year <= 1000) return 'geojson/world_1000.geojson';
-    if (year <= 1100) return 'geojson/world_1100.geojson';
-    if (year <= 1200) return 'geojson/world_1200.geojson';
-    if (year <= 1279) return 'geojson/world_1279.geojson';
-    if (year <= 1300) return 'geojson/world_1300.geojson';
-    if (year <= 1400) return 'geojson/world_1400.geojson';
-    if (year <= 1492) return 'geojson/world_1492.geojson';
-    if (year <= 1500) return 'geojson/world_1500.geojson';
-    if (year <= 1530) return 'geojson/world_1530.geojson';
-    if (year <= 1600) return 'geojson/world_1600.geojson';
-    if (year <= 1650) return 'geojson/world_1650.geojson';
-    if (year <= 1700) return 'geojson/world_1700.geojson';
-    if (year <= 1715) return 'geojson/world_1715.geojson';
-    if (year <= 1783) return 'geojson/world_1783.geojson';
     if (year <= 1800) return 'geojson/world_1800.geojson';
     if (year <= 1815) return 'geojson/world_1815.geojson';
     if (year <= 1880) return 'geojson/world_1880.geojson';
