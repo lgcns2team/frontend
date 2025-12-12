@@ -160,7 +160,7 @@ export const ChatPanel = ({ character }: ChatPanelProps) => {
                     if (line.startsWith('data:')) {
                         const dataStr = line.substring(5).trim();
                         if (!dataStr || dataStr === '[DONE]') continue;
-                        
+
                         // ✅ 수정: JSON 파싱 시도, 실패하면 순수 텍스트로 처리
                         try {
                             const event = JSON.parse(dataStr);
@@ -206,6 +206,7 @@ export const ChatPanel = ({ character }: ChatPanelProps) => {
     // Frame Image Logic
     const currEra = ERAS.find(e => e.id === character.era);
     const frameImage = currEra?.frameImage;
+    const eraColor = currEra?.color || '#3B82F6'; // Default to republic color
 
     return (
         <div className="chat-panel">
@@ -229,8 +230,17 @@ export const ChatPanel = ({ character }: ChatPanelProps) => {
             {/* 대화 영역 */}
             <div className="chat-body-area" ref={chatBodyRef}>
                 {messages.map(msg => (
-                    <div key={msg.id} className={`chat-message ${msg.sender}`}>
-                        {msg.text}
+                    <div
+                        key={msg.id}
+                        className={`chat-message ${msg.sender}`}
+                    >
+                        {msg.sender === 'bot' && msg.text === '' && isLoading ? (
+                            <div className="chat-spinner">
+                                <div className="spinner"></div>
+                            </div>
+                        ) : (
+                            msg.text
+                        )}
                     </div>
                 ))}
             </div>
@@ -246,7 +256,12 @@ export const ChatPanel = ({ character }: ChatPanelProps) => {
                     onKeyDown={handleKeyDown}
                     disabled={isLoading}
                 />
-                <button className="chat-send-btn" onClick={handleSend} disabled={isLoading}>
+                <button
+                    className="chat-send-btn"
+                    onClick={handleSend}
+                    disabled={isLoading}
+                    style={{ backgroundColor: eraColor }}
+                >
                     ➤
                 </button>
             </div>

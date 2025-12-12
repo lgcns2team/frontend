@@ -174,3 +174,28 @@
     pointer-events: none;
     transition: all 0.5s ease;
 }
+
+/* Disabled button with diagonal line */
+.disabled-button-wrapper {
+    position: relative;
+    display: inline-block;
+}
+
+.disabled-button-wrapper.is-disabled::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(to bottom right,
+            transparent 0%,
+            transparent calc(50% - 0.5px),
+            #999 calc(50% - 0.5px),
+            #999 calc(50% + 0.5px),
+            transparent calc(50% + 0.5px),
+            transparent 100%);
+    pointer-events: none;
+    z-index: 1;
+    border-radius: 4px;
+}
