@@ -11,6 +11,7 @@ interface UseWarAnimationProps {
     speed?: number;
     isActive: boolean;
     currentYear: number;
+    historicalLayer: L.Layer | null;
 }
 
 export const useWarAnimation = ({
@@ -18,20 +19,12 @@ export const useWarAnimation = ({
     warData,
     speed = 1,
     isActive,
-    currentYear
+    currentYear,
+    historicalLayer
 }: UseWarAnimationProps) => {
     const animationLayer = useRef<L.LayerGroup | null>(null);
     const animationFrameId = useRef<number | null>(null);
     const startTime = useRef<number | null>(null);
-
-    // Icon
-    const era = getEraForYear(currentYear);
-    const kimaIcon = L.icon({
-        iconUrl: `/assets/images/${era.id}/soldier1.png`,
-        iconSize: [40, 40],
-        iconAnchor: [40, 40],
-        className: 'war-unit-icon'
-    });
 
     useEffect(() => {
         if (!map) return;
@@ -75,12 +68,62 @@ export const useWarAnimation = ({
             return;
         }
 
+        // Icons - soldier1 for land, warship for sea (defined inside useEffect to update with currentYear)
+        const era = getEraForYear(currentYear);
+
+        const soldierIcon = L.icon({
+            iconUrl: `/assets/images/${era.id}/soldier1.png`,
+            iconSize: [40, 40],
+            iconAnchor: [20, 20],
+            className: 'war-unit-icon'
+        });
+
+        const warshipIcon = L.icon({
+            iconUrl: `/assets/images/${era.id}/warship.png`,
+            iconSize: [40, 40],
+            iconAnchor: [20, 20],
+            className: 'war-unit-icon'
+        });
+
+        // Blue route icons (ksoldier / kwarship)
+        const ksoldierIcon = L.icon({
+            iconUrl: `/assets/images/${era.id}/ksoldier.png`,
+            iconSize: [40, 40],
+            iconAnchor: [20, 20],
+            className: 'war-unit-icon'
+        });
+
+        const kwarshipIcon = L.icon({
+            iconUrl: `/assets/images/${era.id}/kwarship.png`,
+            iconSize: [40, 40],
+            iconAnchor: [20, 20],
+            className: 'war-unit-icon'
+        });
+
+        // Purple route icon (always soldier3, regardless of terrain)
+        const soldier3Icon = L.icon({
+            iconUrl: `/assets/images/${era.id}/soldier3.png`,
+            iconSize: [40, 40],
+            iconAnchor: [20, 20],
+            className: 'war-unit-icon'
+        });
+
+        // Turtle ship icon for specific Korean naval battles
+        const tshipIcon = L.icon({
+            iconUrl: `/assets/images/${era.id}/Tship.png`,
+            iconSize: [40, 40],
+            iconAnchor: [20, 20],
+            className: 'war-unit-icon'
+        });
+
         const activeUnits: {
             marker: L.Marker;
             line: any; // Turf LineString
             length: number;
             duration: number; // Duration in ms
             offset: number; // Random start offset
+            routeColor: string; // Route color to determine if naval battle
+            battleName: string; // Battle name to determine specific icons
         }[] = [];
 
         // Process each battle route
@@ -112,19 +155,24 @@ export const useWarAnimation = ({
                     // Duration: e.g., 5 seconds for full path
                     const duration = 5000;
 
+                    // Get route color from battle data
+                    const routeColor = battle.routeColor || '#ef4444'; // Default to red
+
                     const marker = L.marker([0, 0], {
-                        icon: kimaIcon,
+                        icon: soldierIcon,
                         interactive: false // Let clicks pass through to the line
                     }).addTo(animationLayer.current!);
 
-                    console.log('[useWarAnimation] Created marker for battle:', battle.battleName);
+                    console.log('[useWarAnimation] Created marker for battle:', battle.battleName, 'routeColor:', routeColor);
 
                     activeUnits.push({
                         marker,
                         line,
                         length,
                         duration,
-                        offset: Math.random() * duration
+                        offset: Math.random() * duration,
+                        routeColor,
+                        battleName: battle.battleName
                     });
                 }
             });
@@ -151,47 +199,47 @@ export const useWarAnimation = ({
                 // Update marker position
                 unit.marker.setLatLng(latLng);
 
-                // Calculate rotation (bearing)
-                // Get a point slightly ahead to determine direction
-                const nextDist = distance + (unit.length * 0.01); // Look ahead 1%
-                const nextPoint = turf.along(unit.line, nextDist > unit.length ? nextDist - unit.length : nextDist, { units: 'kilometers' });
-                const bearing = turf.bearing(point, nextPoint);
+                // Check route color to determine which icon set to use
+                // #ef4444 = red route, #3b82f6 = blue route, #9333ea = purple route
+                let targetIcon;
 
-                // Rotate icon
-                // Icon points Right by default? Or Up?
-                // If icon points Right: Rotation = Bearing - 90?
-                // Let's assume standard icon points Up.
-                // Turf bearing is -180 to 180, 0 is North.
-                // CSS rotate is clockwise.
-                // If bearing is 90 (East), we want 90 deg rotation.
-                // If bearing is 0 (North), we want 0 deg rotation.
-                // So simply `bearing` should work if icon points Up.
-                // If icon points Left (like the horse usually does), we need adjustment.
-                // The user said "mong-kima-bow.png". Usually these side-view images face Left or Right.
-                // If it faces Left: To face North (0), it needs +90 deg.
-                // Let's try just `bearing` first, or maybe flip it based on direction?
+                // Check for specific naval battles that use Tship
+                const turtleShipBattles = ['한산도 대첩', '노량 해전', '명량 해전'];
+                if (turtleShipBattles.includes(unit.battleName)) {
+                    // Specific Korean naval battles: always use Tship
+                    targetIcon = tshipIcon;
+                } else if (unit.routeColor === '#9333ea') {
+                    // Purple route: always use soldier3, regardless of terrain
+                    targetIcon = soldier3Icon;
+                } else if (historicalLayer) {
+                    // For red and blue routes, check if on land or sea
+                    let isOnLand = false;
 
-                // For side-view units (like horses), we usually just flip X if moving left/right.
-                // But if we want it to follow the path rotation:
-                const rotation = bearing;
+                    (historicalLayer as any).eachLayer((layer: any) => {
+                        if (isOnLand) return; // Already found
 
-                // Apply rotation to the icon's internal div
-                const icon = unit.marker.getIcon() as L.Icon;
-                // Leaflet icons don't support rotation natively easily without plugins or CSS transforms on the img.
-                // We can use DivIcon with rotation, but we used L.icon.
-                // Let's switch to DivIcon for rotation support if needed, 
-                // OR just flip it horizontally if moving West.
+                        if (layer.feature && (layer.feature.geometry.type === 'Polygon' || layer.feature.geometry.type === 'MultiPolygon')) {
+                            const pt = turf.point([coords[0], coords[1]]);
+                            if (turf.booleanPointInPolygon(pt, layer.feature)) {
+                                isOnLand = true;
+                            }
+                        }
+                    });
 
-                // Simple approach: Flip if moving West
-                if (bearing < 0 && bearing > -180) {
-                    // Moving West-ish
-                    // unit.marker.getElement()?.classList.add('flip-x');
-                } else {
-                    // unit.marker.getElement()?.classList.remove('flip-x');
+                    // Update icon based on route color and location
+                    const isBlueRoute = unit.routeColor === '#3b82f6';
+                    if (isBlueRoute) {
+                        // Blue route: ksoldier (land) / kwarship (sea)
+                        targetIcon = isOnLand ? ksoldierIcon : kwarshipIcon;
+                    } else {
+                        // Red route: soldier1 (land) / warship (sea)
+                        targetIcon = isOnLand ? soldierIcon : warshipIcon;
+                    }
                 }
 
-                // For now, let's just move it. The user asked for "move from start to end".
-                // Rotation might be overkill if it's a 2D sprite.
+                if (targetIcon && unit.marker.getIcon() !== targetIcon) {
+                    unit.marker.setIcon(targetIcon);
+                }
             });
 
             animationFrameId.current = requestAnimationFrame(animate);
@@ -209,5 +257,5 @@ export const useWarAnimation = ({
                 animationLayer.current.clearLayers();
             }
         };
-    }, [warData, map, isActive, currentYear]);
+    }, [warData, map, isActive, currentYear, historicalLayer]);
 };
