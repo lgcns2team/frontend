@@ -102,168 +102,169 @@ export const useWarLayer = (map: L.Map | null, currentYear: number, isVisible: b
                         ? (battle.routeColor.includes('blue') || battle.routeColor.includes('#3') ? '#2563eb' : '#dc2626')
                         : '#dc2626';
 
-                    // 1. Draw the border/outline first (HoI4 style black border)
-                    // Initially hidden (opacity 0), will be shown when animation starts
-                    const borderLayer = L.polyline(smoothedLatLngs, {
-                        color: '#000000',
-                        weight: 10,
-                        opacity: 0, // Start hidden
-                        pane: 'warPane',
-                        interactive: false,
-                        lineCap: 'round',
-                        lineJoin: 'round'
-                    }).addTo(warLayer.current!);
-
-                    // 2. Draw the main route on top (Solid thick line HoI4 style)
-                    // Initially hidden (opacity 0), will be shown when animation starts
-                    const routeLayer = L.polyline(smoothedLatLngs, {
-                        color: routeColor,
-                        weight: 7,
-                        opacity: 0, // Start hidden
-                        pane: 'warPane',
-                        interactive: true,
-                        lineCap: 'round',
-                        lineJoin: 'round'
-                    }).addTo(warLayer.current!);
-
-                    // Animate drawing effect: line flows from start to end
-                    const startAnimation = () => {
-                        const borderPath = borderLayer.getElement() as SVGPathElement;
-                        const routePath = routeLayer.getElement() as SVGPathElement;
-
-                        if (!borderPath || !routePath) return;
-
-                        // Show the layers by setting opacity (they start hidden)
-                        borderLayer.setStyle({ opacity: 0.4 });
-                        routeLayer.setStyle({ opacity: 0.7 });
-
-                        const borderLength = borderPath.getTotalLength();
-                        const routeLength = routePath.getTotalLength();
-
-                        // Set initial state: line is hidden by dash offset
-                        borderPath.style.strokeDasharray = `${borderLength}`;
-                        borderPath.style.strokeDashoffset = `${borderLength}`;
-                        routePath.style.strokeDasharray = `${routeLength}`;
-                        routePath.style.strokeDashoffset = `${routeLength}`;
-
-                        const startTime = performance.now();
-                        const duration = 3500; // 2 seconds for the drawing animation
-
-                        const animate = () => {
-                            if (!warLayer.current?.hasLayer(routeLayer)) return;
-
-                            const now = performance.now();
-                            const elapsed = now - startTime;
-                            const progress = Math.min(elapsed / duration, 1);
-
-                            // Ease out cubic for smoother animation
-                            const easeProgress = 1 - Math.pow(1 - progress, 3);
-
-                            const borderOffset = borderLength * (1 - easeProgress);
-                            const routeOffset = routeLength * (1 - easeProgress);
-
-                            borderPath.style.strokeDashoffset = `${borderOffset}`;
-                            routePath.style.strokeDashoffset = `${routeOffset}`;
-
-                            if (progress < 1) {
-                                requestAnimationFrame(animate);
-                            } else {
-                                // Remove dash array after animation completes for proper rendering
-                                borderPath.style.strokeDasharray = 'none';
-                                routePath.style.strokeDasharray = 'none';
-                            }
-                        };
-                        requestAnimationFrame(animate);
-                    };
-
                     // Start animation with staggered delay based on battle order
                     // Each subsequent battle starts 1.5 seconds after the previous one
                     const staggerDelay = battleIndex * 1500;
-                    setTimeout(startAnimation, 50 + staggerDelay);
 
-                    // Add hover effects
-                    routeLayer.on('mouseover', function (e) {
-                        const layer = e.target;
-                        layer.setStyle({
-                            opacity: 0.9,
-                            color: routeColorHover,
-                            weight: 8
-                        });
-                        borderLayer.setStyle({
-                            opacity: 0.5,
-                            weight: 11
-                        });
-                    });
+                    // Delay adding layers until animation time to prevent flicker on zoom
+                    setTimeout(() => {
+                        if (!warLayer.current) return;
 
-                    routeLayer.on('mouseout', function (e) {
-                        const layer = e.target;
-                        layer.setStyle({
-                            opacity: 0.7,
-                            color: routeColor,
-                            weight: 7
-                        });
-                        borderLayer.setStyle({
+                        // 1. Draw the border/outline first (HoI4 style black border)
+                        const borderLayer = L.polyline(smoothedLatLngs, {
+                            color: '#000000',
+                            weight: 10,
                             opacity: 0.4,
-                            weight: 10
+                            pane: 'warPane',
+                            interactive: false,
+                            lineCap: 'round',
+                            lineJoin: 'round'
+                        }).addTo(warLayer.current!);
+
+                        // 2. Draw the main route on top (Solid thick line HoI4 style)
+                        const routeLayer = L.polyline(smoothedLatLngs, {
+                            color: routeColor,
+                            weight: 7,
+                            opacity: 0.7,
+                            pane: 'warPane',
+                            interactive: true,
+                            lineCap: 'round',
+                            lineJoin: 'round'
+                        }).addTo(warLayer.current!);
+
+                        // Animate drawing effect: line flows from start to end
+                        const startAnimation = () => {
+                            const borderPath = borderLayer.getElement() as SVGPathElement;
+                            const routePath = routeLayer.getElement() as SVGPathElement;
+
+                            if (!borderPath || !routePath) return;
+
+                            const borderLength = borderPath.getTotalLength();
+                            const routeLength = routePath.getTotalLength();
+
+                            // Set initial state: line is hidden by dash offset
+                            borderPath.style.strokeDasharray = `${borderLength}`;
+                            borderPath.style.strokeDashoffset = `${borderLength}`;
+                            routePath.style.strokeDasharray = `${routeLength}`;
+                            routePath.style.strokeDashoffset = `${routeLength}`;
+
+                            const startTime = performance.now();
+                            const duration = 3500;
+
+                            const animate = () => {
+                                if (!warLayer.current?.hasLayer(routeLayer)) return;
+
+                                const now = performance.now();
+                                const elapsed = now - startTime;
+                                const progress = Math.min(elapsed / duration, 1);
+
+                                // Ease out cubic for smoother animation
+                                const easeProgress = 1 - Math.pow(1 - progress, 3);
+
+                                const borderOffset = borderLength * (1 - easeProgress);
+                                const routeOffset = routeLength * (1 - easeProgress);
+
+                                borderPath.style.strokeDashoffset = `${borderOffset}`;
+                                routePath.style.strokeDashoffset = `${routeOffset}`;
+
+                                if (progress < 1) {
+                                    requestAnimationFrame(animate);
+                                } else {
+                                    // Remove dash array after animation completes for proper rendering
+                                    borderPath.style.strokeDasharray = 'none';
+                                    routePath.style.strokeDasharray = 'none';
+                                }
+                            };
+                            requestAnimationFrame(animate);
+                        };
+
+                        // Start animation after a small delay to ensure SVG is rendered
+                        setTimeout(startAnimation, 50);
+
+                        // Add hover effects
+                        routeLayer.on('mouseover', function (e) {
+                            const layer = e.target;
+                            layer.setStyle({
+                                opacity: 0.9,
+                                color: routeColorHover,
+                                weight: 8
+                            });
+                            borderLayer.setStyle({
+                                opacity: 0.5,
+                                weight: 11
+                            });
                         });
-                    });
 
-                    // Bind popup to the line as well
-                    routeLayer.bindPopup(`
-                        <div style="min-width: 200px;">
-                            <h3 style="margin: 0 0 8px 0; font-size: 16px; font-weight: bold;">${battle.battleName}</h3>
-                            <p style="margin: 4px 0; font-size: 14px;"><strong>전쟁:</strong> ${war.name}</p>
-                            <p style="margin: 4px 0; font-size: 14px;"><strong>일시:</strong> ${battle.battleDate}</p>
-                            <div style="margin-top: 8px; padding-top: 8px; border-top: 1px solid #eee;">
-                                <p style="margin: 4px 0;"><strong>승리:</strong> ${battle.winnerGeneral}</p>
-                                <p style="margin: 4px 0;"><strong>패배:</strong> ${battle.loserGeneral}</p>
-                            </div>
-                            <p style="margin-top: 8px; font-size: 13px; color: #666;">${battle.details}</p>
-                        </div>
-                    `);
-
-                    // Only show start and end markers if latitude/longitude exist (not route-only entries)
-                    if (battle.latitude && battle.longitude) {
-                        // 2. Start Point (HoI4 style - larger circle with glow)
-                        const startPoint = latLngs[0]; // Use original start point
-                        L.circleMarker(startPoint, {
-                            radius: 8,
-                            fillColor: '#fbbf24', // Amber/Yellow like HoI4
-                            color: '#ffffff',
-                            weight: 3,
-                            opacity: 1,
-                            fillOpacity: 0.9,
-                            pane: 'warPane' // Use custom pane
-                        }).addTo(warLayer.current!)
-                            .bindPopup(`<b>${battle.battleName}</b> (출발지)`);
-
-                        // 3. End Point (Fortress)
-                        const endPoint = smoothedLatLngs[smoothedLatLngs.length - 1];
-                        const era = getEraForYear(currentYear);
-
-                        const arrowIcon = L.icon({
-                            iconUrl: `/assets/images/${era.id}/fortress.png`,
-                            iconSize: [36, 36],
-                            iconAnchor: [24, 24]
+                        routeLayer.on('mouseout', function (e) {
+                            const layer = e.target;
+                            layer.setStyle({
+                                opacity: 0.7,
+                                color: routeColor,
+                                weight: 7
+                            });
+                            borderLayer.setStyle({
+                                opacity: 0.4,
+                                weight: 10
+                            });
                         });
 
-                        L.marker(endPoint, {
-                            icon: arrowIcon,
-                            pane: 'warPane' // Use custom pane
-                        }).addTo(warLayer.current!)
-                            .bindPopup(`
-                                <div style="min-width: 200px;">
-                                    <h3 style="margin: 0 0 8px 0; font-size: 16px; font-weight: bold;">${battle.battleName}</h3>
-                                    <p style="margin: 4px 0; font-size: 14px;"><strong>전쟁:</strong> ${war.name}</p>
-                                    <p style="margin: 4px 0; font-size: 14px;"><strong>일시:</strong> ${battle.battleDate}</p>
-                                    <div style="margin-top: 8px; padding-top: 8px; border-top: 1px solid #eee;">
-                                        <p style="margin: 4px 0;"><strong>승리:</strong> ${battle.winnerGeneral}</p>
-                                        <p style="margin: 4px 0;"><strong>패배:</strong> ${battle.loserGeneral}</p>
-                                    </div>
-                                    <p style="margin-top: 8px; font-size: 13px; color: #666;">${battle.details}</p>
+                        // Bind popup to the line as well
+                        routeLayer.bindPopup(`
+                            <div style="min-width: 200px;">
+                                <h3 style="margin: 0 0 8px 0; font-size: 16px; font-weight: bold;">${battle.battleName}</h3>
+                                <p style="margin: 4px 0; font-size: 14px;"><strong>전쟁:</strong> ${war.name}</p>
+                                <p style="margin: 4px 0; font-size: 14px;"><strong>일시:</strong> ${battle.battleDate}</p>
+                                <div style="margin-top: 8px; padding-top: 8px; border-top: 1px solid #eee;">
+                                    <p style="margin: 4px 0;"><strong>승리:</strong> ${battle.winnerGeneral}</p>
+                                    <p style="margin: 4px 0;"><strong>패배:</strong> ${battle.loserGeneral}</p>
                                 </div>
-                            `);
-                    }
+                                <p style="margin-top: 8px; font-size: 13px; color: #666;">${battle.details}</p>
+                            </div>
+                        `);
+
+                        // Only show start and end markers if latitude/longitude exist (not route-only entries)
+                        if (battle.latitude && battle.longitude) {
+                            // 2. Start Point (HoI4 style - larger circle with glow)
+                            const startPoint = latLngs[0]; // Use original start point
+                            L.circleMarker(startPoint, {
+                                radius: 8,
+                                fillColor: '#fbbf24', // Amber/Yellow like HoI4
+                                color: '#ffffff',
+                                weight: 3,
+                                opacity: 1,
+                                fillOpacity: 0.9,
+                                pane: 'warPane' // Use custom pane
+                            }).addTo(warLayer.current!)
+                                .bindPopup(`<b>${battle.battleName}</b> (출발지)`);
+
+                            // 3. End Point (Fortress)
+                            const endPoint = smoothedLatLngs[smoothedLatLngs.length - 1];
+                            const era = getEraForYear(currentYear);
+
+                            const arrowIcon = L.icon({
+                                iconUrl: `/assets/images/${era.id}/fortress.png`,
+                                iconSize: [36, 36],
+                                iconAnchor: [24, 24]
+                            });
+
+                            L.marker(endPoint, {
+                                icon: arrowIcon,
+                                pane: 'warPane' // Use custom pane
+                            }).addTo(warLayer.current!)
+                                .bindPopup(`
+                                    <div style="min-width: 200px;">
+                                        <h3 style="margin: 0 0 8px 0; font-size: 16px; font-weight: bold;">${battle.battleName}</h3>
+                                        <p style="margin: 4px 0; font-size: 14px;"><strong>전쟁:</strong> ${war.name}</p>
+                                        <p style="margin: 4px 0; font-size: 14px;"><strong>일시:</strong> ${battle.battleDate}</p>
+                                        <div style="margin-top: 8px; padding-top: 8px; border-top: 1px solid #eee;">
+                                            <p style="margin: 4px 0;"><strong>승리:</strong> ${battle.winnerGeneral}</p>
+                                            <p style="margin: 4px 0;"><strong>패배:</strong> ${battle.loserGeneral}</p>
+                                        </div>
+                                        <p style="margin-top: 8px; font-size: 13px; color: #666;">${battle.details}</p>
+                                    </div>
+                                `);
+                        }
+                    }, staggerDelay);
                 } else {
                     // If no route, just show a simple marker at the battle location
                     if (battle.latitude && battle.longitude) {
