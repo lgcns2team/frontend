@@ -1,7 +1,7 @@
 import { useMemo, useState, useEffect, useRef } from 'react';
 import { fetchMainEvents, type ParsedMainEvent } from '../../../shared/api/main-events-api';
 import './Timeline.css';
-import { getEraColor, ERA_LIMITS, ERAS } from '../../../shared/config/era-theme';
+import { getEraColor, ERA_LIMITS } from '../../../shared/config/era-theme';
 
 
 interface TimelineProps {
@@ -12,49 +12,6 @@ interface TimelineProps {
     onToggleVisibility: () => void;
 }
 
-// Helper for binary search (Windowing optimization)
-function getVisibleItems<T extends { year: number }>(
-    items: T[],
-    minYear: number,
-    maxYear: number
-): T[] {
-    if (items.length === 0) return [];
-
-    // Lower bound: Find first item >= minYear
-    let startIdx = 0;
-    let low = 0;
-    let high = items.length - 1;
-
-    while (low <= high) {
-        const mid = (low + high) >>> 1;
-        if (items[mid].year < minYear) {
-            low = mid + 1;
-        } else {
-            startIdx = mid;
-            high = mid - 1;
-        }
-    }
-
-    // If startIdx is out of bounds, no items are visible
-    if (startIdx >= items.length) return [];
-
-    // Upper bound: Find first item > maxYear
-    let endIdx = items.length;
-    low = startIdx;
-    high = items.length - 1;
-
-    while (low <= high) {
-        const mid = (low + high) >>> 1;
-        if (items[mid].year <= maxYear) {
-            low = mid + 1;
-        } else {
-            endIdx = mid;
-            high = mid - 1;
-        }
-    }
-
-    return items.slice(startIdx, endIdx);
-}
 
 const GLOBAL_MIN_YEAR = -2333;
 const GLOBAL_MAX_YEAR = 2024;
@@ -68,12 +25,9 @@ export const Timeline = ({ currentYear, onYearChange, onEventClick, isVisible, o
         fetchMainEvents().then(setMainEvents);
     }, []);
 
-    // Zoom levels: 1x (500), 2x (250), 4x (125), 16x (31.25)
     // Base window size is 500 years
     const BASE_WINDOW_SIZE = 500;
-    const [zoomLevel, setZoomLevel] = useState<1 | 2 | 4 | 16>(1);
-
-    const displayWindowSize = BASE_WINDOW_SIZE / zoomLevel;
+    const displayWindowSize = BASE_WINDOW_SIZE;
 
     // Initialize view window centered on current year
     const [viewStart, setViewStart] = useState(() => {
@@ -262,98 +216,10 @@ export const Timeline = ({ currentYear, onYearChange, onEventClick, isVisible, o
         };
     }, []);
 
-    // Jittered Grid & Seeded Random for Decorations (Houses & Vehicles)
-    const decorationItems = useMemo(() => {
-        // Simple seeded random generator (Linear Congruential Generator)
-        // Use Math.random() for fully random decorations on every mount
-        const seededRandom = () => Math.random();
 
-        const items: Array<{ id: string; year: number; lane: number; image: string; type: 'house' | 'vehicle' | 'cloud' }> = [];
-
-        ERAS.forEach((era) => {
-            // Calculate effective range
-            const effectiveStart = era.startYear === -Infinity ? GLOBAL_MIN_YEAR : era.startYear;
-            const effectiveEnd = era.endYear === Infinity ? GLOBAL_MAX_YEAR : era.endYear;
-            const duration = effectiveEnd - effectiveStart;
-
-            // --- 1. Houses (Lanes 2, 3, 4) ---
-            if (era.houseImages && era.houseImages.length > 0) {
-                const HOUSE_DENSITY = 50; // 1 house per 50 years
-                const houseCount = Math.max(1, Math.floor(duration / HOUSE_DENSITY));
-
-                for (let i = 0; i < houseCount; i++) {
-                    // Random year within era
-                    const year = effectiveStart + Math.floor(seededRandom() * (duration + 1));
-
-                    // Lanes 2, 3, 4
-                    const lane = 2 + Math.floor(seededRandom() * 3);
-
-                    // Pick random house image from available variants
-                    const imageIndex = Math.floor(seededRandom() * era.houseImages.length);
-                    const image = era.houseImages[imageIndex];
-
-                    items.push({
-                        id: `house-${era.id}-${i}`,
-                        year,
-                        lane,
-                        image: image,
-                        type: 'house'
-                    });
-                }
-            }
-
-            // --- 2. Clouds (Lane 4) ---
-            // Randomly placed, disappearing/reappearing
-            const CLOUD_DENSITY = 70; // 1 cloud per 70 years
-            const cloudCount = Math.max(1, Math.floor(duration / CLOUD_DENSITY));
-            const cloudStep = duration / cloudCount;
-
-            for (let i = 0; i < cloudCount; i++) {
-                const jitter = seededRandom(); // 0 to 1
-                const verticalJitter = seededRandom(); // 0 to 1
-                const imageJitter = seededRandom(); // 0 to 1
-                const year = effectiveStart + (cloudStep * i) + (cloudStep * jitter);
-
-                items.push({
-                    id: `cloud-${era.id}-${i}`,
-                    year,
-                    lane: 4 + (verticalJitter * 0.5), // Lane 4 with some vertical variation
-                    image: imageJitter > 0.5 ? '/assets/images/common/cloud1.png' : '/assets/images/common/cloud2.png',
-                    type: 'cloud'
-                });
-            }
-
-
-        });
-
-        return items.sort((a, b) => a.year - b.year);
-    }, []);
-
-    // Optimization: Calculate visible decorations using binary search
-    const visibleDecorations = useMemo(() => {
-        const totalRange = viewEnd - viewStart;
-        const buffer = totalRange * 0.15; // 15% buffer
-        const minYear = viewStart - buffer;
-        const maxYear = viewEnd + buffer;
-
-        return getVisibleItems(decorationItems, minYear, maxYear);
-    }, [decorationItems, viewStart, viewEnd]);
 
     return (
         <div className="timeline-component">
-            {/* Zoom Controls - Always Visible */}
-            <div className={`zoom-controls ${!isVisible ? 'controls-detached' : ''}`}>
-                {[1, 2, 4, 16].map((zoom) => (
-                    <button
-                        key={zoom}
-                        className={`zoom-btn ${zoomLevel === zoom ? 'active' : ''}`}
-                        onClick={() => setZoomLevel(zoom as 1 | 2 | 4 | 16)}
-                        aria-label={`Zoom ${zoom}x`}
-                    >
-                        {zoom}x
-                    </button>
-                ))}
-            </div>
 
             {/* Sliding Panel */}
             <div className={`timeline-panel ${!isVisible ? 'panel-hidden' : ''}`}>
@@ -425,81 +291,7 @@ export const Timeline = ({ currentYear, onYearChange, onEventClick, isVisible, o
                             })}
                         </div>
 
-                        {/* Vehicles (Era-based End-to-End Movement) */}
-                        <div className="timeline-vehicles">
-                            {ERAS.map((era) => {
-                                if (!era.vehicleImage) return null;
 
-                                const effectiveStart = era.startYear === -Infinity ? GLOBAL_MIN_YEAR : era.startYear;
-                                const effectiveEnd = era.endYear === Infinity ? GLOBAL_MAX_YEAR : era.endYear;
-                                const duration = effectiveEnd - effectiveStart;
-
-                                const totalRange = viewEnd - viewStart;
-                                const leftPercent = ((effectiveStart - viewStart) / totalRange) * 100;
-                                const widthPercent = (duration / totalRange) * 100;
-
-                                if (leftPercent + widthPercent < -20 || leftPercent > 120) return null;
-
-                                return (
-                                    <div
-                                        key={`vehicles-${era.id}`}
-                                        className="era-vehicle-container"
-                                        style={{
-                                            left: `${leftPercent}%`,
-                                            width: `${widthPercent}%`
-                                        }}
-                                    >
-                                        <div className="vehicle-track lane-0">
-                                            <img
-                                                src={era.vehicleImage}
-                                                alt=""
-                                                className="era-vehicle vehicle-rl"
-                                                aria-hidden="true"
-                                            />
-                                        </div>
-                                        <div className="vehicle-track lane-1">
-                                            <img
-                                                src={era.vehicleImage}
-                                                alt=""
-                                                className="era-vehicle vehicle-lr"
-                                                aria-hidden="true"
-                                            />
-                                        </div>
-                                    </div>
-                                );
-                            })}
-                        </div>
-
-                        {/* Background Decorations (Houses) */}
-                        {/* Background Decorations (Houses) */}
-                        <div className="timeline-decorations">
-                            {visibleDecorations.map((item) => {
-                                const totalRange = viewEnd - viewStart;
-                                const percent = ((item.year - viewStart) / totalRange) * 100;
-
-                                // Boundary check is already done by binary search windowing
-
-                                const laneOffset = 10 + (item.lane * 7);
-
-                                let className = "timeline-decoration-house";
-                                if (item.type === 'vehicle') className = "timeline-decoration-vehicle";
-                                else if (item.type === 'cloud') className = "timeline-decoration-cloud";
-
-                                return (
-                                    <img
-                                        key={item.id}
-                                        src={item.image}
-                                        alt=""
-                                        className={className}
-                                        style={{
-                                            left: `${percent}%`,
-                                            marginBottom: `${laneOffset}px`
-                                        }}
-                                        aria-hidden="true"
-                                    />
-                                );
-                            })}
-                        </div>
 
                         <input
                             type="range"

@@ -9,14 +9,7 @@ const VIEWPORT_BBOX = {
 };
 
 export const getGeojsonFileForYear = (year: number) => {
-    if (year <= -1000) return 'geojson/world_bc1000.geojson';
-    if (year <= -500) return 'geojson/world_bc500.geojson';
-    if (year <= 0) return 'geojson/world_bc1.geojson';
-    if (year <= 100) return 'geojson/world_100.geojson';
-    if (year <= 200) return 'geojson/world_200.geojson';
-    if (year <= 400) return 'geojson/world_400.geojson';
-    if (year <= 600) return 'geojson/world_600.geojson';
-    if (year < 790) return 'geojson/world_800.geojson';
+
     if (year <= 892) return 'geojson/goryeo_balhae_790-892.geojson';
     if (year <= 900) return 'geojson/silla_hubaekjee_893-900.geojson';
     if (year <= 907) return 'geojson/hugoguryeo_904-917.geojson'; // Tang period (if present) or just pre-5Dyn
@@ -27,23 +20,23 @@ export const getGeojsonFileForYear = (year: number) => {
     if (year <= 960) return 'geojson/5dae10guk_yo_908-960.geojson';
     if (year <= 1066) return 'geojson/song_yo_yeojin_961-1066.geojson';
     if (year <= 1114) return 'geojson/yo_song_seoha_1067-1114.geojson';
-    if (year <= 1351) return 'geojson/geum_seo_song_1115-1351.geojson';
+    if (year <= 1156) return 'geojson/geum_seo_song_1115-1351.geojson';
+    if (year <= 1205) return 'geojson/geum_yeojin_song_1157-1205.geojson';
+    if (year <= 1214) return 'geojson/monggol_1206-1214.geojson';
+    if (year <= 1234) return 'geojson/monggol_1215-1234.geojson';
+    if (year <= 1279) return 'geojson/monggol_1235-1279.geojson';
+    if (year <= 1368) return 'geojson/yuan_1280-1368.geojson';
+    if (year <= 1370) return 'geojson/yuan_myeong_goryeo_1369-1370.geojson';
+    if (year <= 1391) return 'geojson/goryeo_yuan_myeong_yeojin_1371-1391.geojson';
+    if (year <= 1432) return 'geojson/joseon_yuan_myeong_yeojin_1392-1432.geojson';
+    if (year <= 1626) return 'geojson/yuan_myeong_yeojin_josun_1433-1626.geojson';
+    if (year <= 1635) return 'geojson/hugeum_josun_ming_1627-1635.geojson';
+    if (year <= 1644) return 'geojson/cheong_jo_ming_1636-1644.geojson';
+    if (year <= 1655) return 'geojson/cheong_1645-1655.geojson';
+    if (year <= 1755) return 'geojson/cheong_jo_1656-1755.geojson';
+    if (year <= 1351) return 'geojson/geum_seo_song_1115-1351.geojson'; // Fallback for other years in this range if needed, but user asked for 1156 limit. Keeping this for now as fallback after 1214? No, user said "adjust to 1115-1156".    
     if (year <= 1350) return 'geojson/goryeo_936-1350.geojson'; // This might be redundant now if 1351 covers it, but keeping for safety if year range overlaps weirdly
     if (year <= 1391) return 'geojson/goryeomal_1351-1391.geojson';
-    if (year <= 1000) return 'geojson/world_1000.geojson';
-    if (year <= 1100) return 'geojson/world_1100.geojson';
-    if (year <= 1200) return 'geojson/world_1200.geojson';
-    if (year <= 1279) return 'geojson/world_1279.geojson';
-    if (year <= 1300) return 'geojson/world_1300.geojson';
-    if (year <= 1400) return 'geojson/world_1400.geojson';
-    if (year <= 1492) return 'geojson/world_1492.geojson';
-    if (year <= 1500) return 'geojson/world_1500.geojson';
-    if (year <= 1530) return 'geojson/world_1530.geojson';
-    if (year <= 1600) return 'geojson/world_1600.geojson';
-    if (year <= 1650) return 'geojson/world_1650.geojson';
-    if (year <= 1700) return 'geojson/world_1700.geojson';
-    if (year <= 1715) return 'geojson/world_1715.geojson';
-    if (year <= 1783) return 'geojson/world_1783.geojson';
     if (year <= 1800) return 'geojson/world_1800.geojson';
     if (year <= 1815) return 'geojson/world_1815.geojson';
     if (year <= 1880) return 'geojson/world_1880.geojson';
@@ -82,17 +75,18 @@ export const getColorByCountry = (name: string) => {
         '중국': '#ea580c', 'China': '#ea580c',
         '한': '#ea580c', 'Han': '#ea580c',
         '당': '#f97316', 'Tang': '#f97316',
-        '송': '#f97316', 'Song': '#f97316',
-        '원': '#a855f7', 'Yuan': '#a855f7', 'Mongol': '#a855f7',
-        '명': '#eab308', 'Ming': '#eab308',
-        '청': '#0ea5e9', 'Qing': '#0ea5e9',
+        '송': '#eab308', 'Song': '#eab308', 'Southern Song': '#eab308',
+        '원': '#22d3ee', 'Yuan': '#22d3ee', 'Mongol': '#22d3ee', 'Mongol Empire': '#22d3ee', 'Great Yuan': '#22d3ee', 'Northern Yuan': '#22d3ee', // Cyan
+        '명': '#ea580c', 'Ming': '#ea580c', // Orange
+        '청': '#ef4444', 'Qing': '#ef4444', // Red
         '흉노': '#a855f7', 'Xiongnu': '#a855f7',
-        '거란': '#f59e0b', 'Khitan': '#f59e0b', 'Liao': '#f59e0b', // Changed to Amber
-        '여진': '#a855f7', 'Jurchen': '#a855f7', 'Jin': '#a855f7',
-        '오대십국': '#facc15', 'Five Dynasties': '#facc15', 'Later Jin': '#facc15',
-        '서하': '#facc15', 'Western Xia': '#facc15', 'Seoha': '#facc15', // Changed to Yellow for 1115-1351 period consistency
-        '금': '#16a34a', 'Jin (Geum)': '#16a34a', 'Geum': '#16a34a', // Jin as Green
-        '남송': '#3b82f6', 'Southern Song': '#3b82f6', 'Namsong': '#3b82f6' // Southern Song as Blue
+        '거란': '#f59e0b', 'Khitan': '#f59e0b', 'Liao': '#f59e0b',
+        '여진': '#84cc16', 'Jurchen': '#84cc16', 'newyeojin': '#84cc16', 'yeojin': '#84cc16', // Jurchen Cyan, Jin (Dynasty) Purple
+        '후금': '#fa0000ff', 'Later Jin': '#fa0000ff', 'Hugeum': '#fa0000ff', // Dark Red
+        '오대십국': '#facc15', 'Five Dynasties': '#facc15', // 'Later Jin': '#facc15' removed to avoid conflict with Manchu Later Jin
+        '서하': '#c084fc', 'Western Xia': '#c084fc', 'Seoha': '#c084fc', // Light Purple
+        '금': '#fa0000ff', 'Jin (Geum)': '#fa0000ff', 'Geum': '#fa0000ff', 'Jin': '#fa0000ff', // Jin (Dynasty) Purple
+        '남송': '#3b82f6', 'Namsong': '#3b82f6'
     };
 
     if (name && colors[name]) {
@@ -160,6 +154,25 @@ export const loadHistoricalBorders = async (
         filesToLoad.push('geojson/japan.geojson');
     }
 
+    // Add New Yeojin (961-992)
+    if (year >= 961 && year <= 992) {
+        filesToLoad.push('geojson/newyeojin_961-992.geojson');
+    }
+
+    // Goryeo Territory Override Logic
+    let goryeoOverrideFile: string | null = null;
+    if (year >= 936 && year <= 992) {
+        // Early Goryeo (Unified Goryeo + Hubaekje + Silla)
+        goryeoOverrideFile = 'geojson/goryeo_early_936-992.geojson';
+    } else if (year >= 993 && year <= 1350) {
+        // Standard Goryeo map
+        goryeoOverrideFile = 'geojson/goryeo_936-1350.geojson';
+    }
+
+    if (goryeoOverrideFile) {
+        filesToLoad.push(goryeoOverrideFile);
+    }
+
     try {
         const responses = await Promise.all(filesToLoad.map(file => fetch(`/${file}`)));
         const validResponses = responses.filter(res => res.ok);
@@ -169,9 +182,37 @@ export const loadHistoricalBorders = async (
         const datas = await Promise.all(validResponses.map(res => res.json()));
 
         let allFeatures: any[] = [];
-        datas.forEach(data => {
+        datas.forEach((data, index) => {
             if (data && data.features) {
-                allFeatures = [...allFeatures, ...data.features];
+                let features = data.features;
+
+                // If we are using a Goryeo override file, remove 'Goryeo' from other files
+                // to prevent duplicates/overlaps.
+                if (goryeoOverrideFile) {
+                    const currentFile = filesToLoad[index];
+                    if (currentFile !== goryeoOverrideFile) {
+                        features = features.filter((f: any) => {
+                            const name = f.properties?.NAME || f.properties?.name;
+                            return name !== 'Goryeo';
+                        });
+                    }
+                }
+
+                // Jurchen Override Logic
+                // If we are in the specific period for new Jurchen territory (961-992),
+                // remove 'Jurchen' from other files (like song_yo_yeojin_961-1066.geojson)
+                if (year >= 961 && year <= 992) {
+                    const currentFile = filesToLoad[index];
+                    // The new file is 'geojson/newyeojin_961-992.geojson'
+                    if (currentFile !== 'geojson/newyeojin_961-992.geojson') {
+                        features = features.filter((f: any) => {
+                            const name = f.properties?.NAME || f.properties?.name;
+                            return name !== 'Jurchen' && name !== '여진' && name !== 'Jin';
+                        });
+                    }
+                }
+
+                allFeatures = [...allFeatures, ...features];
             }
         });
 

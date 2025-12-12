@@ -7,23 +7,28 @@ interface CloudTransitionProps {
 }
 
 export const CloudTransition: React.FC<CloudTransitionProps> = ({ isActive, onAnimationComplete }) => {
-    //랜더링 안하는 코드 필요하면 지울것
-    const disabled = true;
-    if (disabled) return null;
-    //랜더링 안하는 코드 필요하면 지울것
+
 
     const [isAnimating, setIsAnimating] = useState(false);
+
+    // Use ref to keep callback stable across re-renders
+    const onCompleteRef = React.useRef(onAnimationComplete);
+    useEffect(() => {
+        onCompleteRef.current = onAnimationComplete;
+    }, [onAnimationComplete]);
 
     useEffect(() => {
         if (isActive) {
             setIsAnimating(true);
             const timer = setTimeout(() => {
                 setIsAnimating(false);
-                onAnimationComplete?.();
+                if (onCompleteRef.current) {
+                    onCompleteRef.current();
+                }
             }, 2500); // Total animation duration matches CSS
             return () => clearTimeout(timer);
         }
-    }, [isActive, onAnimationComplete]);
+    }, [isActive]);
 
     if (!isAnimating) return null;
 
