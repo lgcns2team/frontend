@@ -42,6 +42,7 @@ export interface EraConfig {
     frameImage?: string; // FloatingPanel 프레임 이미지 (Optional)
     houseImages?: string[]; // 타임라인 데코레이션 이미지 배열
     vehicleImage?: string; // 타임라인 탈것 이미지 (Optional)
+    hideOnTimeline?: boolean; // 타임라인에 표시 여부 (Optional)
 }
 
 // 3. 시대별 설정 (Color를 여기서 통합 관리)
@@ -162,6 +163,7 @@ export const ERAS: EraConfig[] = [
         bgImage: "/assets/images/liberation/timecontrol.png",
         //timelineImage: "/assets/images/liberation/timeline.png",
         frameImage: "/assets/images/liberation/frame.png",
+        hideOnTimeline: true,
     },
     {
         id: 'korean-war',
@@ -175,6 +177,7 @@ export const ERAS: EraConfig[] = [
         bgImage: "/assets/images/korean-war/timecontrol.png",
         //timelineImage: "/assets/images/korean-war/timeline.png",
         frameImage: "/assets/images/korean-war/frame.png",
+        hideOnTimeline: true,
     },
     {
         id: 'republic',
