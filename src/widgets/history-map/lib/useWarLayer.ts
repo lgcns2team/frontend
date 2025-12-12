@@ -128,7 +128,7 @@ export const useWarLayer = (map: L.Map | null, currentYear: number, isVisible: b
                         // 2. Draw the main route on top (Solid thick line HoI4 style)
                         const routeLayer = L.polyline(smoothedLatLngs, {
                             color: routeColor,
-                            weight: 7,
+                            weight: 5,
                             opacity: 0.7,
                             pane: 'warPane',
                             interactive: true,
