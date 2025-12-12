@@ -180,7 +180,7 @@ export const useWarAnimation = ({
 
                     // Create marker at starting position, initially invisible
                     const marker = L.marker(startLatLng, {
-                        icon: kimaIcon,
+                        icon: soldierIcon, // Using soldierIcon instead of removed kimaIcon
                         interactive: false,
                         opacity: 0 // Start invisible, will fade in when animation starts
                     }).addTo(animationLayer.current!);
