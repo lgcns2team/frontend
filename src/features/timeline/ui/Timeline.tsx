@@ -220,13 +220,17 @@ export const Timeline = ({ currentYear, onYearChange, onEventClick, isVisible, o
     // Generate 100-year ticks
     const ticks = useMemo(() => {
         const tickElements = [];
-        const startTick = Math.ceil(viewStart / 100) * 100;
-        const endTick = Math.floor(viewEnd / 100) * 100;
         const totalRange = viewEnd - viewStart;
+        // Extend range by 10% on each side
+        const extendedStart = viewStart - totalRange * 0.1;
+        const extendedEnd = viewEnd + totalRange * 0.1;
+
+        const startTick = Math.ceil(extendedStart / 100) * 100;
+        const endTick = Math.floor(extendedEnd / 100) * 100;
 
         for (let year = startTick; year <= endTick; year += 100) {
             const percent = ((year - viewStart) / totalRange) * 100;
-            if (percent >= 0 && percent <= 100) {
+            if (percent >= -5 && percent <= 105) {
                 tickElements.push({ year, percent });
             }
         }
@@ -237,14 +241,12 @@ export const Timeline = ({ currentYear, onYearChange, onEventClick, isVisible, o
     const eraLabels = useMemo(() => {
         const totalRange = viewEnd - viewStart;
         return ERAS.filter(era => {
-            // Check if era start is within view or if era spans across view start
-            return (era.startYear >= viewStart && era.startYear <= viewEnd) ||
-                (era.startYear < viewStart && era.endYear > viewStart);
+            // Check if era start is within extended view
+            const extendedStart = viewStart - totalRange * 0.1;
+            const extendedEnd = viewEnd + totalRange * 0.1;
+            return (era.startYear >= extendedStart && era.startYear <= extendedEnd) ||
+                (era.startYear < extendedStart && era.endYear > extendedStart);
         }).map(era => {
-            // Position at start of era, or at left edge if start is off-screen?
-            // User said "where the era changes", so strictly at startYear seems best.
-            // But if startYear is offscreen, we might miss the label.
-            // Let's stick to startYear for now as "era change marker".
             const percent = ((era.startYear - viewStart) / totalRange) * 100;
             return { ...era, percent };
         }).filter(item => item.percent >= -5 && item.percent <= 105); // Allow slight overflow for labels
