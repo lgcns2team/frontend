@@ -54,6 +54,9 @@ export const useWarLayer = (map: L.Map | null, currentYear: number, isVisible: b
     useEffect(() => {
         if (!map || !warLayer.current) return;
 
+        // Track all setTimeout IDs for cleanup
+        const timeoutIds: ReturnType<typeof setTimeout>[] = [];
+
         warLayer.current.clearLayers();
 
         if (!isVisible) return;
@@ -107,7 +110,8 @@ export const useWarLayer = (map: L.Map | null, currentYear: number, isVisible: b
                     const staggerDelay = battleIndex * 1500;
 
                     // Delay adding layers until animation time to prevent flicker on zoom
-                    setTimeout(() => {
+                    // Store timeout ID for cleanup
+                    const timerId = setTimeout(() => {
                         if (!warLayer.current) return;
 
                         // 1. Draw the border/outline first (HoI4 style black border)
@@ -265,6 +269,7 @@ export const useWarLayer = (map: L.Map | null, currentYear: number, isVisible: b
                                 `);
                         }
                     }, staggerDelay);
+                    timeoutIds.push(timerId);
                 } else {
                     // If no route, just show a simple marker at the battle location
                     if (battle.latitude && battle.longitude) {
@@ -295,7 +300,12 @@ export const useWarLayer = (map: L.Map | null, currentYear: number, isVisible: b
                 }
             });
         });
-    }, [map, warData, isVisible]);
+
+        // Cleanup: cancel all pending timeouts when effect re-runs or unmounts
+        return () => {
+            timeoutIds.forEach(id => clearTimeout(id));
+        };
+    }, [map, warData, isVisible, currentYear]);
 
     // Animation Hook
     useWarAnimation({
