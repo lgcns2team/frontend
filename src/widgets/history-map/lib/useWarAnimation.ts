@@ -123,6 +123,8 @@ export const useWarAnimation = ({
             duration: number; // Duration in ms
             startDelay: number; // Delay before this unit starts (synced with route drawing)
             isVisible: boolean; // Whether the unit is currently visible
+            routeColor: string; // Route color
+            battleName: string; // Battle name
         }[] = [];
 
         // Total cycle time: all routes + 10 second pause
@@ -193,7 +195,9 @@ export const useWarAnimation = ({
                         length,
                         duration: UNIT_TRAVEL_DURATION,
                         startDelay,
-                        isVisible: false
+                        isVisible: false,
+                        routeColor: battle.routeColor || '#ef4444',
+                        battleName: battle.battleName
                     });
                 }
             });
@@ -263,6 +267,46 @@ export const useWarAnimation = ({
 
                 // Update marker position
                 unit.marker.setLatLng(latLng);
+
+                // Start of icon switching logic
+                let targetIcon;
+
+                // Check for specific naval battles that use Tship
+                const turtleShipBattles = ['한산도 대첩', '노량 해전', '명량 해전'];
+                if (turtleShipBattles.includes(unit.battleName)) {
+                    targetIcon = tshipIcon;
+                } else if (unit.routeColor === '#9333ea') {
+                    // Purple route: always use soldier3, regardless of terrain
+                    targetIcon = soldier3Icon;
+                } else if (historicalLayer) {
+                    // For red and blue routes, check if on land or sea
+                    let isOnLand = false;
+
+                    (historicalLayer as any).eachLayer((layer: any) => {
+                        if (isOnLand) return; // Already found
+
+                        if (layer.feature && (layer.feature.geometry.type === 'Polygon' || layer.feature.geometry.type === 'MultiPolygon')) {
+                            const pt = turf.point([coords[0], coords[1]]);
+                            if (turf.booleanPointInPolygon(pt, layer.feature)) {
+                                isOnLand = true;
+                            }
+                        }
+                    });
+
+                    // Update icon based on route color and location
+                    const isBlueRoute = unit.routeColor === '#3b82f6';
+                    if (isBlueRoute) {
+                        // Blue route: ksoldier (land) / kwarship (sea)
+                        targetIcon = isOnLand ? ksoldierIcon : kwarshipIcon;
+                    } else {
+                        // Red route: soldier1 (land) / warship (sea)
+                        targetIcon = isOnLand ? soldierIcon : warshipIcon;
+                    }
+                }
+
+                if (targetIcon && unit.marker.getIcon() !== targetIcon) {
+                    unit.marker.setIcon(targetIcon);
+                }
 
                 // Calculate rotation (bearing) for direction
                 const nextDist = distance + (unit.length * 0.01);
