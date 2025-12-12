@@ -246,87 +246,93 @@ export const Timeline = ({ currentYear, onYearChange, onEventClick, isVisible, o
                         <path d="M6 9l6 6 6-6" />
                     </svg>
                 </button>
-                <button
-                    className="nav-btn prev-btn"
-                    onMouseDown={() => startNav(-1)}
-                    onMouseUp={() => stopNav(-1)}
-                    onMouseLeave={() => stopNav(-1)}
-                    onTouchStart={(e) => { e.preventDefault(); startNav(-1); }}
-                    onTouchEnd={(e) => { e.preventDefault(); stopNav(-1); }}
-                    onTouchCancel={() => stopNav(-1)}
-                    aria-label="Previous 1 year"
-                >
-                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <path d="M15 18L9 12L15 6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-                    </svg>
-                </button>
 
-                <div className="timeline-wrapper">
-                    <div className="timeline-slider-container">
-                        {/* Main Event Markers */}
-                        <div className="timeline-event-markers">
-                            {mainEvents.map((event) => {
-                                const totalRange = viewEnd - viewStart;
-                                const percent = ((event.year - viewStart) / totalRange) * 100;
+                {/* Scroll Background Wrapper */}
+                <div className="timeline-scroll-bg">
+                    <button
+                        className="nav-btn prev-btn"
+                        onMouseDown={() => startNav(-1)}
+                        onMouseUp={() => stopNav(-1)}
+                        onMouseLeave={() => stopNav(-1)}
+                        onTouchStart={(e) => { e.preventDefault(); startNav(-1); }}
+                        onTouchEnd={(e) => { e.preventDefault(); stopNav(-1); }}
+                        onTouchCancel={() => stopNav(-1)}
+                        aria-label="Previous 1 year"
+                    >
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M15 18L9 12L15 6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                        </svg>
+                    </button>
 
-                                if (percent < -5 || percent > 105) return null;
+                    <div className="timeline-wrapper">
+                        <div className="timeline-slider-container">
+                            {/* Brush Stroke Line */}
+                            <div className="timeline-brush-line"></div>
 
-                                return (
-                                    <div
-                                        key={event.eventId}
-                                        className="event-marker"
-                                        style={{ left: `${percent}%` }}
-                                        onClick={(e) => {
-                                            e.stopPropagation();
-                                            onYearChange(event.year);
-                                            if (onEventClick) onEventClick(event);
-                                        }}
-                                    >
-                                        <div className="event-marker-dot" style={{ backgroundColor: getEraColor(event.year) }}></div>
-                                        <div className="event-marker-label" style={{ borderColor: getEraColor(event.year) }}>
-                                            {event.eventName}
+                            {/* Main Event Markers */}
+                            <div className="timeline-event-markers">
+                                {mainEvents.map((event) => {
+                                    const totalRange = viewEnd - viewStart;
+                                    const percent = ((event.year - viewStart) / totalRange) * 100;
+
+                                    if (percent < -5 || percent > 105) return null;
+
+                                    return (
+                                        <div
+                                            key={event.eventId}
+                                            className="event-marker"
+                                            style={{ left: `${percent}%` }}
+                                            onClick={(e) => {
+                                                e.stopPropagation();
+                                                onYearChange(event.year);
+                                                if (onEventClick) onEventClick(event);
+                                            }}
+                                        >
+                                            <div className="event-marker-dot" style={{ backgroundColor: getEraColor(event.year) }}></div>
+                                            <div className="event-marker-label" style={{ borderColor: getEraColor(event.year) }}>
+                                                {event.eventName}
+                                            </div>
                                         </div>
-                                    </div>
-                                );
-                            })}
+                                    );
+                                })}
+                            </div>
+
+                            <input
+                                type="range"
+                                min={viewStart}
+                                max={viewEnd}
+                                value={currentYear}
+                                className="timeline-slider"
+                                onChange={(e) => handleSliderChange(parseInt(e.target.value))}
+                                onMouseDown={handleMouseDown}
+                                onMouseUp={handleMouseUp}
+                                onTouchStart={handleMouseDown}
+                                onTouchEnd={handleMouseUp}
+                                style={{ '--thumb-color': thumbColor } as React.CSSProperties}
+                            />
+                            {/* Gradient Track - Optional, maybe remove if brush line is enough, or keep for subtle color indication */}
+                            <div
+                                className="timeline-track-bg"
+                                style={{ background: trackGradient, opacity: 0.3 }}
+                            ></div>
                         </div>
-
-
-
-                        <input
-                            type="range"
-                            min={viewStart}
-                            max={viewEnd}
-                            value={currentYear}
-                            className="timeline-slider"
-                            onChange={(e) => handleSliderChange(parseInt(e.target.value))}
-                            onMouseDown={handleMouseDown}
-                            onMouseUp={handleMouseUp}
-                            onTouchStart={handleMouseDown}
-                            onTouchEnd={handleMouseUp}
-                            style={{ '--thumb-color': thumbColor } as React.CSSProperties}
-                        />
-                        <div
-                            className="timeline-track-bg"
-                            style={{ background: trackGradient }}
-                        ></div>
                     </div>
-                </div>
 
-                <button
-                    className="nav-btn next-btn"
-                    onMouseDown={() => startNav(1)}
-                    onMouseUp={() => stopNav(1)}
-                    onMouseLeave={() => stopNav(1)}
-                    onTouchStart={(e) => { e.preventDefault(); startNav(1); }}
-                    onTouchEnd={(e) => { e.preventDefault(); stopNav(1); }}
-                    onTouchCancel={() => stopNav(1)}
-                    aria-label="Next 1 year"
-                >
-                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <path d="M9 18L15 12L9 6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-                    </svg>
-                </button>
+                    <button
+                        className="nav-btn next-btn"
+                        onMouseDown={() => startNav(1)}
+                        onMouseUp={() => stopNav(1)}
+                        onMouseLeave={() => stopNav(1)}
+                        onTouchStart={(e) => { e.preventDefault(); startNav(1); }}
+                        onTouchEnd={(e) => { e.preventDefault(); stopNav(1); }}
+                        onTouchCancel={() => stopNav(1)}
+                        aria-label="Next 1 year"
+                    >
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M9 18L15 12L9 6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                        </svg>
+                    </button>
+                </div>
             </div>
         </div>
     );

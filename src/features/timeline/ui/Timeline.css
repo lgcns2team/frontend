@@ -3,99 +3,139 @@
     flex: 1;
     display: flex;
     justify-content: center;
+    pointer-events: none;
+    /* Let clicks pass through to map unless on panel */
 }
 
 .timeline-panel {
     display: flex;
     align-items: center;
-    /* Center vertically */
-    gap: 24px;
-    /* Increased gap */
+    justify-content: center;
     width: 100%;
-    padding: 0 20px;
-    /* Add side padding */
-    border-radius: 16px;
-    /* Optional: Rounded corners for the container */
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-    /* Optional: Shadow for depth */
+    max-width: 1200px;
+    /* Limit width for the scroll look */
+    height: 200px;
+    /* Fixed height for the scroll image */
+    padding: 0;
 
-    /* Animation */
-    transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-    position: relative;
-    background-color: var(--ui-bg, white);
-    background-image: url('/assets/images/background.png');
-    background-size: auto;
-    background-repeat: repeat;
-    background-position: right bottom !important;
-    background-attachment: fixed;
-    background-blend-mode: multiply;
+    /* Scroll Background */
+    background-image: url('/assets/images/paper_timeline.png');
+    background-size: 100% 100%;
+    background-repeat: no-repeat;
+    background-position: center;
+    background-color: transparent;
+
+    position: fixed;
+    /* Fixed at bottom */
+    bottom: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+
     z-index: 900;
-    /* High z-index */
+    pointer-events: auto;
+
+    /* Remove old styles */
+    border-radius: 0;
+    box-shadow: none;
+    transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 /* When hidden, slide down. */
 .timeline-panel.panel-hidden {
-    transform: translateY(100%);
+    transform: translate(-50%, 150%);
 }
 
 /* Toggle Button */
-
-
 .timeline-toggle-btn {
     position: absolute;
-    top: -32px;
-    /* Pull it up outside */
+    top: -40px;
+    /* Above the scroll */
     left: 50%;
     transform: translateX(-50%);
-    /* Start centered */
-    width: 60px;
-    height: 32px;
-    background: var(--ui-bg, white);
-    border: 1px solid var(--ui-border, #ddd);
-    border-bottom: none;
-    border-radius: 12px 12px 0 0;
+    width: 40px;
+    height: 40px;
+    background: rgba(255, 255, 255, 0.9);
+    border: 1px solid #d1d5db;
+    border-radius: 50%;
     cursor: pointer;
     display: flex;
     align-items: center;
     justify-content: center;
-    color: var(--ui-text, #666);
-    box-shadow: 0 -4px 10px rgba(0, 0, 0, 0.05);
-    transition: background-color 0.2s, color 0.2s;
+    color: #4b5563;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
     z-index: 1000;
+    transition: all 0.2s;
 }
 
 .timeline-toggle-btn:hover {
-    background: var(--ui-accent-light, #f9fafb);
-    color: var(--ui-accent, #3b82f6);
+    background: white;
+    color: #111827;
+    transform: translateX(-50%) scale(1.1);
 }
 
+/* Scroll Background Wrapper to hold content */
+.timeline-scroll-bg {
+    display: flex;
+    align-items: center;
+    width: 85%;
+    /* Content area within the scroll handles */
+    height: 100%;
+    position: relative;
+    padding: 0 20px;
+}
 
 .timeline-wrapper {
     flex: 1;
     display: flex;
     flex-direction: column;
-    gap: 12px;
-    /* Increased gap */
-    padding-bottom: 10px;
+    justify-content: center;
+    height: 100%;
+    position: relative;
 }
 
 .timeline-slider-container {
     position: relative;
-    height: 90px;
-    /* Adjusted height */
+    height: 100px;
+    /* Height for markers and slider */
     display: flex;
     align-items: center;
-    margin-bottom: 5px;
+    justify-content: center;
+}
+
+/* Brush Stroke Line */
+.timeline-brush-line {
+    position: absolute;
+    top: 50%;
+    left: 0;
+    right: 0;
+    height: 6px;
+    /* Thickness of the line */
+    background: #222;
+    /* Ink color */
+    border-radius: 50% 50% 50% 50% / 20% 20% 20% 20%;
+    /* Tapered ends */
+    transform: translateY(-50%) scaleY(0.8);
+    /* Slight irregularity */
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+    z-index: 2;
+    /* Optional: Add a texture or gradient to make it look more like a brush */
+    background: linear-gradient(90deg,
+            rgba(30, 30, 30, 0.8) 0%,
+            rgba(0, 0, 0, 1) 10%,
+            rgba(0, 0, 0, 1) 90%,
+            rgba(30, 30, 30, 0.8) 100%);
 }
 
 .timeline-slider {
     -webkit-appearance: none;
     appearance: none;
     width: 100%;
-    height: 48px;
+    height: 40px;
+    /* Hit area */
     background: transparent;
     outline: none;
-    z-index: 3;
+    z-index: 10;
+    /* Topmost for interaction */
     margin: 0;
     position: absolute;
     top: 50%;
@@ -104,184 +144,71 @@
     cursor: pointer;
 }
 
-/* Custom Slider Track */
+/* Custom Slider Track - Hidden or subtle */
 .timeline-track-bg {
-    position: absolute;
-    top: 50%;
-    left: 0;
-    right: 0;
-    height: 16px;
-    /* Thicker track */
-    transform: translateY(-50%);
-    background: var(--track-bg, #cbd5e1);
-    border: 1px solid var(--ui-border, #47351D);
-    border-radius: 8px;
-    /* More rounded */
-    z-index: 1;
-    box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.1);
+    display: none;
+    /* We use brush line instead */
 }
 
-/* Lens Thumb */
+/* Lens Thumb - Ring Style */
 .timeline-slider::-webkit-slider-thumb {
     -webkit-appearance: none;
     appearance: none;
-    width: 32px;
-    /* Larger thumb */
-    height: 32px;
+    width: 24px;
+    height: 24px;
     border-radius: 50%;
-    background: var(--thumb-color, #E7903A);
+    background: transparent;
+    /* See through center */
     cursor: grab;
-    border: 4px solid var(--ui-bg, #fff);
-    /* Thicker border */
+    border: 4px solid #fff;
+    /* White ring */
     box-shadow:
-        0 4px 6px rgba(0, 0, 0, 0.2),
-        0 0 0 1px var(--ui-border, #47351D);
-    transition: transform 0.1s, background-color 0.2s, box-shadow 0.2s;
+        0 0 0 2px #333,
+        /* Outer dark border */
+        0 2px 4px rgba(0, 0, 0, 0.3);
+    transition: transform 0.1s;
     margin-top: 0;
-    /* Center vertically relative to track if needed, but flex aligns it */
 }
 
 .timeline-slider::-webkit-slider-thumb:active {
     cursor: grabbing;
     transform: scale(1.1);
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
-}
-
-.timeline-slider::-webkit-slider-thumb:hover {
-    transform: scale(1.15);
 }
 
 .timeline-slider::-moz-range-thumb {
-    width: 32px;
-    height: 32px;
+    width: 24px;
+    height: 24px;
     border-radius: 50%;
-    background: var(--thumb-color, #E7903A);
+    background: transparent;
     cursor: grab;
-    border: 4px solid var(--ui-bg, #fff);
+    border: 4px solid #fff;
     box-shadow:
-        0 4px 6px rgba(0, 0, 0, 0.2),
-        0 0 0 1px var(--ui-border, #47351D);
-    transition: transform 0.1s, background-color 0.2s;
+        0 0 0 2px #333,
+        0 2px 4px rgba(0, 0, 0, 0.3);
+    transition: transform 0.1s;
 }
 
-.timeline-slider::-moz-range-thumb:active {
-    cursor: grabbing;
-    transform: scale(1.1);
-}
-
-.timeline-slider::-moz-range-thumb:hover {
-    transform: scale(1.15);
-}
-
-
-
+/* Navigation Buttons */
 .nav-btn {
-    width: 56px;
-    /* Larger buttons */
-    height: 56px;
+    width: 40px;
+    height: 40px;
     border-radius: 50%;
-    background: var(--ui-bg, white);
-    border: 2px solid var(--ui-accent, #3b82f6);
-    color: var(--ui-accent, #3b82f6);
-    /* font-size removed */
+    background: transparent;
+    border: none;
+    color: #4b5563;
     cursor: pointer;
     display: flex;
     align-items: center;
     justify-content: center;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    transition: all 0.2s;
     flex-shrink: 0;
-    padding: 0;
-    /* Remove padding to prevent layout shifts */
+    z-index: 20;
 }
 
-.nav-btn svg {
-    width: 24px;
-    height: 24px;
-    stroke-width: 2.5px;
-    /* Make it slightly thicker */
-    flex-shrink: 0;
-}
-
-@media (hover: hover) {
-    .nav-btn:hover {
-        background: var(--ui-accent, #eff6ff);
-        color: var(--ui-bg, white);
-        transform: translateY(-2px);
-        box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
-    }
-}
-
-/* Explicitly reset hover on touch devices to prevent stickiness */
-@media (pointer: coarse) {
-    .nav-btn:hover {
-        background: var(--ui-bg, white);
-        color: var(--ui-accent, #3b82f6);
-        transform: none;
-        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-    }
-}
-
-.nav-btn:active {
-    transform: translateY(0);
-    background: var(--ui-accent, #eff6ff);
-    color: var(--ui-bg, white);
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-}
-
-/* Era Markers */
-.timeline-era-markers {
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    pointer-events: none;
-    z-index: 4;
-}
-
-.era-label-marker {
-    position: absolute;
-    top: -16px;
-    /* Moved up slightly */
-    transform: translateX(-50%);
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-}
-
-.era-bubble {
-    background: var(--ui-bg, white);
-    color: var(--era-color, var(--ui-text, #333));
-    padding: 6px 16px;
-    /* Increased padding */
-    border-radius: 20px;
-    /* Increased radius */
-    font-size: 14px;
-    /* Increased font size */
-    font-weight: bold;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
-    /* Stronger shadow */
-    border: 2px solid var(--era-color, var(--ui-border, #ccc));
-    /* Thicker border */
-    white-space: nowrap;
-    position: relative;
-    z-index: 5;
-}
-
-/* Arrow for bubble */
-.era-bubble::after {
-    content: '';
-    position: absolute;
-    bottom: -5px;
-    left: 50%;
-    transform: translateX(-50%) rotate(45deg);
-    width: 10px;
-    /* Larger arrow */
-    height: 10px;
-    background: var(--ui-bg, white);
-    border-bottom: 2px solid var(--era-color, var(--ui-border, #ccc));
-    border-right: 2px solid var(--era-color, var(--ui-border, #ccc));
+.nav-btn:hover {
+    color: #000;
+    transform: scale(1.1);
+    background: rgba(0, 0, 0, 0.05);
 }
 
 /* Main Event Markers */
@@ -293,62 +220,72 @@
     bottom: 0;
     pointer-events: none;
     z-index: 5;
-    /* Above slider (z-index: 3) */
-    overflow: hidden;
 }
 
 .event-marker {
     position: absolute;
     top: 50%;
-    /* Moved down by approx 0.5cm */
+    /* On the line */
     transform: translate(-50%, -50%);
     cursor: pointer;
     pointer-events: auto;
-    /* Allow clicking */
-    padding: 8px;
-    /* Hit area */
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
 }
 
 .event-marker-dot {
-    width: 10px;
-    height: 10px;
+    width: 8px;
+    height: 8px;
     border-radius: 50%;
-    background-color: var(--ui-accent);
-    border: 2px solid white;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
-    transition: transform 0.2s;
-}
-
-.event-marker:hover .event-marker-dot {
-    transform: scale(1.5);
-    z-index: 10;
+    background-color: #333;
+    /* Default dark dot */
+    border: 1px solid rgba(255, 255, 255, 0.5);
+    z-index: 6;
+    margin-top: 2px;
+    /* Adjust to sit on line */
 }
 
 .event-marker-label {
     position: absolute;
-    bottom: 20px;
-    /* Position above the dot */
+    bottom: 15px;
+    /* Above the dot */
     left: 50%;
-    transform: translateX(-50%);
-    background: var(--ui-bg, white);
-    padding: 4px 8px;
-    border-radius: 4px;
-    font-size: 12px;
+    transform-origin: bottom left;
+    transform: rotate(-45deg) translate(5px, -5px);
+    /* Diagonal */
+
+    font-family: 'Nanum Myeongjo', serif;
+    /* Brush style fallback */
+    font-size: 14px;
+    font-weight: 600;
+    color: #1f2937;
     white-space: nowrap;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
-    border: 1px solid #ccc;
-    /* Fallback */
-    border-width: 1px;
-    border-style: solid;
-    opacity: 0;
-    visibility: hidden;
-    transition: opacity 0.2s, visibility 0.2s;
-    pointer-events: none;
-    z-index: 20;
-    color: var(--ui-text, #333);
+
+    /* Remove box styling */
+    background: transparent;
+    padding: 0;
+    border: none;
+    box-shadow: none;
+
+    opacity: 0.8;
+    visibility: visible;
+    /* Always visible */
+    transition: all 0.2s ease;
+    pointer-events: auto;
+    /* Clickable */
 }
 
 .event-marker:hover .event-marker-label {
     opacity: 1;
-    visibility: visible;
+    font-size: 18px;
+    /* Enlarge on hover */
+    z-index: 100;
+    text-shadow: 0 0 2px rgba(255, 255, 255, 0.8);
+    font-weight: 800;
+}
+
+.event-marker:hover .event-marker-dot {
+    transform: scale(1.5);
 }
