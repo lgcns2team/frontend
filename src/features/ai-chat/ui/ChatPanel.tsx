@@ -235,8 +235,10 @@ export const ChatPanel = ({ character }: ChatPanelProps) => {
                         className={`chat-message ${msg.sender}`}
                     >
                         {msg.sender === 'bot' && msg.text === '' && isLoading ? (
-                            <div className="chat-spinner">
-                                <div className="spinner"></div>
+                            <div className="chat-typing">
+                                <span className="dot"></span>
+                                <span className="dot"></span>
+                                <span className="dot"></span>
                             </div>
                         ) : (
                             msg.text
