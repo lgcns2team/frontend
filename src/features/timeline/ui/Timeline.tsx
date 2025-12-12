@@ -1,7 +1,7 @@
 import { useMemo, useState, useEffect, useRef } from 'react';
 import { fetchMainEvents, type ParsedMainEvent } from '../../../shared/api/main-events-api';
 import './Timeline.css';
-import { getEraColor, ERA_LIMITS } from '../../../shared/config/era-theme';
+import { getEraColor, ERA_LIMITS, ERAS } from '../../../shared/config/era-theme';
 
 
 interface TimelineProps {
@@ -217,6 +217,39 @@ export const Timeline = ({ currentYear, onYearChange, onEventClick, isVisible, o
     }, []);
 
 
+    // Generate 100-year ticks
+    const ticks = useMemo(() => {
+        const tickElements = [];
+        const startTick = Math.ceil(viewStart / 100) * 100;
+        const endTick = Math.floor(viewEnd / 100) * 100;
+        const totalRange = viewEnd - viewStart;
+
+        for (let year = startTick; year <= endTick; year += 100) {
+            const percent = ((year - viewStart) / totalRange) * 100;
+            if (percent >= 0 && percent <= 100) {
+                tickElements.push({ year, percent });
+            }
+        }
+        return tickElements;
+    }, [viewStart, viewEnd]);
+
+    // Generate Era Labels
+    const eraLabels = useMemo(() => {
+        const totalRange = viewEnd - viewStart;
+        return ERAS.filter(era => {
+            // Check if era start is within view or if era spans across view start
+            return (era.startYear >= viewStart && era.startYear <= viewEnd) ||
+                (era.startYear < viewStart && era.endYear > viewStart);
+        }).map(era => {
+            // Position at start of era, or at left edge if start is off-screen?
+            // User said "where the era changes", so strictly at startYear seems best.
+            // But if startYear is offscreen, we might miss the label.
+            // Let's stick to startYear for now as "era change marker".
+            const percent = ((era.startYear - viewStart) / totalRange) * 100;
+            return { ...era, percent };
+        }).filter(item => item.percent >= -5 && item.percent <= 105); // Allow slight overflow for labels
+    }, [viewStart, viewEnd]);
+
 
     return (
         <div className="timeline-component">
@@ -268,6 +301,36 @@ export const Timeline = ({ currentYear, onYearChange, onEventClick, isVisible, o
                         <div className="timeline-slider-container">
                             {/* Brush Stroke Line */}
                             <div className="timeline-brush-line"></div>
+
+                            {/* Ticks & Year Labels */}
+                            <div className="timeline-ticks">
+                                {ticks.map(tick => (
+                                    <div
+                                        key={tick.year}
+                                        className="timeline-tick"
+                                        style={{ left: `${tick.percent}%` }}
+                                    >
+                                        <div className="tick-line"></div>
+                                        <div className="tick-label">
+                                            {tick.year < 0 ? `BC ${Math.abs(tick.year)}` : tick.year}
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+
+                            {/* Era Labels */}
+                            <div className="timeline-era-labels">
+                                {eraLabels.map(era => (
+                                    <div
+                                        key={era.id}
+                                        className="era-change-marker"
+                                        style={{ left: `${era.percent}%` }}
+                                    >
+                                        <div className="era-change-line" style={{ backgroundColor: era.color }}></div>
+                                        <div className="era-change-label" style={{ color: era.color }}>{era.label}</div>
+                                    </div>
+                                ))}
+                            </div>
 
                             {/* Main Event Markers */}
                             <div className="timeline-event-markers">
