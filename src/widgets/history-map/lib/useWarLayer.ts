@@ -6,7 +6,7 @@ import { interpolateCatmullRom } from './math-utils';
 import { useWarAnimation } from './useWarAnimation';
 import { getEraForYear } from '../../../shared/config/era-theme';
 
-export const useWarLayer = (map: L.Map | null, currentYear: number, isVisible: boolean) => {
+export const useWarLayer = (map: L.Map | null, currentYear: number, isVisible: boolean, historicalLayer: L.Layer | null = null) => {
     const warLayer = useRef<L.LayerGroup | null>(null);
     const [warData, setWarData] = useState<WarData[]>([]);
 
@@ -302,7 +302,8 @@ export const useWarLayer = (map: L.Map | null, currentYear: number, isVisible: b
         map,
         warData,
         isActive: isVisible,
-        currentYear
+        currentYear,
+        historicalLayer
     });
 
     return warLayer;

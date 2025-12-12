@@ -11,6 +11,7 @@ interface UseWarAnimationProps {
     speed?: number;
     isActive: boolean;
     currentYear: number;
+    historicalLayer: L.Layer | null;
 }
 
 export const useWarAnimation = ({
@@ -18,20 +19,12 @@ export const useWarAnimation = ({
     warData,
     speed = 1,
     isActive,
-    currentYear
+    currentYear,
+    historicalLayer
 }: UseWarAnimationProps) => {
     const animationLayer = useRef<L.LayerGroup | null>(null);
     const animationFrameId = useRef<number | null>(null);
     const startTime = useRef<number | null>(null);
-
-    // Icon
-    const era = getEraForYear(currentYear);
-    const kimaIcon = L.icon({
-        iconUrl: `/assets/images/${era.id}/soldier1.png`,
-        iconSize: [40, 40],
-        iconAnchor: [40, 40],
-        className: 'war-unit-icon'
-    });
 
     useEffect(() => {
         if (!map) return;
@@ -74,6 +67,54 @@ export const useWarAnimation = ({
             }
             return;
         }
+
+        // Icons - soldier1 for land, warship for sea (defined inside useEffect to update with currentYear)
+        const era = getEraForYear(currentYear);
+
+        const soldierIcon = L.icon({
+            iconUrl: `/assets/images/${era.id}/soldier1.png`,
+            iconSize: [40, 40],
+            iconAnchor: [20, 20],
+            className: 'war-unit-icon'
+        });
+
+        const warshipIcon = L.icon({
+            iconUrl: `/assets/images/${era.id}/warship.png`,
+            iconSize: [40, 40],
+            iconAnchor: [20, 20],
+            className: 'war-unit-icon'
+        });
+
+        // Blue route icons (ksoldier / kwarship)
+        const ksoldierIcon = L.icon({
+            iconUrl: `/assets/images/${era.id}/ksoldier.png`,
+            iconSize: [40, 40],
+            iconAnchor: [20, 20],
+            className: 'war-unit-icon'
+        });
+
+        const kwarshipIcon = L.icon({
+            iconUrl: `/assets/images/${era.id}/kwarship.png`,
+            iconSize: [40, 40],
+            iconAnchor: [20, 20],
+            className: 'war-unit-icon'
+        });
+
+        // Purple route icon (always soldier3, regardless of terrain)
+        const soldier3Icon = L.icon({
+            iconUrl: `/assets/images/${era.id}/soldier3.png`,
+            iconSize: [40, 40],
+            iconAnchor: [20, 20],
+            className: 'war-unit-icon'
+        });
+
+        // Turtle ship icon for specific Korean naval battles
+        const tshipIcon = L.icon({
+            iconUrl: `/assets/images/${era.id}/Tship.png`,
+            iconSize: [40, 40],
+            iconAnchor: [20, 20],
+            className: 'war-unit-icon'
+        });
 
         const activeUnits: {
             marker: L.Marker;
@@ -252,5 +293,5 @@ export const useWarAnimation = ({
                 animationLayer.current.clearLayers();
             }
         };
-    }, [warData, map, isActive, currentYear]);
+    }, [warData, map, isActive, currentYear, historicalLayer]);
 };
