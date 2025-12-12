@@ -44,6 +44,8 @@
     background-color: #ccc;
     border-radius: 24px;
     transition: 0.3s;
+    border: 1px solid black;
+    box-sizing: border-box;
 }
 
 .toggle-slider:before {
@@ -93,7 +95,10 @@
 }
 
 .character-item {
-    background-color: white;
+    background-image: url('/assets/images/background1.png');
+    background-size: cover;
+    background-repeat: no-repeat;
+    background-position: center;
     border: 1px solid var(--ui-border);
     border-radius: 8px;
     padding: 16px;

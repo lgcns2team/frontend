@@ -894,8 +894,8 @@ export default function HistoryMap() {
                     disabled={textbookPage === 0}
                     style={{
                         padding: isSinglePage ? '4px 4px' : '4px 8px',
-                        backgroundColor: 'var(--ui-primary)',
-                        color: 'white',
+                        backgroundColor: 'transparent',
+                        color: 'black',
                         border: 'none',
                         borderRadius: '4px',
                         cursor: 'pointer',
@@ -929,8 +929,8 @@ export default function HistoryMap() {
                     }
                     style={{
                         padding: isSinglePage ? '4px 4px' : '4px 8px',
-                        backgroundColor: 'var(--ui-primary)',
-                        color: 'white',
+                        backgroundColor: 'transparent',
+                        color: 'black',
                         border: 'none',
                         borderRadius: '4px',
                         cursor: 'pointer',
@@ -955,7 +955,7 @@ export default function HistoryMap() {
                             padding: '4px',
                             borderRadius: '4px',
                             border: '1px solid var(--ui-border)',
-                            backgroundColor: 'var(--ui-bg)',
+                            backgroundColor: 'white',
                             color: 'var(--ui-text)',
                             textAlign: 'center',
                             fontSize: isSinglePage ? '13px' : '13px'
@@ -965,8 +965,8 @@ export default function HistoryMap() {
                         onClick={handlePageInputSubmit}
                         style={{
                             padding: isSinglePage ? '4px 4px' : '4px 8px',
-                            backgroundColor: 'var(--ui-primary)',
-                            color: 'white',
+                            backgroundColor: 'transparent',
+                            color: 'black',
                             border: 'none',
                             borderRadius: '4px',
                             cursor: 'pointer',
@@ -979,43 +979,47 @@ export default function HistoryMap() {
                     </button>
                 </div>
 
-                <button
-                    onClick={handleVoiceChat}
-                    disabled={isConversationMode}
-                    style={{
-                        padding: isSinglePage ? '4px 4px' : '4px 8px',
-                        backgroundColor: 'transparent',
-                        border: `1px solid ${isConversationMode ? '#ccc' : 'var(--ui-primary)'}`,
-                        color: isConversationMode ? '#ccc' : 'var(--ui-primary)',
-                        borderRadius: '4px',
-                        cursor: isConversationMode ? 'not-allowed' : 'pointer',
-                        marginLeft: isSinglePage ? '2px' : '8px',
-                        letterSpacing: isSinglePage ? '-0.5px' : 'normal',
-                        fontSize: '14px',
-                        whiteSpace: 'nowrap'
-                    }}
-                >
-                    인물대화
-                </button>
+                <div className={`disabled-button-wrapper ${isConversationMode ? 'is-disabled' : ''}`}>
+                    <button
+                        onClick={handleVoiceChat}
+                        disabled={isConversationMode}
+                        style={{
+                            padding: isSinglePage ? '4px 4px' : '4px 8px',
+                            backgroundColor: 'transparent',
+                            border: `1px solid ${isConversationMode ? '#ccc' : 'var(--ui-primary)'}`,
+                            color: isConversationMode ? '#ccc' : 'var(--ui-primary)',
+                            borderRadius: '4px',
+                            cursor: isConversationMode ? 'not-allowed' : 'pointer',
+                            marginLeft: isSinglePage ? '2px' : '8px',
+                            letterSpacing: isSinglePage ? '-0.5px' : 'normal',
+                            fontSize: '14px',
+                            whiteSpace: 'nowrap'
+                        }}
+                    >
+                        인물대화
+                    </button>
+                </div>
 
-                <button
-                    onClick={toggleTextbookViewMode}
-                    disabled={isConversationMode}
-                    style={{
-                        padding: isSinglePage ? '4px 4px' : '4px 8px',
-                        backgroundColor: 'transparent',
-                        border: `1px solid ${isConversationMode ? '#ccc' : 'var(--ui-primary)'}`,
-                        color: isConversationMode ? '#ccc' : 'var(--ui-primary)',
-                        borderRadius: '4px',
-                        cursor: isConversationMode ? 'not-allowed' : 'pointer',
-                        marginLeft: isSinglePage ? '2px' : '8px',
-                        letterSpacing: isSinglePage ? '-0.5px' : 'normal',
-                        fontSize: '14px',
-                        whiteSpace: 'nowrap'
-                    }}
-                >
-                    {textbookViewMode === 'single' ? '양면보기' : '한면보기'}
-                </button>
+                <div className={`disabled-button-wrapper ${isConversationMode ? 'is-disabled' : ''}`}>
+                    <button
+                        onClick={toggleTextbookViewMode}
+                        disabled={isConversationMode}
+                        style={{
+                            padding: isSinglePage ? '4px 4px' : '4px 8px',
+                            backgroundColor: 'transparent',
+                            border: `1px solid ${isConversationMode ? '#ccc' : 'var(--ui-primary)'}`,
+                            color: isConversationMode ? '#ccc' : 'var(--ui-primary)',
+                            borderRadius: '4px',
+                            cursor: isConversationMode ? 'not-allowed' : 'pointer',
+                            marginLeft: isSinglePage ? '2px' : '8px',
+                            letterSpacing: isSinglePage ? '-0.5px' : 'normal',
+                            fontSize: '14px',
+                            whiteSpace: 'nowrap'
+                        }}
+                    >
+                        {textbookViewMode === 'single' ? '양면보기' : '한면보기'}
+                    </button>
+                </div>
             </div>
         );
     };
