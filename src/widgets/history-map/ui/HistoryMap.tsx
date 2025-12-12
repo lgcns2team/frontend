@@ -171,7 +171,7 @@ export default function HistoryMap() {
     const [isUIVisible, setIsUIVisible] = useState(true);
     // War Layer Hook
     // War Layer Hook
-    useWarLayer(map.current, currentYear, layerType === 'battles');
+    useWarLayer(map.current, currentYear, layerType === 'battles', historicalLayer.current);
 
     const playInterval = useRef<ReturnType<typeof setInterval> | null>(null);
 
