@@ -80,12 +80,33 @@ export const useWarAnimation = ({
             line: any; // Turf LineString
             length: number;
             duration: number; // Duration in ms
-            offset: number; // Random start offset
+            startDelay: number; // Delay before this unit starts (synced with route drawing)
+            isVisible: boolean; // Whether the unit is currently visible
         }[] = [];
 
-        // Process each battle route
+        // Total cycle time: all routes + 10 second pause
+        const ROUTE_STAGGER_DELAY = 1500; // Same as useWarLayer
+        const UNIT_TRAVEL_DURATION = 3500; // Same as route drawing animation (3.5s)
+        const PAUSE_BEFORE_REPLAY = 10000; // 10 seconds pause
+
+        // Process each battle route - sort by date first (same logic as useWarLayer)
         warData.forEach(war => {
-            war.battles.forEach(battle => {
+            // Sort battles by date: valid dates first (chronological), null/invalid dates last
+            const sortedBattles = [...war.battles].sort((a, b) => {
+                const dateA = a.battleDate ? new Date(a.battleDate).getTime() : null;
+                const dateB = b.battleDate ? new Date(b.battleDate).getTime() : null;
+
+                const isValidA = dateA !== null && !isNaN(dateA);
+                const isValidB = dateB !== null && !isNaN(dateB);
+
+                if (!isValidA && !isValidB) return 0;
+                if (!isValidA) return 1;
+                if (!isValidB) return -1;
+
+                return dateA - dateB;
+            });
+
+            sortedBattles.forEach((battle, battleIndex) => {
                 if (battle.markerRoute && battle.markerRoute.coordinates.length > 0) {
                     const coords = battle.markerRoute.coordinates;
                     // GeoJSON is [lng, lat], Leaflet needs [lat, lng]
@@ -109,38 +130,89 @@ export const useWarAnimation = ({
                     const line = turf.lineString(smoothedCoords);
                     const length = turf.length(line, { units: 'kilometers' });
 
-                    // Duration: e.g., 5 seconds for full path
-                    const duration = 5000;
+                    // Calculate start delay synced with route drawing
+                    const startDelay = battleIndex * ROUTE_STAGGER_DELAY;
 
-                    const marker = L.marker([0, 0], {
+                    // Get the starting position for the marker (first point of the route)
+                    const startCoord = smoothedCoords[0];
+                    const startLatLng: [number, number] = [startCoord[1], startCoord[0]];
+
+                    // Create marker at starting position, initially invisible
+                    const marker = L.marker(startLatLng, {
                         icon: kimaIcon,
-                        interactive: false // Let clicks pass through to the line
+                        interactive: false,
+                        opacity: 0 // Start invisible, will fade in when animation starts
                     }).addTo(animationLayer.current!);
 
-                    console.log('[useWarAnimation] Created marker for battle:', battle.battleName);
+                    console.log('[useWarAnimation] Created marker for battle:', battle.battleName, 'startDelay:', startDelay);
 
                     activeUnits.push({
                         marker,
                         line,
                         length,
-                        duration,
-                        offset: Math.random() * duration
+                        duration: UNIT_TRAVEL_DURATION,
+                        startDelay,
+                        isVisible: false
                     });
                 }
             });
         });
 
+        // Calculate total cycle duration
+        const lastUnitDelay = activeUnits.length > 0 ? activeUnits[activeUnits.length - 1].startDelay : 0;
+        const TOTAL_CYCLE_DURATION = lastUnitDelay + UNIT_TRAVEL_DURATION + PAUSE_BEFORE_REPLAY;
+
         const animate = (timestamp: number) => {
             if (!startTime.current) {
                 startTime.current = timestamp;
-                console.log('[useWarAnimation] Animation started at:', timestamp);
+                console.log('[useWarAnimation] Animation cycle started at:', timestamp);
             }
 
-            const globalTime = timestamp;
+            // Time elapsed since animation cycle started
+            const cycleTime = timestamp - startTime.current;
+
+            // Check if we need to restart the cycle (after pause)
+            if (cycleTime > TOTAL_CYCLE_DURATION) {
+                // Reset for new cycle
+                startTime.current = timestamp;
+                // Hide all markers for fresh start
+                activeUnits.forEach(unit => {
+                    unit.isVisible = false;
+                    unit.marker.setOpacity(0);
+                });
+                console.log('[useWarAnimation] Restarting animation cycle after 10s pause');
+            }
 
             activeUnits.forEach(unit => {
-                // Calculate progress (0 to 1) based on time and duration, looping
-                const progress = ((globalTime + unit.offset) % unit.duration) / unit.duration;
+                // Calculate time since this unit should have started
+                const unitTime = cycleTime - unit.startDelay;
+
+                if (unitTime < 0) {
+                    // Not yet time for this unit to start
+                    if (unit.isVisible) {
+                        unit.marker.setOpacity(0);
+                        unit.isVisible = false;
+                    }
+                    return;
+                }
+
+                if (unitTime > unit.duration) {
+                    // Unit has finished its journey, hide it
+                    if (unit.isVisible) {
+                        unit.marker.setOpacity(0);
+                        unit.isVisible = false;
+                    }
+                    return;
+                }
+
+                // Unit is active - show it and update position
+                if (!unit.isVisible) {
+                    unit.marker.setOpacity(1);
+                    unit.isVisible = true;
+                }
+
+                // Calculate progress (0 to 1) for this unit
+                const progress = unitTime / unit.duration;
 
                 // Get position along the line
                 const distance = progress * unit.length;
@@ -151,47 +223,18 @@ export const useWarAnimation = ({
                 // Update marker position
                 unit.marker.setLatLng(latLng);
 
-                // Calculate rotation (bearing)
-                // Get a point slightly ahead to determine direction
-                const nextDist = distance + (unit.length * 0.01); // Look ahead 1%
-                const nextPoint = turf.along(unit.line, nextDist > unit.length ? nextDist - unit.length : nextDist, { units: 'kilometers' });
+                // Calculate rotation (bearing) for direction
+                const nextDist = distance + (unit.length * 0.01);
+                const nextPoint = turf.along(unit.line, nextDist > unit.length ? unit.length : nextDist, { units: 'kilometers' });
                 const bearing = turf.bearing(point, nextPoint);
 
-                // Rotate icon
-                // Icon points Right by default? Or Up?
-                // If icon points Right: Rotation = Bearing - 90?
-                // Let's assume standard icon points Up.
-                // Turf bearing is -180 to 180, 0 is North.
-                // CSS rotate is clockwise.
-                // If bearing is 90 (East), we want 90 deg rotation.
-                // If bearing is 0 (North), we want 0 deg rotation.
-                // So simply `bearing` should work if icon points Up.
-                // If icon points Left (like the horse usually does), we need adjustment.
-                // The user said "mong-kima-bow.png". Usually these side-view images face Left or Right.
-                // If it faces Left: To face North (0), it needs +90 deg.
-                // Let's try just `bearing` first, or maybe flip it based on direction?
-
-                // For side-view units (like horses), we usually just flip X if moving left/right.
-                // But if we want it to follow the path rotation:
-                const rotation = bearing;
-
-                // Apply rotation to the icon's internal div
-                const icon = unit.marker.getIcon() as L.Icon;
-                // Leaflet icons don't support rotation natively easily without plugins or CSS transforms on the img.
-                // We can use DivIcon with rotation, but we used L.icon.
-                // Let's switch to DivIcon for rotation support if needed, 
-                // OR just flip it horizontally if moving West.
-
-                // Simple approach: Flip if moving West
-                if (bearing < 0 && bearing > -180) {
-                    // Moving West-ish
-                    // unit.marker.getElement()?.classList.add('flip-x');
-                } else {
-                    // unit.marker.getElement()?.classList.remove('flip-x');
+                // Flip icon if moving West
+                const element = unit.marker.getElement();
+                if (element) {
+                    if (bearing < -10 && bearing > -170) {
+                        element.style.transform += ' scaleX(-1)';
+                    }
                 }
-
-                // For now, let's just move it. The user asked for "move from start to end".
-                // Rotation might be overkill if it's a 2D sprite.
             });
 
             animationFrameId.current = requestAnimationFrame(animate);

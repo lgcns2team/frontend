@@ -125,6 +125,16 @@
     border: none;
 }
 
+/* War unit icons - smooth transitions */
+.war-unit-icon {
+    transition: opacity 0.3s ease-in-out !important;
+}
+
+/* War route polylines - smooth opacity transition */
+.leaflet-overlay-pane svg path {
+    transition: opacity 0.3s ease-in-out, stroke-dashoffset 0.05s linear;
+}
+
 .trade-marker .event-marker-content {
     background: #10b981;
     color: white;

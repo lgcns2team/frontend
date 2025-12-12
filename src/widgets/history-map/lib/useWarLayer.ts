@@ -59,7 +59,23 @@ export const useWarLayer = (map: L.Map | null, currentYear: number, isVisible: b
         if (!isVisible) return;
 
         warData.forEach(war => {
-            war.battles.forEach(battle => {
+            // Sort battles by date: valid dates first (chronological), null/invalid dates last
+            const sortedBattles = [...war.battles].sort((a, b) => {
+                const dateA = a.battleDate ? new Date(a.battleDate).getTime() : null;
+                const dateB = b.battleDate ? new Date(b.battleDate).getTime() : null;
+
+                // Handle null/invalid dates - push them to the end
+                const isValidA = dateA !== null && !isNaN(dateA);
+                const isValidB = dateB !== null && !isNaN(dateB);
+
+                if (!isValidA && !isValidB) return 0; // Both invalid, keep original order
+                if (!isValidA) return 1;  // A is invalid, push to end
+                if (!isValidB) return -1; // B is invalid, push to end
+
+                return dateA - dateB; // Both valid, sort chronologically
+            });
+
+            sortedBattles.forEach((battle, battleIndex) => {
                 // Check if we have a valid route with coordinates
                 const hasRoute = battle.markerRoute && battle.markerRoute.coordinates && battle.markerRoute.coordinates.length > 0;
 
@@ -87,10 +103,11 @@ export const useWarLayer = (map: L.Map | null, currentYear: number, isVisible: b
                         : '#dc2626';
 
                     // 1. Draw the border/outline first (HoI4 style black border)
+                    // Initially hidden (opacity 0), will be shown when animation starts
                     const borderLayer = L.polyline(smoothedLatLngs, {
                         color: '#000000',
                         weight: 10,
-                        opacity: 0.4,
+                        opacity: 0, // Start hidden
                         pane: 'warPane',
                         interactive: false,
                         lineCap: 'round',
@@ -98,10 +115,11 @@ export const useWarLayer = (map: L.Map | null, currentYear: number, isVisible: b
                     }).addTo(warLayer.current!);
 
                     // 2. Draw the main route on top (Solid thick line HoI4 style)
+                    // Initially hidden (opacity 0), will be shown when animation starts
                     const routeLayer = L.polyline(smoothedLatLngs, {
                         color: routeColor,
                         weight: 7,
-                        opacity: 0.7,
+                        opacity: 0, // Start hidden
                         pane: 'warPane',
                         interactive: true,
                         lineCap: 'round',
@@ -114,6 +132,10 @@ export const useWarLayer = (map: L.Map | null, currentYear: number, isVisible: b
                         const routePath = routeLayer.getElement() as SVGPathElement;
 
                         if (!borderPath || !routePath) return;
+
+                        // Show the layers by setting opacity (they start hidden)
+                        borderLayer.setStyle({ opacity: 0.4 });
+                        routeLayer.setStyle({ opacity: 0.7 });
 
                         const borderLength = borderPath.getTotalLength();
                         const routeLength = routePath.getTotalLength();
@@ -154,8 +176,10 @@ export const useWarLayer = (map: L.Map | null, currentYear: number, isVisible: b
                         requestAnimationFrame(animate);
                     };
 
-                    // Start animation after a small delay to ensure SVG is rendered
-                    setTimeout(startAnimation, 50);
+                    // Start animation with staggered delay based on battle order
+                    // Each subsequent battle starts 1.5 seconds after the previous one
+                    const staggerDelay = battleIndex * 1500;
+                    setTimeout(startAnimation, 50 + staggerDelay);
 
                     // Add hover effects
                     routeLayer.on('mouseover', function (e) {
