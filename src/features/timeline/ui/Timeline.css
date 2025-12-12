@@ -264,7 +264,12 @@
     /* Much smaller as requested */
     font-weight: 600;
     color: #1f2937;
-    white-space: nowrap;
+    white-space: pre-line;
+    /* Allow newlines, collapse spaces */
+    width: max-content;
+    /* Ensure it fits the text */
+    line-height: 1.2;
+    text-align: left;
 
     /* Remove box styling */
     background: transparent;

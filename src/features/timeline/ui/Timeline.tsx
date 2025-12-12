@@ -240,7 +240,7 @@ export const Timeline = ({ currentYear, onYearChange, onEventClick, isVisible, o
     // Generate Era Labels
     const eraLabels = useMemo(() => {
         const totalRange = viewEnd - viewStart;
-        return ERAS.filter(era => {
+        return ERAS.filter(era => !era.hideOnTimeline).filter(era => {
             // Check if era start is within extended view
             const extendedStart = viewStart - totalRange * 0.1;
             const extendedEnd = viewEnd + totalRange * 0.1;
@@ -252,6 +252,32 @@ export const Timeline = ({ currentYear, onYearChange, onEventClick, isVisible, o
         }).filter(item => item.percent >= -5 && item.percent <= 105); // Allow slight overflow for labels
     }, [viewStart, viewEnd]);
 
+
+    // Process events for staggering
+    const processedEvents = useMemo(() => {
+        // 1. Sort by year
+        const sortedEvents = [...mainEvents].sort((a, b) => a.year - b.year);
+
+        // 2. Assign levels
+        const levels: number[] = []; // Stores the last year placed in each level
+        const GAP = 10; // Minimum year gap to avoid overlap
+
+        return sortedEvents.map(event => {
+            let placedLevel = 0;
+
+            // Find the first level where this event fits
+            while (true) {
+                const lastYearInLevel = levels[placedLevel];
+                if (lastYearInLevel === undefined || event.year >= lastYearInLevel + GAP) {
+                    levels[placedLevel] = event.year;
+                    break;
+                }
+                placedLevel++;
+            }
+
+            return { ...event, level: placedLevel };
+        });
+    }, [mainEvents]);
 
     return (
         <div className="timeline-component">
@@ -336,11 +362,19 @@ export const Timeline = ({ currentYear, onYearChange, onEventClick, isVisible, o
 
                             {/* Main Event Markers */}
                             <div className="timeline-event-markers">
-                                {mainEvents.map((event) => {
+                                {processedEvents.map((event) => {
                                     const totalRange = viewEnd - viewStart;
                                     const percent = ((event.year - viewStart) / totalRange) * 100;
 
                                     if (percent < -5 || percent > 105) return null;
+
+                                    const formatEventName = (name: string) => {
+                                        if (name.length <= 8) return name;
+                                        return name.match(/.{1,8}/g)?.join('\n') || name;
+                                    };
+
+                                    // Base bottom is 15px. Add 25px per level.
+                                    const bottomOffset = 15 + (event.level * 35);
 
                                     return (
                                         <div
@@ -354,8 +388,14 @@ export const Timeline = ({ currentYear, onYearChange, onEventClick, isVisible, o
                                             }}
                                         >
                                             <div className="event-marker-dot" style={{ backgroundColor: getEraColor(event.year) }}></div>
-                                            <div className="event-marker-label" style={{ borderColor: getEraColor(event.year) }}>
-                                                {event.eventName}
+                                            <div
+                                                className="event-marker-label"
+                                                style={{
+                                                    borderColor: getEraColor(event.year),
+                                                    bottom: `${bottomOffset}px`
+                                                }}
+                                            >
+                                                {formatEventName(event.eventName)}
                                             </div>
                                         </div>
                                     );
