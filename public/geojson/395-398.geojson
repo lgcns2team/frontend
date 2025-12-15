@@ -11,7 +11,8 @@
         "fill-opacity": 0.5,
         "stroke": "#ef4444",
         "stroke-width": 2,
-        "originalType": "polygon"
+        "originalType": "polygon",
+        "CODE": "가야"
       },
       "geometry": {
         "type": "Polygon",
@@ -695,7 +696,8 @@
         "fill-opacity": 0.5,
         "stroke": "#ef4444",
         "stroke-width": 2,
-        "originalType": "polygon"
+        "originalType": "polygon",
+        "CODE": "동예"
       },
       "geometry": {
         "type": "Polygon",
@@ -1463,7 +1465,8 @@
         "fill-opacity": 0.5,
         "stroke": "#ef4444",
         "stroke-width": 2,
-        "originalType": "polygon"
+        "originalType": "polygon",
+        "CODE": "예"
       },
       "geometry": {
         "type": "Polygon",
@@ -3287,7 +3290,8 @@
         "fill-opacity": 0.5,
         "stroke": "#ef4444",
         "stroke-width": 2,
-        "originalType": "polygon"
+        "originalType": "polygon",
+        "CODE": "북부여"
       },
       "geometry": {
         "type": "Polygon",
@@ -3767,7 +3771,8 @@
         "fill-opacity": 0.5,
         "stroke": "#ef4444",
         "stroke-width": 2,
-        "originalType": "polygon"
+        "originalType": "polygon",
+        "CODE": "진나라"
       },
       "geometry": {
         "type": "Polygon",
@@ -5175,7 +5180,8 @@
         "fill-opacity": 0.5,
         "stroke": "#ef4444",
         "stroke-width": 2,
-        "originalType": "polygon"
+        "originalType": "polygon",
+        "CODE": "사로"
       },
       "geometry": {
         "type": "Polygon",
@@ -5419,7 +5425,8 @@
         "fill-opacity": 0.5,
         "stroke": "#ef4444",
         "stroke-width": 2,
-        "originalType": "polygon"
+        "originalType": "polygon",
+        "CODE": "백제"
       },
       "geometry": {
         "type": "Polygon",
@@ -6167,7 +6174,8 @@
         "fill-opacity": 0.5,
         "stroke": "#ef4444",
         "stroke-width": 2,
-        "originalType": "polygon"
+        "originalType": "polygon",
+        "CODE": "거란"
       },
       "geometry": {
         "type": "Polygon",
@@ -7623,7 +7631,8 @@
         "fill-opacity": 0.5,
         "stroke": "#ef4444",
         "stroke-width": 2,
-        "originalType": "polygon"
+        "originalType": "polygon",
+        "CODE": "북위"
       },
       "geometry": {
         "type": "Polygon",
@@ -8551,7 +8560,8 @@
         "fill-opacity": 0.5,
         "stroke": "#ef4444",
         "stroke-width": 2,
-        "originalType": "polygon"
+        "originalType": "polygon",
+        "CODE": "서진"
       },
       "geometry": {
         "type": "Polygon",
@@ -9403,7 +9413,8 @@
         "fill-opacity": 0.5,
         "stroke": "#ef4444",
         "stroke-width": 2,
-        "originalType": "polyline"
+        "originalType": "polyline",
+        "CODE": "동부여"
       },
       "geometry": {
         "type": "Polygon",
@@ -9879,7 +9890,8 @@
         "fill-opacity": 0.5,
         "stroke": "#ef4444",
         "stroke-width": 2,
-        "originalType": "polyline"
+        "originalType": "polyline",
+        "CODE": "고구려"
       },
       "geometry": {
         "type": "Polygon",
@@ -11871,7 +11883,8 @@
         "fill-opacity": 0.5,
         "stroke": "#ef4444",
         "stroke-width": 2,
-        "originalType": "polyline"
+        "originalType": "polyline",
+        "CODE": "후연"
       },
       "geometry": {
         "type": "Polygon",
@@ -14383,7 +14396,8 @@
         "fill-opacity": 0.5,
         "stroke": "#ef4444",
         "stroke-width": 2,
-        "originalType": "polyline"
+        "originalType": "polyline",
+        "CODE": "남연"
       },
       "geometry": {
         "type": "Polygon",
@@ -15939,7 +15953,8 @@
         "fill-opacity": 0.5,
         "stroke": "#ef4444",
         "stroke-width": 2,
-        "originalType": "polyline"
+        "originalType": "polyline",
+        "CODE": "후진"
       },
       "geometry": {
         "type": "Polygon",
@@ -17507,7 +17522,8 @@
         "fill-opacity": 0.5,
         "stroke": "#ef4444",
         "stroke-width": 2,
-        "originalType": "polyline"
+        "originalType": "polyline",
+        "CODE": "남량"
       },
       "geometry": {
         "type": "Polygon",
@@ -18375,7 +18391,8 @@
         "fill-opacity": 0.5,
         "stroke": "#ef4444",
         "stroke-width": 2,
-        "originalType": "polyline"
+        "originalType": "polyline",
+        "CODE": "북량"
       },
       "geometry": {
         "type": "Polygon",

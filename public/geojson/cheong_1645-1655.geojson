@@ -10,7 +10,8 @@
         "fill": "#ef4444",
         "fill-opacity": 0.5,
         "stroke": "#ef4444",
-        "stroke-width": 2
+        "stroke-width": 2,
+        "CODE": "20"
       },
       "geometry": {
         "type": "Polygon",
@@ -5041,7 +5042,8 @@
         "fill": "#2563eb",
         "fill-opacity": 0.5,
         "stroke": "#2563eb",
-        "stroke-width": 2
+        "stroke-width": 2,
+        "CODE": "18"
       },
       "geometry": {
         "type": "Polygon",
@@ -9428,7 +9430,8 @@
         "fill": "#84cc16",
         "fill-opacity": 0.5,
         "stroke": "#84cc16",
-        "stroke-width": 2
+        "stroke-width": 2,
+        "CODE": "9"
       },
       "geometry": {
         "type": "Polygon",

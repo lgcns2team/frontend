@@ -8,7 +8,8 @@
         "name": "고려 여진",
         "color": "#ef4444",
         "stroke": "#ef4444",
-        "stroke-width": 2
+        "stroke-width": 2,
+        "CODE": "고려_여진"
       },
       "geometry": {
         "type": "LineString",
@@ -31,7 +32,8 @@
         "name": "여진 고려",
         "color": "#ef4444",
         "stroke": "#ef4444",
-        "stroke-width": 2
+        "stroke-width": 2,
+        "CODE": "여진_고려"
       },
       "geometry": {
         "type": "LineString",
@@ -54,7 +56,8 @@
         "name": "고려 거란(요)",
         "color": "#ef4444",
         "stroke": "#ef4444",
-        "stroke-width": 2
+        "stroke-width": 2,
+        "CODE": "고려_거란(요)"
       },
       "geometry": {
         "type": "LineString",
@@ -77,7 +80,8 @@
         "name": "거란(요) 고려",
         "color": "#ef4444",
         "stroke": "#ef4444",
-        "stroke-width": 2
+        "stroke-width": 2,
+        "CODE": "거란(요)_고려"
       },
       "geometry": {
         "type": "LineString",
@@ -100,7 +104,8 @@
         "name": "고려 일본",
         "color": "#ef4444",
         "stroke": "#ef4444",
-        "stroke-width": 2
+        "stroke-width": 2,
+        "CODE": "고려_일본"
       },
       "geometry": {
         "type": "LineString",
@@ -123,7 +128,8 @@
         "name": "일본 고려",
         "color": "#ef4444",
         "stroke": "#ef4444",
-        "stroke-width": 2
+        "stroke-width": 2,
+        "CODE": "일본_고려"
       },
       "geometry": {
         "type": "LineString",
@@ -146,7 +152,8 @@
         "name": "벽란도 등주",
         "color": "#ef4444",
         "stroke": "#ef4444",
-        "stroke-width": 2
+        "stroke-width": 2,
+        "CODE": "벽란도_등주"
       },
       "geometry": {
         "type": "LineString",
@@ -189,7 +196,8 @@
         "name": "등주 명주",
         "color": "#ef4444",
         "stroke": "#ef4444",
-        "stroke-width": 2
+        "stroke-width": 2,
+        "CODE": "등주_명주"
       },
       "geometry": {
         "type": "LineString",
@@ -228,7 +236,8 @@
         "name": "벽란도 명주",
         "color": "#ef4444",
         "stroke": "#ef4444",
-        "stroke-width": 2
+        "stroke-width": 2,
+        "CODE": "벽란도_명주"
       },
       "geometry": {
         "type": "LineString",
@@ -267,7 +276,8 @@
         "name": "개경 명주 사이 금주(김해)",
         "color": "#ef4444",
         "stroke": "#ef4444",
-        "stroke-width": 2
+        "stroke-width": 2,
+        "CODE": "개경_명주_사이_금주(김해)"
       },
       "geometry": {
         "type": "LineString",
@@ -298,7 +308,8 @@
         "name": "금주 다자이후 일본중앙",
         "color": "#ef4444",
         "stroke": "#ef4444",
-        "stroke-width": 2
+        "stroke-width": 2,
+        "CODE": "금주_다자이후_일본중앙"
       },
       "geometry": {
         "type": "LineString",
@@ -341,7 +352,8 @@
         "name": "이슬람 해상실크로드",
         "color": "#ef4444",
         "stroke": "#ef4444",
-        "stroke-width": 2
+        "stroke-width": 2,
+        "CODE": "이슬람_해상실크로드"
       },
       "geometry": {
         "type": "LineString",
