@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { Link as RouterLink } from 'react-router-dom';
+import { Link as RouterLink, useNavigate } from 'react-router-dom';
+import { authApi } from '../../../shared/api/auth-api';
 import {
     Container,
     Paper,
@@ -10,7 +11,9 @@ import {
     Link,
     CssBaseline,
     createTheme,
-    ThemeProvider
+    ThemeProvider,
+    ToggleButton,
+    ToggleButtonGroup
 } from '@mui/material';
 
 const claudeTheme = createTheme({
@@ -83,14 +86,43 @@ const claudeTheme = createTheme({
 });
 
 const SignupPage = () => {
-    const [name, setName] = useState('');
-    const [email, setEmail] = useState('');
+    const [nickname, setNickname] = useState('');
     const [password, setPassword] = useState('');
+    const [name, setName] = useState('');
+    const [grade, setGrade] = useState('');
+    const [classroom, setClassroom] = useState('');
+    const [role, setRole] = useState<'STUDENT' | 'TEACHER'>('STUDENT');
+    const [error, setError] = useState('');
+    const navigate = useNavigate();
 
-    const handleSubmit = (e: React.FormEvent) => {
+    const handleRoleChange = (
+        event: React.MouseEvent<HTMLElement>,
+        newRole: 'STUDENT' | 'TEACHER' | null,
+    ) => {
+        if (newRole !== null) {
+            setRole(newRole);
+        }
+    };
+
+    const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        console.log('Signup attempt:', { name, email, password });
-        // TODO: Implement actual signup logic
+        setError('');
+
+        try {
+            await authApi.signup({
+                nickname,
+                password,
+                name,
+                grade: parseInt(grade),
+                classroom: parseInt(classroom),
+                role: role
+            });
+            alert('회원가입이 완료되었습니다. 로그인해주세요.');
+            navigate('/');
+        } catch (err: any) {
+            console.error('Signup failed:', err);
+            setError(err.message || '회원가입에 실패했습니다.');
+        }
     };
 
     return (
@@ -124,30 +156,36 @@ const SignupPage = () => {
                         </Typography>
 
                         <Box component="form" onSubmit={handleSubmit} sx={{ mt: 1, width: '100%' }}>
+                            <Box sx={{ display: 'flex', justifyContent: 'center', mb: 3 }}>
+                                <ToggleButtonGroup
+                                    value={role}
+                                    exclusive
+                                    onChange={handleRoleChange}
+                                    aria-label="role selection"
+                                    fullWidth
+                                >
+                                    <ToggleButton value="STUDENT" sx={{ py: 1.5 }}>
+                                        학생
+                                    </ToggleButton>
+                                    <ToggleButton value="TEACHER" sx={{ py: 1.5 }}>
+                                        선생님
+                                    </ToggleButton>
+                                </ToggleButtonGroup>
+                            </Box>
+
                             <TextField
                                 margin="normal"
                                 required
                                 fullWidth
-                                id="name"
-                                label="이름"
-                                name="name"
-                                autoComplete="name"
+                                id="nickname"
+                                label="아이디 (닉네임)"
+                                name="nickname"
+                                autoComplete="username"
                                 autoFocus
-                                value={name}
-                                onChange={(e) => setName(e.target.value)}
+                                value={nickname}
+                                onChange={(e) => setNickname(e.target.value)}
                                 InputLabelProps={{ style: { color: '#888' } }}
-                            />
-                            <TextField
-                                margin="normal"
-                                required
-                                fullWidth
-                                id="email"
-                                label="이메일 주소"
-                                name="email"
-                                autoComplete="email"
-                                value={email}
-                                onChange={(e) => setEmail(e.target.value)}
-                                InputLabelProps={{ style: { color: '#888' } }}
+                                error={!!error}
                             />
                             <TextField
                                 margin="normal"
@@ -162,6 +200,50 @@ const SignupPage = () => {
                                 onChange={(e) => setPassword(e.target.value)}
                                 InputLabelProps={{ style: { color: '#888' } }}
                             />
+                            <TextField
+                                margin="normal"
+                                required
+                                fullWidth
+                                id="name"
+                                label="이름"
+                                name="name"
+                                autoComplete="name"
+                                value={name}
+                                onChange={(e) => setName(e.target.value)}
+                                InputLabelProps={{ style: { color: '#888' } }}
+                            />
+                            <Box sx={{ display: 'flex', gap: 2 }}>
+                                <TextField
+                                    margin="normal"
+                                    required
+                                    fullWidth
+                                    id="grade"
+                                    label="학년"
+                                    name="grade"
+                                    type="number"
+                                    value={grade}
+                                    onChange={(e) => setGrade(e.target.value)}
+                                    InputLabelProps={{ style: { color: '#888' } }}
+                                />
+                                <TextField
+                                    margin="normal"
+                                    required
+                                    fullWidth
+                                    id="classroom"
+                                    label="반"
+                                    name="classroom"
+                                    type="number"
+                                    value={classroom}
+                                    onChange={(e) => setClassroom(e.target.value)}
+                                    InputLabelProps={{ style: { color: '#888' } }}
+                                />
+                            </Box>
+
+                            {error && (
+                                <Typography color="error" variant="body2" sx={{ mt: 1, textAlign: 'center' }}>
+                                    {error}
+                                </Typography>
+                            )}
 
                             <Button
                                 type="submit"
