@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { Link as RouterLink } from 'react-router-dom';
+import { Link as RouterLink, useNavigate } from 'react-router-dom';
+import { authApi } from '../../../shared/api/auth-api';
 import {
     Container,
     Paper,
@@ -85,13 +86,22 @@ const claudeTheme = createTheme({
 });
 
 const LoginPage = () => {
-    const [email, setEmail] = useState('');
+    const [nickname, setNickname] = useState('');
     const [password, setPassword] = useState('');
+    const [error, setError] = useState('');
+    const navigate = useNavigate();
 
-    const handleSubmit = (e: React.FormEvent) => {
+    const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        console.log('Login attempt:', { email, password });
-        // TODO: Implement actual login logic
+        setError('');
+
+        try {
+            await authApi.login({ nickname, password });
+            navigate('/map');
+        } catch (err) {
+            console.error('Login failed:', err);
+            setError('로그인에 실패했습니다. 아이디와 비밀번호를 확인해주세요.');
+        }
     };
 
     return (
@@ -129,14 +139,15 @@ const LoginPage = () => {
                                 margin="normal"
                                 required
                                 fullWidth
-                                id="email"
-                                label="이메일 주소"
-                                name="email"
-                                autoComplete="email"
+                                id="nickname"
+                                label="아이디 (닉네임)"
+                                name="nickname"
+                                autoComplete="username"
                                 autoFocus
-                                value={email}
-                                onChange={(e) => setEmail(e.target.value)}
+                                value={nickname}
+                                onChange={(e) => setNickname(e.target.value)}
                                 InputLabelProps={{ style: { color: '#888' } }}
+                                error={!!error}
                             />
                             <TextField
                                 margin="normal"
@@ -150,6 +161,8 @@ const LoginPage = () => {
                                 value={password}
                                 onChange={(e) => setPassword(e.target.value)}
                                 InputLabelProps={{ style: { color: '#888' } }}
+                                error={!!error}
+                                helperText={error}
                             />
 
                             <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mt: 2, mb: 2 }}>
@@ -172,7 +185,7 @@ const LoginPage = () => {
                                 </Link>
                             </Box>
 
-                            <Button component={RouterLink} to="/map"
+                            <Button
                                 type="submit"
                                 fullWidth
                                 variant="contained"
