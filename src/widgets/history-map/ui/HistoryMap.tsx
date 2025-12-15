@@ -47,18 +47,18 @@ let DefaultIcon = L.icon({
 
 L.Marker.prototype.options.icon = DefaultIcon;
 
-interface TimelineEvent {
-    year: number;
+interface CapitalData {
+    capitalId: number;
+    capitalName: string;
+    latitude: number;
+    longitude: number;
+    startedDate: string; // Changed from number to string
+    endedDate: string;   // Changed from number to string
+    description: string;
+    summary: string;
+    countryId: string;
     countryName: string;
-    capitalName: string | null;
-    capitalLatitude: number | null;
-    capitalLongitude: number | null;
-    regnalName: string | null;
 }
-
-// Assuming TimelineData is the same as TimelineEvent for now, or it will be defined elsewhere.
-// If it's a different type, it should be imported or defined.
-type TimelineData = TimelineEvent;
 
 export default function HistoryMap() {
     const mapContainer = useRef<HTMLDivElement>(null);
@@ -69,7 +69,7 @@ export default function HistoryMap() {
     const lastRequestedYear = useRef<number>(326);
     const layerCache = useRef<Map<number, L.Layer>>(new Map());
     const abortController = useRef<AbortController | null>(null);
-    const [timelineData, setTimelineData] = useState<TimelineData[]>([]);
+    const [capitalData, setCapitalData] = useState<CapitalData[]>([]);
     const [activeTradeRoutes, setActiveTradeRoutes] = useState<TradeRouteWithColor[]>([]);
 
     // Helper to normalize country names to ID
@@ -234,13 +234,17 @@ export default function HistoryMap() {
         markersLayer.current = L.layerGroup().addTo(map.current);
         tradeLayer.current = L.layerGroup().addTo(map.current);
 
-        // Load timeline data from API
-        fetch('http://localhost:8080/api/timeline/events')
+        // Load capital data from API
+        fetch('/api/capitals')
             .then(res => res.json())
             .then(data => {
-                setTimelineData(data);
+                console.log('Capital data loaded:', data);
+                if (data.length > 0) {
+                    console.log('First capital sample:', data[0]);
+                }
+                setCapitalData(data);
             })
-            .catch(err => console.error('Failed to load timeline data:', err));
+            .catch(err => console.error('Failed to load capital data:', err));
 
         return () => {
             map.current?.remove();
@@ -299,10 +303,10 @@ export default function HistoryMap() {
         localStorage.setItem('historyMapLayer', layerType);
     }, [layerType]);
 
-    // Update Markers when layer type changes or timeline data loads
+    // Update Markers when layer type changes or capital data loads
     useEffect(() => {
         updateMarkers(currentYear);
-    }, [layerType, timelineData]);
+    }, [layerType, capitalData]);
 
     // Update Trade Routes
     useEffect(() => {
@@ -622,13 +626,14 @@ export default function HistoryMap() {
 
         markersLayer.current.clearLayers();
 
-        // Always show capitals
-        // Always show capitals from timeline data, EXCEPT when in war mode
+        // Always show capitals from capital data, EXCEPT when in war mode
         if (layerType === 'battles') {
             return;
         }
 
-        if (timelineData.length > 0) {
+        if (capitalData.length > 0) {
+            // console.log(`[Markers] Updating for year ${year}. Total capitals: ${capitalData.length}`);
+
             // 1. Identify visible countries from the map layer
             const visibleCountryIds = new Set<string>();
 
@@ -644,29 +649,24 @@ export default function HistoryMap() {
                     }
                 });
             }
+            // console.log('[Markers] Visible Countries:', Array.from(visibleCountryIds));
 
-            // Group by country
-            const countries = new Set(timelineData.map(d => d.countryName));
+            // Filter capitals that are active in the current year
+            const activeCapitals = capitalData.filter(capital => {
+                const startYear = parseInt(capital.startedDate.substring(0, 4));
+                const endYear = parseInt(capital.endedDate.substring(0, 4));
+                return year >= startYear && year <= endYear;
+            });
+            // console.log(`[Markers] Active capitals for year ${year}: ${activeCapitals.length}`);
 
-            countries.forEach(country => {
+            activeCapitals.forEach(capital => {
                 // Check if this country is visible on the map
-                // We check if the normalized ID of the timeline country exists in the visible map features
-                const timelineCountryId = getCountryId(country);
-
-                // Special handling: If map has "Tang", timeline "Tang" should show.
-                // If map has "Unified Silla" (which might just be "Silla" in GeoJSON), timeline "Unified Silla" should show.
-                // The getCountryId helper handles this normalization.
+                const timelineCountryId = capital.countryId || getCountryId(capital.countryName);
 
                 // If the country is NOT visible on the map, skip it
-                // Exception: If we can't find any visible countries (maybe layer hasn't loaded yet?), show all? 
-                // No, better to be strict to fix the "ghost marker" issue.
-                // However, we need to be careful about name mismatches.
-
-                // Debug log if needed: console.log(`Checking ${country} (${timelineCountryId}) against visible:`, visibleCountryIds);
-
+                /* TEMPORARILY DISABLED FOR DEBUGGING
                 if (!visibleCountryIds.has(timelineCountryId)) {
                     // Try loose matching if strict match fails
-                    // e.g. "Unified Silla" vs "Silla"
                     let matchFound = false;
                     for (const visibleId of visibleCountryIds) {
                         if (visibleId.includes(timelineCountryId) || timelineCountryId.includes(visibleId)) {
@@ -674,51 +674,39 @@ export default function HistoryMap() {
                             break;
                         }
                     }
-                    if (!matchFound) return;
-                }
-
-                // Get all events for this country
-                const countryEvents = timelineData.filter(d => d.countryName === country);
-
-                // Find the latest event that is <= currentYear
-                // Sort by year descending to find the first one <= currentYear
-                const activeEvent = countryEvents
-                    .sort((a, b) => b.year - a.year)
-                    .find(d => d.year <= year);
-
-                // If we found an event, and it has valid coordinates, show it
-                if (activeEvent && activeEvent.capitalName && activeEvent.capitalLatitude && activeEvent.capitalLongitude) {
-                    // Note: The logic "show until next king" is implicitly handled because we find the *latest* event <= currentYear.
-                    // If the next event is in the future, this one remains active.
-                    // However, we should check if the country still exists or if there's a "null" entry indicating end?
-                    // The data seems to have entries with null capital for some years (e.g. 780 Japan null).
-                    // If capitalName is null, we probably shouldn't show a marker.
-
-                    if (activeEvent && activeEvent.capitalName && activeEvent.capitalLatitude && activeEvent.capitalLongitude) {
-                        const icon = L.divIcon({
-                            className: 'capital-marker',
-                            html: `
-                            <div style="display: flex; flex-direction: column; align-items: center; width: 150px;">
-                                <img src="/assets/images/country-summary/sudo.png" style="width: 45px; height: 45px; object-fit: contain;" />
-                                <div style="font-size: 14px; font-weight: bold; color: white; margin-top: 2px; text-align: center; width: 100%; white-space: nowrap;">${activeEvent.capitalName}</div>
-                            </div>
-                        `,
-                            iconSize: [60, 45],
-                            iconAnchor: [75, 40] // Anchor at center of image (approx)
-                        });
-
-                        const popupContent = `
-                        <div style="text-align: center;">
-                            <h3 style="margin: 0 0 5px 0;">${activeEvent.countryName}</h3>
-                            <p style="margin: 0;">수도: ${activeEvent.capitalName}</p>
-                            ${activeEvent.regnalName ? `<p style="margin: 5px 0 0 0;"><strong>${activeEvent.regnalName}</strong></p>` : ''}
-                        </div>
-                    `;
-
-                        L.marker([activeEvent.capitalLatitude, activeEvent.capitalLongitude], { icon })
-                            .addTo(markersLayer.current!)
-                            .bindPopup(popupContent);
+                    if (!matchFound) {
+                        // console.log(`[Markers] Skipping ${capital.capitalName} - Country ${timelineCountryId} not visible`);
+                        return;
                     }
+                }
+                */
+
+                // Render marker
+                if (capital.latitude && capital.longitude) {
+                    // console.log(`[Markers] Creating marker for ${capital.capitalName} at ${capital.latitude}, ${capital.longitude}`);
+                    const icon = L.divIcon({
+                        className: 'capital-marker',
+                        html: `
+                        <div style="display: flex; flex-direction: column; align-items: center; width: 150px;">
+                            <img src="/assets/images/country-summary/sudo.png" style="width: 45px; height: 45px; object-fit: contain;" />
+                            <div style="font-size: 14px; font-weight: bold; color: white; margin-top: 2px; text-align: center; width: 100%; white-space: nowrap;">${capital.capitalName}</div>
+                        </div>
+                    `,
+                        iconSize: [60, 45],
+                        iconAnchor: [75, 40] // Anchor at center of image (approx)
+                    });
+
+                    const popupContent = `
+                    <div style="text-align: center;">
+                        <h3 style="margin: 0 0 5px 0;">${capital.countryName}</h3>
+                        <p style="margin: 0;">수도: ${capital.capitalName}</p>
+                        <p style="margin: 5px 0 0 0; font-size: 12px; color: #666;">${capital.summary || ''}</p>
+                    </div>
+                `;
+
+                    L.marker([capital.latitude, capital.longitude], { icon })
+                        .addTo(markersLayer.current!)
+                        .bindPopup(popupContent);
                 }
             });
         }

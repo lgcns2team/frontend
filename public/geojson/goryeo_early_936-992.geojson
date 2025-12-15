@@ -5,7 +5,8 @@
       "type": "Feature",
       "properties": {
         "NAME": "Goryeo",
-        "name": "Goryeo"
+        "name": "Goryeo",
+        "CODE": "6"
       },
       "geometry": {
         "type": "MultiPolygon",

@@ -11,7 +11,8 @@
         "fill-opacity": 0.5,
         "stroke": "#ef4444",
         "stroke-width": 2,
-        "originalType": "polygon"
+        "originalType": "polygon",
+        "CODE": "가야"
       },
       "geometry": {
         "type": "Polygon",
@@ -695,7 +696,8 @@
         "fill-opacity": 0.5,
         "stroke": "#ef4444",
         "stroke-width": 2,
-        "originalType": "polygon"
+        "originalType": "polygon",
+        "CODE": "사로"
       },
       "geometry": {
         "type": "Polygon",
@@ -939,7 +941,8 @@
         "fill-opacity": 0.5,
         "stroke": "#ef4444",
         "stroke-width": 2,
-        "originalType": "polygon"
+        "originalType": "polygon",
+        "CODE": "백제"
       },
       "geometry": {
         "type": "Polygon",
@@ -1687,7 +1690,8 @@
         "fill-opacity": 0.5,
         "stroke": "#ef4444",
         "stroke-width": 2,
-        "originalType": "polygon"
+        "originalType": "polygon",
+        "CODE": "거란"
       },
       "geometry": {
         "type": "Polygon",
@@ -3143,7 +3147,8 @@
         "fill-opacity": 0.5,
         "stroke": "#ef4444",
         "stroke-width": 2,
-        "originalType": "polygon"
+        "originalType": "polygon",
+        "CODE": "말갈"
       },
       "geometry": {
         "type": "Polygon",
@@ -4367,7 +4372,8 @@
         "fill-opacity": 0.5,
         "stroke": "#ef4444",
         "stroke-width": 2,
-        "originalType": "polygon"
+        "originalType": "polygon",
+        "CODE": "북위"
       },
       "geometry": {
         "type": "Polygon",
@@ -5851,7 +5857,8 @@
         "fill-opacity": 0.5,
         "stroke": "#ef4444",
         "stroke-width": 2,
-        "originalType": "polygon"
+        "originalType": "polygon",
+        "CODE": "남제"
       },
       "geometry": {
         "type": "Polygon",
@@ -7155,7 +7162,8 @@
         "fill-opacity": 0.5,
         "stroke": "#ef4444",
         "stroke-width": 2,
-        "originalType": "polyline"
+        "originalType": "polyline",
+        "CODE": "고구려"
       },
       "geometry": {
         "type": "Polygon",
@@ -9363,7 +9371,8 @@
         "fill-opacity": 0.5,
         "stroke": "#ef4444",
         "stroke-width": 2,
-        "originalType": "polyline"
+        "originalType": "polyline",
+        "CODE": "두막루"
       },
       "geometry": {
         "type": "Polygon",
