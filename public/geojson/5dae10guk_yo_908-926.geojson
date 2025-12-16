@@ -11,7 +11,8 @@
         "fill-opacity": 0.5,
         "stroke": "#ef4444",
         "stroke-width": 2,
-        "originalType": "polyline"
+        "originalType": "polyline",
+        "CODE": "UNNAMED"
       },
       "geometry": {
         "type": "Polygon",
@@ -3671,7 +3672,8 @@
         "fill-opacity": 0.5,
         "stroke": "#ef4444",
         "stroke-width": 2,
-        "originalType": "polyline"
+        "originalType": "polyline",
+        "CODE": "UNNAMED"
       },
       "geometry": {
         "type": "Polygon",

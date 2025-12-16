@@ -10,6 +10,37 @@ const VIEWPORT_BBOX = {
 
 export const getGeojsonFileForYear = (year: number) => {
 
+    if (year <= 312) return 'geojson/300-312.geojson';
+    if (year <= 320) return 'geojson/313-320.geojson';
+    if (year <= 337) return 'geojson/321-337.geojson';
+    if (year <= 351) return 'geojson/338-351.geojson';
+    if (year <= 389) return 'geojson/352-389.geojson';
+    if (year <= 394) return 'geojson/389-394.geojson';
+    if (year <= 398) return 'geojson/395-398.geojson';
+    if (year <= 405) return 'geojson/399-405.geojson';
+    if (year <= 409) return 'geojson/406-409.geojson';
+    if (year <= 419) return 'geojson/410-419.geojson';
+    if (year <= 438) return 'geojson/420-438.geojson';
+    if (year <= 464) return 'geojson/439-464.geojson';
+    if (year <= 475) return 'geojson/465-475.geojson';
+    if (year <= 537) return 'geojson/476-537.geojson';
+    if (year <= 551) return 'geojson/538-551.geojson';
+    if (year <= 562) return 'geojson/552-562.geojson';
+    if (year <= 577) return 'geojson/563-577.geojson';
+    if (year <= 589) return 'geojson/578-589.geojson';
+    if (year <= 617) return 'geojson/590-617.geojson';
+    if (year <= 660) return 'geojson/618-660.geojson';
+    if (year <= 666) return 'geojson/661-666.geojson';
+    if (year <= 668) return 'geojson/667-668.geojson';
+    if (year <= 700) return 'geojson/669-700.geojson';
+    if (year <= 741) return 'geojson/701-741.geojson';
+    if (year <= 756) return 'geojson/742-756.geojson';
+    if (year <= 763) return 'geojson/757-763.geojson';
+    if (year <= 817) return 'geojson/764-817.geojson';
+    if (year <= 819) return 'geojson/818-819.geojson';
+
+    /////////---- 삼국시대 이후 ----/////////    
+
     if (year <= 892) return 'geojson/goryeo_balhae_790-892.geojson';
     if (year <= 900) return 'geojson/silla_hubaekjee_893-900.geojson';
     if (year <= 907) return 'geojson/hugoguryeo_904-917.geojson'; // Tang period (if present) or just pre-5Dyn
@@ -144,13 +175,13 @@ export const loadHistoricalBorders = async (
     const filesToLoad = [baseFile];
 
     // Add Tang Dynasty if in range
-    if (year >= 618 && year <= 907) {
+    if (year >= 701 && year <= 907) {
         filesToLoad.push('geojson/tang_618-907.geojson');
     }
 
     // Add Japan for Nam-Buk-Guk and Goryeo periods (approx 698 - 1392)
     // This uses the Joseon-era Japan shape as a placeholder/representation
-    if (year >= 698 && year <= 1392) {
+    if (year >= 701 && year <= 1392) {
         filesToLoad.push('geojson/japan.geojson');
     }
 

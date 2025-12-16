@@ -8,7 +8,8 @@
         "ABBREVN": "Japan",
         "SUBJECTO": "Japan",
         "BORDERPRECISION": 3,
-        "PARTOF": "Japan"
+        "PARTOF": "Japan",
+        "CODE": "16"
       },
       "geometry": {
         "type": "MultiPolygon",
