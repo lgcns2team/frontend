@@ -29,21 +29,35 @@
 
 .charactersPanel {
   position: relative;
-  height: 100%; /* Ensure panel has height for positioning */
+  height: 100%;
+  /* Ensure panel has height for positioning */
   color: var(--ui-text);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  /* Prevent panel from scrolling, let list scroll */
 }
 
 .charactersList {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr); /* 2 columns */
-  gap: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  flex: 1;
+  overflow-y: auto;
+  padding-bottom: 80px;
+  /* Ensure last item is visible above button */
+  padding-right: 4px;
+  /* Space for scrollbar */
 }
 
 .characterItem {
   background-color: var(--ui-bg-secondary);
+  background-image: url('/assets/images/background1.png');
+  background-size: 100% 100%;
+  background-repeat: no-repeat;
   border: 1px solid var(--ui-border);
   border-radius: 8px;
-  padding: 16px;
+  padding: 32px;
   transition: transform 0.2s, box-shadow 0.2s;
   position: relative;
   box-sizing: border-box;
@@ -78,8 +92,8 @@
   bottom: 20px;
   right: 20px;
   padding: 10px 20px;
-  background-color: var(--ui-primary);
-  color: white;
+  background-color: white;
+  color: black;
   border: none;
   border-radius: 8px;
   cursor: pointer;
@@ -89,8 +103,246 @@
   transition: background-color 0.2s, transform 0.2s;
 }
 
+
 .createRoomButton:hover {
   background-color: var(--ui-primary-dark);
   transform: translateY(-2px);
 }
 
+.deleteButton {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  background: none;
+  border: none;
+  font-size: 1.2rem;
+  color: #999;
+  cursor: pointer;
+  padding: 4px;
+  line-height: 1;
+  border-radius: 50%;
+  transition: color 0.2s, background-color 0.2s;
+  z-index: 5;
+}
+
+.deleteButton:hover {
+  color: #ff4444;
+  background-color: rgba(0, 0, 0, 0.05);
+}
+
+.roomNumber {
+  font-size: 0.8rem;
+  color: #888;
+  margin-bottom: 4px;
+}
+
+.modalOverlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 9999;
+}
+
+.modalContent {
+  background-color: var(--ui-bg-secondary, white);
+  padding: 24px;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+  width: 75vw;
+  height: 75vh;
+  display: flex;
+  flex-direction: column;
+  text-align: center;
+  position: relative;
+}
+
+.modalHeader {
+  margin-top: 0;
+  margin-bottom: 20px;
+  font-size: 1.25rem;
+  font-weight: bold;
+  color: var(--ui-text-highlight, black);
+  border-bottom: 1px solid var(--ui-border, #eee);
+  padding-bottom: 10px;
+  flex-shrink: 0;
+}
+
+.modalBody {
+  flex-grow: 1;
+  overflow-y: hidden;
+  /* Prevent body scroll, let panels scroll if needed */
+  display: flex;
+  gap: 24px;
+  padding: 0 10px;
+  /* Minor horizontal padding */
+}
+
+.leftPanel,
+.rightPanel {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.panelHeader {
+  flex-grow: 0;
+}
+
+.panelFill {
+  flex-grow: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.leftPanelFillBox {
+  flex-grow: 1;
+  border: 1px solid var(--ui-border, #ccc);
+  border-radius: 6px;
+  background-color: #f9f9f9;
+  /* Placeholder background */
+}
+
+.modalFooter {
+  display: flex;
+  justify-content: space-between;
+  /* Split left and right */
+  align-items: center;
+  padding-top: 16px;
+  /* Removed border-top as requested */
+  margin-top: auto;
+}
+
+.footerControls {
+  display: flex;
+  gap: 16px;
+  align-items: center;
+}
+
+.footerInputItem {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.footerLabel {
+  font-size: 0.9rem;
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+.footerSelect,
+.footerInput {
+  padding: 6px;
+  border: 1px solid var(--ui-border, #ccc);
+  border-radius: 4px;
+  font-size: 0.9rem;
+  width: 80px;
+  /* Compact width */
+}
+
+.footerButtons {
+  display: flex;
+  gap: 12px;
+}
+
+/* Reusing existing button styles, no changes needed there */
+.modalButton {
+  padding: 8px 16px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 0.9rem;
+  border: none;
+  transition: background-color 0.2s;
+}
+
+.cancelButton {
+  background-color: #f0f0f0;
+  color: #333;
+}
+
+.cancelButton:hover {
+  background-color: #e0e0e0;
+}
+
+.confirmButton {
+  background-color: var(--ui-primary, #007bff);
+  color: white;
+}
+
+.confirmButton:hover {
+  background-color: var(--ui-primary-dark, #0056b3);
+}
+
+/* Update general form styles to remove what's no longer needed or keep for body */
+.formRow {
+  margin-bottom: 16px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  text-align: left;
+}
+
+.formLabel {
+  display: block;
+  margin-bottom: 4px;
+  font-weight: 500;
+  color: var(--ui-text-highlight, black);
+  min-width: 100px;
+}
+
+.input,
+.select,
+.textarea {
+  width: 100%;
+  padding: 10px;
+  border: 1px solid var(--ui-border, #ccc);
+  border-radius: 6px;
+  font-size: 1rem;
+  box-sizing: border-box;
+}
+
+/* Ensure textarea fills its container in the split view */
+.panelFill .formRow {
+  height: 100%;
+  margin-bottom: 0;
+  /* Remove margin to match left panel height */
+}
+
+.textarea {
+  resize: none;
+  /* Disable resize */
+  min-height: 80px;
+}
+
+.topicTextarea {
+  resize: none;
+  width: 100%;
+  padding: 10px;
+  border: 1px solid var(--ui-border, #ccc);
+  border-radius: 6px;
+  font-size: 1rem;
+  box-sizing: border-box;
+  height: 9em;
+  /* Approx 5 lines + padding */
+}
+
+.recommendButton {
+  padding: 10px 16px;
+  background-color: var(--ui-secondary, #6c757d);
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.recommendButton:hover {
+  background-color: var(--ui-secondary-dark, #5a6268);
+}

@@ -182,6 +182,16 @@ export default function HistoryMap() {
     useEffect(() => {
         if (!mapContainer.current) return;
 
+        // Check for auto-open panel request
+        const openPanelRequest = localStorage.getItem('openPanel');
+        if (openPanelRequest) {
+            setActivePanel(openPanelRequest);
+            if (openPanelRequest === 'discussion') {
+                setDockingPanelWidth(window.innerWidth * 0.25);
+            }
+            localStorage.removeItem('openPanel');
+        }
+
         // Load saved map state from localStorage
         const savedZoom = localStorage.getItem('historyMapZoom');
         const savedCenter = localStorage.getItem('historyMapCenter');
@@ -273,7 +283,7 @@ export default function HistoryMap() {
     useEffect(() => {
         const handleResize = () => {
             if (activePanel && activePanel !== 'textbook') {
-                if (activePanel === 'search') {
+                if (activePanel === 'search' || activePanel === 'discussion') {
                     setDockingPanelWidth(window.innerWidth * 0.25);
                 } else if (activePanel === 'people') {
                     setDockingPanelWidth(window.innerWidth * 0.5);
@@ -789,8 +799,8 @@ export default function HistoryMap() {
         if (id === 'textbook') {
             // Reset width when opening textbook
             setDockingPanelWidth(calculateTextbookWidth(textbookViewMode));
-        } else if (id === 'search') {
-            // Major Events Panel width - 25% of screen width
+        } else if (id === 'search' || id === 'discussion') {
+            // Major Events & Discussion Panel width - 25% of screen width
             setDockingPanelWidth(window.innerWidth * 0.25);
         } else if (id === 'people') {
             // Characters Panel width - 50% of screen width
@@ -803,7 +813,7 @@ export default function HistoryMap() {
 
 
 
-        const getPanelTitle = (id: string | null) => {
+    const getPanelTitle = (id: string | null) => {
         switch (id) {
             case 'search': return '주요사건';
             case 'textbook': return '교과서';
@@ -1118,7 +1128,7 @@ export default function HistoryMap() {
                             : null
                 }
             >
-                                {activePanel === 'textbook' ? (
+                {activePanel === 'textbook' ? (
                     <TextbookPanel
                         currentPage={textbookPage}
                         viewMode={textbookViewMode}

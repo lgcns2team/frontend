@@ -2,6 +2,7 @@ import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import MapPage from '../pages/home/ui/Page';
 import LoginPage from '../pages/auth/ui/LoginPage';
 import SignupPage from '../pages/auth/ui/SignupPage';
+import DiscussionRoomPage from '../pages/discussion/ui/DiscussionRoomPage';
 import './styles/App.css';
 
 function App() {
@@ -11,6 +12,7 @@ function App() {
         <Route path="/" element={<LoginPage />} />
         <Route path="/signup" element={<SignupPage />} />
         <Route path="/map" element={<MapPage />} />
+        <Route path="/discussion/:id" element={<DiscussionRoomPage />} />
       </Routes>
     </BrowserRouter>
   );
