@@ -32,6 +32,7 @@ import { ProfileButton } from '../../../features/profile-button';
 import { SettingsButton } from '../../../features/settings-button';
 import { NukeExplosion } from '../../../features/nuke-explosion';
 import { FallingBomb } from '../../../features/falling-bomb';
+import { DiscussionPanel } from '../../../features/discussion';
 import { CloudTransition } from '../../../features/cloud-transition/ui/CloudTransition';
 
 // Fix Leaflet marker icon issue
@@ -181,6 +182,16 @@ export default function HistoryMap() {
     useEffect(() => {
         if (!mapContainer.current) return;
 
+        // Check for auto-open panel request
+        const openPanelRequest = localStorage.getItem('openPanel');
+        if (openPanelRequest) {
+            setActivePanel(openPanelRequest);
+            if (openPanelRequest === 'discussion') {
+                setDockingPanelWidth(window.innerWidth * 0.25);
+            }
+            localStorage.removeItem('openPanel');
+        }
+
         // Load saved map state from localStorage
         const savedZoom = localStorage.getItem('historyMapZoom');
         const savedCenter = localStorage.getItem('historyMapCenter');
@@ -272,7 +283,7 @@ export default function HistoryMap() {
     useEffect(() => {
         const handleResize = () => {
             if (activePanel && activePanel !== 'textbook') {
-                if (activePanel === 'search') {
+                if (activePanel === 'search' || activePanel === 'discussion') {
                     setDockingPanelWidth(window.innerWidth * 0.25);
                 } else if (activePanel === 'people') {
                     setDockingPanelWidth(window.innerWidth * 0.5);
@@ -788,8 +799,8 @@ export default function HistoryMap() {
         if (id === 'textbook') {
             // Reset width when opening textbook
             setDockingPanelWidth(calculateTextbookWidth(textbookViewMode));
-        } else if (id === 'search') {
-            // Major Events Panel width - 25% of screen width
+        } else if (id === 'search' || id === 'discussion') {
+            // Major Events & Discussion Panel width - 25% of screen width
             setDockingPanelWidth(window.innerWidth * 0.25);
         } else if (id === 'people') {
             // Characters Panel width - 50% of screen width
@@ -1140,6 +1151,8 @@ export default function HistoryMap() {
                             renderToggle={setCharacterPanelToggle}
                         />
                     )
+                ) : activePanel === 'discussion' ? (
+                    <DiscussionPanel />
                 ) : (
                     <div style={{ padding: '20px', textAlign: 'center', color: 'var(--ui-text)' }}>
                         <p>{getPanelTitle(activePanel)} 패널 내용이 여기에 표시됩니다.</p>

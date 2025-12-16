@@ -40,7 +40,8 @@ export const authApi = {
         const refreshToken = response.headers.get('Refresh-Token');
 
         if (accessToken) {
-            localStorage.setItem('accessToken', accessToken);
+            const pureToken = accessToken.replace('Bearer ', '');
+            localStorage.setItem('accessToken', pureToken);
         }
         if (refreshToken) {
             localStorage.setItem('refreshToken', refreshToken);

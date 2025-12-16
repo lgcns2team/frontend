@@ -19,6 +19,9 @@
 
 .major-event-item {
     background-color: var(--ui-bg-secondary);
+    background-image: url('/assets/images/background1.png');
+    background-size: 100% 100%;
+    background-repeat: no-repeat;
     /* border: 1px solid var(--ui-border); -- Replaced by frame */
     border-radius: 8px;
     /* Frame usually has its own corners, but keeping for background */

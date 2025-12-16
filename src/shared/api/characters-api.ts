@@ -17,14 +17,29 @@ export interface Character {
 
 export type ParsedCharacter = Character;
 
+// Helper to get headers with auth
+const getHeaders = () => {
+    const token = localStorage.getItem('accessToken');
+    const headers: HeadersInit = {
+        'Accept': 'application/json',
+        'Content-Type': 'application/json'
+    };
+    if (token) {
+        // Remove Bearer prefix if it exists in the stored token to prevent duplication
+        const cleanToken = token.startsWith('Bearer ') ? token.slice(7) : token;
+        headers['Authorization'] = `Bearer ${cleanToken}`;
+    }
+    return headers;
+};
+
 export const fetchCharacters = async (): Promise<Character[]> => {
     try {
         const response = await fetch(`/api/ai-person`, {
-            headers: {
-                'Accept': 'application/json',
-                'Content-Type': 'application/json'
-            }
+            headers: getHeaders()
         });
+
+
+
         console.log("Characters API Response Status:", response.status);
         if (!response.ok) {
             throw new Error('Failed to fetch characters');
@@ -58,13 +73,13 @@ export const fetchCharacters = async (): Promise<Character[]> => {
         // 데이터 매핑: 백엔드 필드명이 다를 경우를 대비해 여기서 매핑
         // 현재는 필드명이 같다고 가정하되, 없는 필드는 기본값을 할당
         const mappedData: Character[] = dataList.map((item: any, index: number) => {
-            // 이미지 순환 할당 (kwang, elji, kimyusin)
-            const dummyImages = [
-                '/assets/images/character/kwang.png',
-                '/assets/images/character/elji.png',
-                '/assets/images/character/kimyusin.png'
-            ];
-            const fallbackImage = dummyImages[index % dummyImages.length];
+            // 이미지 순환 할당 (kwang, elji, kimyusin) - Removed as we now use name matching
+            // const dummyImages = [
+            //     '/assets/images/character/kwang.png',
+            //     '/assets/images/character/elji.png',
+            //     '/assets/images/character/kimyusin.png'
+            // ];
+            // const fallbackImage = dummyImages[index % dummyImages.length];
 
             // birthYear 또는 year 필드 사용
             const rawBirthYear = item.birthYear !== undefined ? item.birthYear : item.year;
@@ -96,7 +111,8 @@ export const fetchCharacters = async (): Promise<Character[]> => {
                 summary: item.summary || item.description || '',
                 occupation: item.occupation || null,
                 countryName: item.countryName || item.country || '',
-                imagePath: item.imagePath || item.image || item.img || fallbackImage,
+                // Use character name for image path
+                imagePath: `/assets/images/character/${item.characterName || item.name}.png`,
                 promptId: item.promptID || item.promptId || item.id, // promptID 매핑
                 greetingMessage: item.greetingMessage || item.greeting || null
             };
@@ -113,10 +129,11 @@ export const fetchCharacters = async (): Promise<Character[]> => {
 export const fetchCharacterDetail = async (promptId: string): Promise<{ summary?: string, greetingMessage?: string }> => {
     try {
         const response = await fetch(`/api/ai-person/${promptId}`, {
-            headers: {
-                'Accept': 'application/json'
-            }
+            headers: getHeaders()
         });
+
+
+
         if (!response.ok) {
             throw new Error(`Failed to fetch character detail for ${promptId}`);
         }

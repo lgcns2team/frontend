@@ -125,6 +125,10 @@ export const useWarAnimation = ({
             isVisible: boolean; // Whether the unit is currently visible
             routeColor: string; // Route color
             battleName: string; // Battle name
+            battleDate: string | null; // Battle date
+            winnerGeneral: string | null; // Winner force/general name
+            loserGeneral: string | null; // Loser force/general name
+            tooltipShown: boolean; // Whether tooltip has been shown for this cycle
         }[] = [];
 
         // Total cycle time: all routes + 10 second pause
@@ -197,7 +201,11 @@ export const useWarAnimation = ({
                         startDelay,
                         isVisible: false,
                         routeColor: battle.routeColor || '#ef4444',
-                        battleName: battle.battleName
+                        battleName: battle.battleName,
+                        battleDate: battle.battleDate || null,
+                        winnerGeneral: battle.winnerGeneral || null,
+                        loserGeneral: battle.loserGeneral || null,
+                        tooltipShown: false
                     });
                 }
             });
@@ -223,6 +231,7 @@ export const useWarAnimation = ({
                 // Hide all markers for fresh start
                 activeUnits.forEach(unit => {
                     unit.isVisible = false;
+                    unit.tooltipShown = false;
                     unit.marker.setOpacity(0);
                 });
                 console.log('[useWarAnimation] Restarting animation cycle after 10s pause');
@@ -254,6 +263,48 @@ export const useWarAnimation = ({
                 if (!unit.isVisible) {
                     unit.marker.setOpacity(1);
                     unit.isVisible = true;
+
+                    // Show battle info tooltip when marker becomes visible
+                    if (!unit.tooltipShown) {
+                        unit.tooltipShown = true;
+
+                        // Use Leaflet's built-in tooltip for reliable display
+                        const tooltipContent = `
+                            <div style="
+                                background: rgba(255, 255, 255, 0.5);
+                                backdrop-filter: blur(8px);
+                                border: 1px solid rgba(255, 255, 255, 0.2);
+                                border-radius: 8px;
+                                padding: 10px 14px;
+                                color: #fff;
+                                font-size: 13px;
+                                white-space: nowrap;
+                                box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+                            ">
+                                <div style="font-weight: 700; font-size: 14px; margin-bottom: 4px; color: #333333;">${unit.battleName}</div>
+                                ${(unit.winnerGeneral || unit.loserGeneral) ? `<div style="font-weight: 600; font-size: 13px; margin-bottom: 6px; color: #666666;">${unit.winnerGeneral || ''}${unit.winnerGeneral && unit.loserGeneral ? ' vs ' : ''}${unit.loserGeneral || ''}</div>` : ''}
+                                ${unit.battleDate ? `<div style="font-size: 12px; color: rgba(102, 102, 102, 0.8);">${unit.battleDate}</div>` : ''}
+                            </div>
+                        `;
+
+                        unit.marker.bindTooltip(tooltipContent, {
+                            permanent: true,
+                            direction: 'right',
+                            offset: [20, 0],
+                            className: 'battle-tooltip-container',
+                            opacity: 1
+                        }).openTooltip();
+
+                        console.log('[useWarAnimation] Tooltip opened for:', unit.battleName);
+
+                        // Remove tooltip after 3 seconds
+                        setTimeout(() => {
+                            if (unit.marker) {
+                                unit.marker.unbindTooltip();
+                                console.log('[useWarAnimation] Tooltip closed for:', unit.battleName);
+                            }
+                        }, 1500);
+                    }
                 }
 
                 // Calculate progress (0 to 1) for this unit
