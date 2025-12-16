@@ -302,11 +302,52 @@ export const loadHistoricalBorders = async (
 
                     if (countryName) {
                         // 국가명을 한글로 변환
+                        // 국가명을 한글로 변환
                         let displayName = countryName;
-                        if (countryName === 'gojoseon') displayName = '고조선';
-                        else if (countryName === 'Korea' && year >= 1392 && year <= 1910) displayName = '조선';
-                        else if (countryName === 'Korea' && year >= 918 && year < 1392) displayName = '고려';
-                        else if (countryName === 'Joseon') displayName = '조선';
+                        const nameMap: Record<string, string> = {
+                            'gojoseon': '고조선',
+                            'Gojoseon': '고조선',
+                            'Goguryeo': '고구려',
+                            'Baekje': '백제',
+                            'Silla': '신라',
+                            'Gaya': '가야',
+                            'Balhae': '발해',
+                            'Goryeo': '고려',
+                            'Joseon': '조선',
+                            'Korea': '조선', // Default to Joseon for generic Korea, specific logic below
+                            'Tang': '당',
+                            'Song': '송',
+                            'Liao': '요',
+                            'Jin': '금',
+                            'Western Xia': '서하',
+                            'Yuan': '원',
+                            'Ming': '명',
+                            'Qing': '청',
+                            'Japan': '일본',
+                            'Wako': '왜구',
+                            'Jurchen': '여진',
+                            'Later Jin': '후금',
+                            'Unified Silla': '통일 신라',
+                            'Hubaekje': '후백제',
+                            'Hugoguryeo': '후고구려',
+                            'Taebong': '태봉',
+                            'Khitan': '거란',
+                            'Mongol Empire': '몽골제국',
+                            'Mongols': '몽골제국',
+                            'Northern Yuan': '북원',
+                            'Five Dynasties': '오대십국',
+                            'Later Liang': '후량',
+                            'Later Tang': '후당',
+                            'Later Han': '후한',
+                            'Later Zhou': '후주'
+                        };
+
+                        if (nameMap[countryName]) {
+                            displayName = nameMap[countryName];
+                        } else if (countryName === 'Korea') {
+                            if (year >= 1392 && year <= 1910) displayName = '조선';
+                            else if (year >= 918 && year < 1392) displayName = '고려';
+                        }
 
                         layer.bindPopup(
                             `<div style="font-family: sans-serif; padding: 8px;">

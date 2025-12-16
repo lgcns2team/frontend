@@ -22,7 +22,11 @@ export const Timeline = ({ currentYear, onYearChange, onEventClick, isVisible, o
     // const [isVisible, setIsVisible] = useState(true); // Moved to parent
 
     useEffect(() => {
-        fetchMainEvents().then(setMainEvents);
+        fetchMainEvents().then(events => {
+            // Filter events that should be shown on timeline
+            const filteredEvents = events.filter(e => e.showTimeline !== false);
+            setMainEvents(filteredEvents);
+        });
     }, []);
 
     // Base window size is 500 years
@@ -98,7 +102,7 @@ export const Timeline = ({ currentYear, onYearChange, onEventClick, isVisible, o
                 cancelAnimationFrame(animationFrameId.current);
             }
         };
-    }, [isDragging, currentYear, onYearChange, displayWindowSize]);
+    }, [isDragging, displayWindowSize, currentYear, onYearChange]);
 
     const handleSliderChange = (newYear: number) => {
         onYearChange(newYear);
@@ -253,29 +257,29 @@ export const Timeline = ({ currentYear, onYearChange, onEventClick, isVisible, o
     }, [viewStart, viewEnd]);
 
 
-    // Process events for staggering
+    // Process events for staggering (Vertical Alternation)
     const processedEvents = useMemo(() => {
-        // 1. Sort by year
         const sortedEvents = [...mainEvents].sort((a, b) => a.year - b.year);
+        const GAP = 10; // Years gap to consider as overlap
 
-        // 2. Assign levels
-        const levels: number[] = []; // Stores the last year placed in each level
-        const GAP = 10; // Minimum year gap to avoid overlap
+        let lastYear = -9999;
+        let lastPosition = 'above'; // 'above' or 'below'
 
         return sortedEvents.map(event => {
-            let placedLevel = 0;
+            let position = 'above';
 
-            // Find the first level where this event fits
-            while (true) {
-                const lastYearInLevel = levels[placedLevel];
-                if (lastYearInLevel === undefined || event.year >= lastYearInLevel + GAP) {
-                    levels[placedLevel] = event.year;
-                    break;
-                }
-                placedLevel++;
+            if (event.year - lastYear < GAP) {
+                // If within GAP, toggle position relative to last one
+                position = lastPosition === 'above' ? 'below' : 'above';
+            } else {
+                // Reset to default 'above' if no overlap
+                position = 'above';
             }
 
-            return { ...event, level: placedLevel };
+            lastYear = event.year;
+            lastPosition = position;
+
+            return { ...event, position };
         });
     }, [mainEvents]);
 
@@ -366,15 +370,15 @@ export const Timeline = ({ currentYear, onYearChange, onEventClick, isVisible, o
                                     const totalRange = viewEnd - viewStart;
                                     const percent = ((event.year - viewStart) / totalRange) * 100;
 
-                                    if (percent < -5 || percent > 105) return null;
+                                    if (percent < 1 || percent > 99) return null;
 
                                     const formatEventName = (name: string) => {
-                                        if (name.length <= 8) return name;
-                                        return name.match(/.{1,8}/g)?.join('\n') || name;
+                                        return name.split(' ').join('\n');
                                     };
 
-                                    // Base bottom is 15px. Add 25px per level.
-                                    const bottomOffset = 15 + (event.level * 35);
+                                    const isBelow = event.position === 'below';
+
+                                    const displayName = event.shortName || event.eventName;
 
                                     return (
                                         <div
@@ -392,10 +396,12 @@ export const Timeline = ({ currentYear, onYearChange, onEventClick, isVisible, o
                                                 className="event-marker-label"
                                                 style={{
                                                     borderColor: getEraColor(event.year),
-                                                    bottom: `${bottomOffset}px`
+                                                    bottom: isBelow ? 'auto' : '15px',
+                                                    top: isBelow ? '25px' : 'auto',
+                                                    transformOrigin: isBelow ? 'top center' : 'bottom center'
                                                 }}
                                             >
-                                                {formatEventName(event.eventName)}
+                                                {formatEventName(displayName)}
                                             </div>
                                         </div>
                                     );
