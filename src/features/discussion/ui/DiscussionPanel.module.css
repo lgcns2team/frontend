@@ -346,3 +346,10 @@
 .recommendButton:hover {
   background-color: var(--ui-secondary-dark, #5a6268);
 }
+
+.participantCount {
+  font-size: 0.9rem;
+  color: #555;
+  margin-top: 4px;
+  font-weight: 500;
+}

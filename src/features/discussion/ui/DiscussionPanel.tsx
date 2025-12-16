@@ -102,7 +102,8 @@ const DiscussionPanel: React.FC = () => {
             </button>
             <div className={styles.roomNumber}>No. {discussion.id}</div>
             <h3 className={styles.characterName}>{discussion.title}</h3>
-            <p className={styles.characterSummary}>{discussion.content}</p>
+            <p className={styles.characterSummary}>{discussion.description || (discussion.content && discussion.content.split(', ')[1]) || '설명 없음'}</p>
+            <div className={styles.participantCount}>인원수: {discussion.maxParticipants || (discussion.content && discussion.content.split('명')[0].split(': ')[1]) || '?'}명</div>
           </div>
         ))}
       </div>
