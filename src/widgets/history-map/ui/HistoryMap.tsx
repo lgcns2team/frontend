@@ -32,6 +32,7 @@ import { ProfileButton } from '../../../features/profile-button';
 import { SettingsButton } from '../../../features/settings-button';
 import { NukeExplosion } from '../../../features/nuke-explosion';
 import { FallingBomb } from '../../../features/falling-bomb';
+import { DiscussionPanel } from '../../../features/discussion';
 import { CloudTransition } from '../../../features/cloud-transition/ui/CloudTransition';
 
 // Fix Leaflet marker icon issue
@@ -814,7 +815,7 @@ export default function HistoryMap() {
 
 
 
-    const getPanelTitle = (id: string | null) => {
+        const getPanelTitle = (id: string | null) => {
         switch (id) {
             case 'search': return '주요사건';
             case 'textbook': return '교과서';
@@ -1129,7 +1130,7 @@ export default function HistoryMap() {
                             : null
                 }
             >
-                {activePanel === 'textbook' ? (
+                                {activePanel === 'textbook' ? (
                     <TextbookPanel
                         currentPage={textbookPage}
                         viewMode={textbookViewMode}
@@ -1152,6 +1153,8 @@ export default function HistoryMap() {
                             renderToggle={setCharacterPanelToggle}
                         />
                     )
+                ) : activePanel === 'discussion' ? (
+                    <DiscussionPanel />
                 ) : (
                     <div style={{ padding: '20px', textAlign: 'center', color: 'var(--ui-text)' }}>
                         <p>{getPanelTitle(activePanel)} 패널 내용이 여기에 표시됩니다.</p>

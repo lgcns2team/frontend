@@ -1,8 +1,44 @@
+
 # H.AI (History AI)
 
 **H.AI** is an interactive historical map application that invites users to explore the flow of history through an immersive time-travel experience.
 
 ![H.AI Preview](/public/assets/images/taegeuk_contemporary.png)
+
+## ✨ Key Features
+
+### 1. Anthropic-style Landing Page
+A premium, editorial-style landing page introduces the product with elegant scroll animations and a warm, minimalist design.
+- **Hero Section:** "H.AI" title with smooth fade-up effects.
+- **Feature Showcase:** Scroll-based storytelling highlighting "Time Travel" and "Dynamic Themes".
+- **Seamless Integration:** The experience naturally flows into the interactive Greeting Page.
+
+### 2. Dynamic Theming (Time Travel)
+The entire application interface adapts in real-time to the historical era being viewed.
+- **Ancient (고대):** Stone textures, serif fonts, dark ambient tones.
+- **Medieval (중세):** Parchment textures, calligraphy fonts, warm earth tones.
+- **Modern (근대):** Newspaper textures, Minjo fonts, stark black & white with red accents.
+- **Contemporary (현대):** Clean glassmorphism, sans-serif fonts, vibrant blue & red accents.
+
+### 3. Interactive History Map
+- **Timeline Control:** Drag the slider to travel through time.
+- **Live Updates:** Borders, markers, and UI styles update instantly as you scroll through years.
+
+## 🛠️ Technology Stack
+
+- **Framework:** React 18, TypeScript
+- **Build Tool:** Vite
+- **Architecture:** Feature-Sliced Design (FSD)
+- **Styling:** CSS Modules / Vanilla CSS with CSS Variables
+- **Map Engine:** Leaflet (React-Leaflet)
+
+## 🚀 Getting Started
+
+### Prerequisites
+- Node.js (v18 or higher)
+- npm or yarn
+
+### Installation
 
 ## ✨ Key Features
 

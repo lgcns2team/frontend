@@ -1,0 +1,96 @@
+.discussionPanel {
+  padding: 16px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.discussionTitle {
+  font-size: 1.2em;
+  margin-bottom: 8px;
+}
+
+.discussionList {
+  list-style: none;
+  padding: 0;
+}
+
+.discussionList li {
+  padding: 12px;
+  border-bottom: 1px solid #eee;
+  background-color: #f9f9f9;
+  border-radius: 4px;
+  margin-bottom: 8px;
+}
+
+.discussionList li:last-child {
+  border-bottom: none;
+}
+
+.charactersPanel {
+  position: relative;
+  height: 100%; /* Ensure panel has height for positioning */
+  color: var(--ui-text);
+}
+
+.charactersList {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr); /* 2 columns */
+  gap: 16px;
+}
+
+.characterItem {
+  background-color: var(--ui-bg-secondary);
+  border: 1px solid var(--ui-border);
+  border-radius: 8px;
+  padding: 16px;
+  transition: transform 0.2s, box-shadow 0.2s;
+  position: relative;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  text-align: left;
+}
+
+.characterItem:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  border-color: var(--ui-primary);
+}
+
+.characterName {
+  margin: 0 0 8px 0;
+  font-size: 1rem;
+  color: var(--ui-text-highlight);
+  font-weight: 600;
+}
+
+.characterSummary {
+  font-size: 0.85rem;
+  line-height: 1.4;
+  color: var(--ui-text);
+  margin: 0;
+}
+
+.createRoomButton {
+  position: absolute;
+  bottom: 20px;
+  right: 20px;
+  padding: 10px 20px;
+  background-color: var(--ui-primary);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 1rem;
+  font-weight: 600;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  transition: background-color 0.2s, transform 0.2s;
+}
+
+.createRoomButton:hover {
+  background-color: var(--ui-primary-dark);
+  transform: translateY(-2px);
+}
+
