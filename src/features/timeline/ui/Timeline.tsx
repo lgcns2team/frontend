@@ -290,26 +290,25 @@ export const Timeline = ({ currentYear, onYearChange, onEventClick, isVisible, o
             <div className={`timeline-panel ${!isVisible ? 'panel-hidden' : ''}`}>
                 {/* Toggle Button - Always Visible (Moved Inside) */}
                 <button
-                    className="timeline-toggle-btn"
+                    className={`timeline-toggle-btn ${!isVisible ? 'btn-hidden-state' : ''}`}
                     onClick={onToggleVisibility}
                     aria-label={isVisible ? "Hide timeline" : "Show timeline"}
                 >
-                    <svg
-                        width="24"
-                        height="24"
-                        viewBox="0 0 24 24"
-                        fill="none"
-                        stroke="currentColor"
-                        strokeWidth="2"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        style={{
-                            transform: isVisible ? 'rotate(0deg)' : 'rotate(180deg)',
-                            transition: 'transform 0.3s ease'
-                        }}
-                    >
-                        <path d="M6 9l6 6 6-6" />
-                    </svg>
+                    {isVisible ? (
+                        <>
+                            <span style={{ marginRight: '8px', fontSize: '14px', fontWeight: 600 }}>연표 숨기기</span>
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                <path d="M19 9l-7 7-7-7" />
+                            </svg>
+                        </>
+                    ) : (
+                        <>
+                            <span style={{ marginRight: '8px', fontSize: '14px', fontWeight: 600 }}>연표 보기</span>
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                <path d="M5 15l7-7 7 7" />
+                            </svg>
+                        </>
+                    )}
                 </button>
 
                 {/* Scroll Background Wrapper */}
