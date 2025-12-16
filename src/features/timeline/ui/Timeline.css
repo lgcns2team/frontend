@@ -12,14 +12,14 @@
     align-items: center;
     justify-content: center;
     width: 100%;
-    max-width: 95vw;
+    max-width: 100%;
     /* Limit width for the scroll look */
-    height: 200px;
+    height: 250px;
     /* Fixed height for the scroll image */
     padding: 0;
 
     /* Scroll Background */
-    background-image: url('/assets/images/paper_timeline.png');
+    background-image: url('/assets/images/paper_timeline2.png');
     background-size: 100% 100%;
     background-repeat: no-repeat;
     background-position: center;
@@ -27,7 +27,7 @@
 
     position: fixed;
     /* Fixed at bottom */
-    bottom: 20px;
+    bottom: 0;
     left: 50%;
     transform: translateX(-50%);
 
@@ -42,21 +42,25 @@
 
 /* When hidden, slide down but keep button visible. */
 .timeline-panel.panel-hidden {
-    transform: translate(-50%, calc(100% + 20px));
+    transform: translate(-50%, 100%);
 }
 
 /* Toggle Button */
 .timeline-toggle-btn {
     position: absolute;
-    top: -40px;
-    /* Above the scroll */
-    left: 50%;
-    transform: translateX(-50%);
-    width: 40px;
-    height: 40px;
-    background: rgba(255, 255, 255, 0.9);
+    top: -5px;
+    /* Attached to top */
+    right: 40px;
+    left: auto;
+    /* Move to right */
+    transform: none;
+    width: auto;
+    padding: 0 16px;
+    height: 32px;
+    background: rgba(255, 255, 255, 0.95);
     border: 1px solid #d1d5db;
-    border-radius: 50%;
+    border-radius: 20px;
+    /* Fully rounded */
     cursor: pointer;
     display: flex;
     align-items: center;
@@ -64,13 +68,35 @@
     color: #4b5563;
     box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
     z-index: 1000;
-    transition: all 0.2s;
+    transition: all 0.3s ease;
 }
 
 .timeline-toggle-btn:hover {
     background: white;
     color: #111827;
-    transform: translateX(-50%) scale(1.1);
+    height: 36px;
+    top: -9px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+}
+
+/* Hidden State (View Timeline) */
+.timeline-toggle-btn.btn-hidden-state {
+    width: auto;
+    padding: 0 20px;
+    height: 40px;
+    top: -40px;
+    border-radius: 20px 20px 0 0;
+    border-bottom: none;
+    /* Keep tab look */
+    background: #fff;
+    box-shadow: 0 -4px 10px rgba(0, 0, 0, 0.1);
+    color: #111;
+}
+
+.timeline-toggle-btn.btn-hidden-state:hover {
+    transform: translateY(-5px);
+    top: -40px;
+    height: 45px;
 }
 
 /* Scroll Background Wrapper to hold content */
@@ -254,22 +280,29 @@
     bottom: 15px;
     /* Above the dot */
     left: 50%;
-    transform-origin: bottom left;
-    transform: rotate(-45deg) translate(5px, -5px);
-    /* Diagonal */
+    transform-origin: bottom center;
+    transform: translate(-50%, 0);
+    /* Vertical text */
+    writing-mode: vertical-lr;
+    text-orientation: upright;
+    letter-spacing: 2px;
+    /* Add some spacing for better readability */
+    height: max-content;
+    width: max-content;
+    /* Ensure it fits the text */
 
     font-family: 'Nanum Myeongjo', serif;
     /* Brush style fallback */
-    font-size: 10px;
+    font-size: 11px;
     /* Much smaller as requested */
-    font-weight: 600;
-    color: #1f2937;
+    font-weight: 800;
+    color: #000;
     white-space: pre-line;
     /* Allow newlines, collapse spaces */
     width: max-content;
     /* Ensure it fits the text */
     line-height: 1.2;
-    text-align: left;
+    text-align: center;
 
     /* Remove box styling */
     background: transparent;
@@ -277,7 +310,7 @@
     border: none;
     box-shadow: none;
 
-    opacity: 0.7;
+    opacity: 1;
     /* More subtle */
     visibility: visible;
     /* Always visible */

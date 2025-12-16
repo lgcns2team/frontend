@@ -7,6 +7,8 @@ export interface MainEvent {
     type: string;
     countryName: string;
     countryId?: string;
+    shortName?: string;
+    showTimeline?: boolean;
 }
 
 export type ParsedMainEvent = MainEvent;
@@ -26,6 +28,8 @@ export const fetchMainEvents = async (): Promise<MainEvent[]> => {
             return [];
         }
 
+        console.log("Raw Main Event Data (Sample):", rawData[0]);
+
         const data: MainEvent[] = rawData
             .map((item: any) => ({
                 eventId: item.eventId || `event-${Math.random().toString(36).substr(2, 9)}`,
@@ -35,11 +39,14 @@ export const fetchMainEvents = async (): Promise<MainEvent[]> => {
                 summary: item.summary || '',
                 type: item.type || 'Event',
                 countryName: item.countryName || '',
-                countryId: item.countryId
+                countryId: item.countryId,
+                shortName: item.shortName || item.short_name || item.short || null,
+                showTimeline: item.show_timeline === true || item.timeline === true || item.showTimeline === true
             }))
             .filter(event => !isNaN(event.year) && event.year !== null);
 
-        console.log("Fetched main events:", data.length);
+        console.log("Mapped Main Event Data (Sample):", data[0]);
+        console.log("Total events:", data.length);
         return data;
     } catch (error) {
         console.error('Error fetching main events:', error);
