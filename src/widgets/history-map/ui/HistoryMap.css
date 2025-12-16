@@ -128,6 +128,7 @@
 /* War unit icons - smooth transitions */
 .war-unit-icon {
     transition: opacity 0.3s ease-in-out !important;
+    overflow: visible !important;
 }
 
 /* War route polylines - smooth opacity transition */
@@ -208,4 +209,22 @@
     pointer-events: none;
     z-index: 1;
     border-radius: 4px;
+}
+
+/* Battle info tooltip container - override Leaflet default styles */
+.battle-tooltip-container {
+    background: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+    padding: 0 !important;
+}
+
+.battle-tooltip-container::before {
+    display: none !important;
+}
+
+.leaflet-tooltip.battle-tooltip-container {
+    background: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
 }
