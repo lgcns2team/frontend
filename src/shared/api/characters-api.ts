@@ -17,14 +17,29 @@ export interface Character {
 
 export type ParsedCharacter = Character;
 
+// Helper to get headers with auth
+const getHeaders = () => {
+    const token = localStorage.getItem('accessToken');
+    const headers: HeadersInit = {
+        'Accept': 'application/json',
+        'Content-Type': 'application/json'
+    };
+    if (token) {
+        // Remove Bearer prefix if it exists in the stored token to prevent duplication
+        const cleanToken = token.startsWith('Bearer ') ? token.slice(7) : token;
+        headers['Authorization'] = `Bearer ${cleanToken}`;
+    }
+    return headers;
+};
+
 export const fetchCharacters = async (): Promise<Character[]> => {
     try {
         const response = await fetch(`/api/ai-person`, {
-            headers: {
-                'Accept': 'application/json',
-                'Content-Type': 'application/json'
-            }
+            headers: getHeaders()
         });
+
+
+
         console.log("Characters API Response Status:", response.status);
         if (!response.ok) {
             throw new Error('Failed to fetch characters');
@@ -113,10 +128,11 @@ export const fetchCharacters = async (): Promise<Character[]> => {
 export const fetchCharacterDetail = async (promptId: string): Promise<{ summary?: string, greetingMessage?: string }> => {
     try {
         const response = await fetch(`/api/ai-person/${promptId}`, {
-            headers: {
-                'Accept': 'application/json'
-            }
+            headers: getHeaders()
         });
+
+
+
         if (!response.ok) {
             throw new Error(`Failed to fetch character detail for ${promptId}`);
         }
