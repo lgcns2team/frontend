@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { createPortal } from 'react-dom';
 import { useNavigate } from 'react-router-dom';
+import { recommendDebateTopics, type DebateTopic } from '../../../shared/api/debate-api';
 import styles from './DiscussionPanel.module.css';
 
 const DiscussionPanel: React.FC = () => {
@@ -18,6 +19,11 @@ const DiscussionPanel: React.FC = () => {
   const [maxParticipants, setMaxParticipants] = useState<string>('');
 
   const [showCreateModal, setShowCreateModal] = useState(false);
+  
+  // 추천 주제 관련 state
+  const [recommendedTopics, setRecommendedTopics] = useState<DebateTopic[]>([]);
+  const [isLoadingRecommendations, setIsLoadingRecommendations] = useState(false);
+  const [recommendationError, setRecommendationError] = useState<string | null>(null);
 
   // Update localStorage whenever discussions change (except purely purely initial partial loads, but simple approach is ok)
   // Or better, update in handlers to avoid effect loops if not needed, but Effect is safer for consistency.
@@ -31,11 +37,42 @@ const DiscussionPanel: React.FC = () => {
     setDescription('');
     setTimeLimit('10');
     setMaxParticipants('');
+    setRecommendedTopics([]);
+    setRecommendationError(null);
     setShowCreateModal(true);
   };
 
   const closeCreateModal = () => {
     setShowCreateModal(false);
+  };
+  
+  // 추천받기 버튼 핸들러
+  const handleRecommend = async () => {
+    if (!keyword.trim()) {
+      alert('주제 키워드를 입력해주세요.');
+      return;
+    }
+    
+    setIsLoadingRecommendations(true);
+    setRecommendationError(null);
+    
+    try {
+      const topics = await recommendDebateTopics(keyword);
+      setRecommendedTopics(topics);
+      console.log('✅ Received recommendations:', topics);
+    } catch (error) {
+      console.error('❌ Failed to get recommendations:', error);
+      setRecommendationError('추천을 받는데 실패했습니다. 다시 시도해주세요.');
+      setRecommendedTopics([]);
+    } finally {
+      setIsLoadingRecommendations(false);
+    }
+  };
+  
+  // 추천 주제 클릭 핸들러
+  const handleTopicSelect = (selectedTopic: DebateTopic) => {
+    setTopic(selectedTopic.topic);
+    setDescription(selectedTopic.description);
   };
 
   const handleDelete = (e: React.MouseEvent, id: number) => {
@@ -127,11 +164,63 @@ const DiscussionPanel: React.FC = () => {
                       value={keyword}
                       onChange={(e) => setKeyword(e.target.value)}
                     />
-                    <button className={styles.recommendButton}>추천받기</button>
+                    <button 
+                      className={styles.recommendButton}
+                      onClick={handleRecommend}
+                      disabled={isLoadingRecommendations}
+                    >
+                      {isLoadingRecommendations ? '로딩 중...' : '추천받기'}
+                    </button>
                   </div>
                   {/* Fill Box */}
                   <div className={styles.leftPanelFillBox}>
-                    {/* Content can go here later */}
+                    {recommendationError && (
+                      <div style={{ color: 'red', padding: '10px' }}>
+                        {recommendationError}
+                      </div>
+                    )}
+                    {recommendedTopics.length > 0 && (
+                      <div style={{ padding: '10px' }}>
+                        <h4 style={{ marginBottom: '10px', fontSize: '14px' }}>추천 주제 ({recommendedTopics.length}개)</h4>
+                        {recommendedTopics.map((item, index) => (
+                          <div 
+                            key={index}
+                            onClick={() => handleTopicSelect(item)}
+                            style={{
+                              padding: '10px',
+                              marginBottom: '8px',
+                              border: '1px solid #ddd',
+                              borderRadius: '4px',
+                              cursor: 'pointer',
+                              backgroundColor: topic === item.topic ? '#e3f2fd' : 'white',
+                              transition: 'background-color 0.2s'
+                            }}
+                            onMouseEnter={(e) => {
+                              if (topic !== item.topic) {
+                                e.currentTarget.style.backgroundColor = '#f5f5f5';
+                              }
+                            }}
+                            onMouseLeave={(e) => {
+                              if (topic !== item.topic) {
+                                e.currentTarget.style.backgroundColor = 'white';
+                              }
+                            }}
+                          >
+                            <div style={{ fontWeight: 'bold', fontSize: '13px', marginBottom: '4px' }}>
+                              {index + 1}. {item.topic}
+                            </div>
+                            <div style={{ fontSize: '12px', color: '#666', lineHeight: '1.4' }}>
+                              {item.description.substring(0, 80)}...
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                    {!isLoadingRecommendations && recommendedTopics.length === 0 && !recommendationError && (
+                      <div style={{ padding: '20px', textAlign: 'center', color: '#999' }}>
+                        키워드를 입력하고 추천받기 버튼을 눌러주세요
+                      </div>
+                    )}
                   </div>
                 </div>
 
