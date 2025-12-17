@@ -23,7 +23,7 @@ export interface DebateTopicsResponse {
 export const recommendDebateTopics = async (keyword: string): Promise<DebateTopic[]> => {
     console.log('🚀 [recommendDebateTopics] Starting request with keyword:', keyword);
 
-    const response = await fetch('/api/debate/topics/recommend', {
+    const response = await fetch('/api/ai/debate/topics/recommend', {
         method: 'POST',
         headers: getAuthHeaders(),
         body: JSON.stringify({ user_query: keyword }),
