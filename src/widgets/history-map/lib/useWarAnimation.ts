@@ -132,8 +132,15 @@ export const useWarAnimation = ({
         }[] = [];
 
         // Total cycle time: all routes + 10 second pause
+        // Total cycle time: all routes + 10 second pause
         const ROUTE_STAGGER_DELAY = 1500; // Same as useWarLayer
-        const UNIT_TRAVEL_DURATION = 3500; // Same as route drawing animation (3.5s)
+        // const UNIT_TRAVEL_DURATION = 3500; // Same as route drawing animation (3.5s)
+
+        // 고정 속도 설정 (km/ms) - 값을 조절하여 속도 변경 가능
+        // 예: 0.1 = 10ms당 1km 이동 (빠름), 0.05 = 20ms당 1km (느림)
+        // 적절한 값: 약 300km를 3초에 간다고 가정하면 100km/s = 0.1km/ms
+        const ANIMATION_SPEED = 0.15;
+
         const PAUSE_BEFORE_REPLAY = 10000; // 10 seconds pause
 
         // Process each battle route - sort by date first (same logic as useWarLayer)
@@ -177,6 +184,11 @@ export const useWarAnimation = ({
                     const line = turf.lineString(smoothedCoords);
                     const length = turf.length(line, { units: 'kilometers' });
 
+                    // Calculate constant speed duration
+                    // duration = distance / speed
+                    const calculatedDuration = length / ANIMATION_SPEED;
+                    // 너무 짧으면 최소 1초, 너무 길면 최대 10초 등으로 제한할 수도 있지만 일단 원시값 사용
+
                     // Calculate start delay synced with route drawing
                     const startDelay = battleIndex * ROUTE_STAGGER_DELAY;
 
@@ -191,13 +203,13 @@ export const useWarAnimation = ({
                         opacity: 0 // Start invisible, will fade in when animation starts
                     }).addTo(animationLayer.current!);
 
-                    console.log('[useWarAnimation] Created marker for battle:', battle.battleName, 'startDelay:', startDelay);
+                    console.log('[useWarAnimation] Created marker for battle:', battle.battleName, 'startDelay:', startDelay, 'length:', length, 'duration:', calculatedDuration);
 
                     activeUnits.push({
                         marker,
                         line,
                         length,
-                        duration: UNIT_TRAVEL_DURATION,
+                        duration: calculatedDuration, // UNIT_TRAVEL_DURATION 대신 계산된 시간 사용
                         startDelay,
                         isVisible: false,
                         routeColor: battle.routeColor || '#ef4444',
@@ -212,8 +224,16 @@ export const useWarAnimation = ({
         });
 
         // Calculate total cycle duration
-        const lastUnitDelay = activeUnits.length > 0 ? activeUnits[activeUnits.length - 1].startDelay : 0;
-        const TOTAL_CYCLE_DURATION = lastUnitDelay + UNIT_TRAVEL_DURATION + PAUSE_BEFORE_REPLAY;
+        // Find the unit that finishes last
+        let maxEndTime = 0;
+        activeUnits.forEach(unit => {
+            const endTime = unit.startDelay + unit.duration;
+            if (endTime > maxEndTime) maxEndTime = endTime;
+        });
+
+        const TOTAL_CYCLE_DURATION = maxEndTime + PAUSE_BEFORE_REPLAY;
+        // const lastUnitDelay = activeUnits.length > 0 ? activeUnits[activeUnits.length - 1].startDelay : 0;
+        // const TOTAL_CYCLE_DURATION = lastUnitDelay + UNIT_TRAVEL_DURATION + PAUSE_BEFORE_REPLAY;
 
         const animate = (timestamp: number) => {
             if (!startTime.current) {
