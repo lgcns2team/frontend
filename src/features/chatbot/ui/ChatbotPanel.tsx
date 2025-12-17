@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
+import { sendGeneralMessage } from '../../../shared/api/aichat-api';
 import './ChatbotPanel.css';
 
 type Sender = 'bot' | 'user';
@@ -242,85 +243,17 @@ export const ChatbotPanel = ({ onClose, initialPosition, initialSize, onStateCha
         typingBufferRef.current = '';
 
         try {
-            console.log('🚀 [DEBUG] Starting fetch to /api/ai/chat with message:', input);
-            const response = await fetch('/api/ai/chat', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({ message: input }),
+            console.log('🚀 [DEBUG] Sending message to AI chat');
+
+            await sendGeneralMessage(input, (text) => {
+                // Add text to typing buffer
+                typingBufferRef.current += text;
+                console.log('✍️ [DEBUG] Added to typing buffer. Buffer now:', typingBufferRef.current.length, 'chars');
+                // Start typing loop (if not already running)
+                startTypingLoop();
             });
 
-            console.log('📥 [DEBUG] Response received, status:', response.status, 'ok:', response.ok);
-
-            if (!response.ok) {
-                throw new Error('Network response was not ok');
-            }
-
-            if (!response.body) {
-                throw new Error('Response body is null');
-            }
-
-            console.log('📖 [DEBUG] Starting to read response body stream...');
-
-            const reader = response.body.getReader();
-            const decoder = new TextDecoder();
-            let buffer = '';
-            let chunkCount = 0;
-
-            while (true) {
-                const { done, value } = await reader.read();
-                if (done) {
-                    console.log('✅ [DEBUG] Stream done. Total chunks:', chunkCount);
-                    break;
-                }
-
-                chunkCount++;
-                console.log(`📦 [DEBUG] Chunk #${chunkCount} received, bytes:`, value?.length);
-
-                // UTF-8 안전하게 디코딩
-                const chunk = decoder.decode(value, { stream: true });
-                console.log(`📝 [DEBUG] Decoded chunk #${chunkCount}:`, chunk.substring(0, 100));
-                buffer += chunk;
-
-                // SSE 이벤트 파싱 (개행으로 분리)
-                const lines = buffer.split('\n');
-
-                // 마지막 줄은 불완전할 수 있으므로 버퍼에 보관
-                buffer = lines.pop() || '';
-                console.log(`📋 [DEBUG] Processing ${lines.length} lines, buffer remainder:`, buffer.substring(0, 50));
-
-                for (const line of lines) {
-                    if (line.startsWith('data:')) {  // 공백 없음
-                        const dataStr = line.substring(5).trim();  // 5자 ("data:")
-                        if (!dataStr || dataStr === '[DONE]') continue;
-
-                        try {
-                            // JSON 파싱
-                            const event = JSON.parse(dataStr);
-                            console.log('🎯 [DEBUG] Parsed event:', event.type, 'text length:', event.text?.length);
-
-                            if (event.type === 'content' && event.text) {
-                                // 🔥 여기서 바로 메시지에 넣지 말고 버퍼에 추가만!
-                                typingBufferRef.current += event.text;
-                                console.log('✍️ [DEBUG] Added to typing buffer. Buffer now:', typingBufferRef.current.length, 'chars');
-                                // 타이핑 루프 시작 (이미 돌고 있으면 아무 일 X)
-                                startTypingLoop();
-
-                            } else if (event.type === 'citations') {
-                                console.log('📚 Received citations:', event.count);
-                            } else if (event.type === 'done') {
-                                console.log('✅ Stream completed, total length maybe:', event.total_length);
-                            } else if (event.type === 'error') {
-                                console.error('❌ Error from backend:', event.message);
-                            }
-                        } catch (e) {
-                            console.error('Error parsing SSE JSON:', e, 'Data:', dataStr);
-                        }
-                    }
-                }
-            }
-
+            console.log('✅ [DEBUG] Message sent successfully');
         } catch (error) {
             console.error('Error sending message:', error);
             const errorMsg = {

@@ -1,6 +1,20 @@
 import React, { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import styles from './DiscussionRoomPage.module.css';
+import { useStomp } from '../../../shared/lib/useStomp';
+
+interface ChatMessage {
+    sender: string;
+    content: string;
+    type: 'CHAT' | 'JOIN' | 'LEAVE';
+    userId?: string;
+    roomId?: string;
+    side?: 'agree' | 'disagree';
+}
+
+interface DisplayMessage extends ChatMessage {
+    side: 'agree' | 'disagree';
+}
 
 const DiscussionRoomPage: React.FC = () => {
     const { id } = useParams();
@@ -15,6 +29,44 @@ const DiscussionRoomPage: React.FC = () => {
     const [viewMode, setViewMode] = useState<'vote' | 'chat' | 'verify' | 'result' | 'final'>('vote');
     const [messages, setMessages] = useState<{ text: string, side: 'agree' | 'disagree' }[]>([]);
     const [inputValue, setInputValue] = useState('');
+
+    // Mock user info
+    const [userId] = useState(`user-${Math.floor(Math.random() * 10000)}`);
+    const [username] = useState(`User ${Math.floor(Math.random() * 100)}`);
+
+    const { connect, disconnect, subscribe, sendMessage, isConnected } = useStomp({
+        url: 'http://localhost:8081/ws-stomp',
+        onConnect: (frame) => {
+            console.log('Connected: ' + frame);
+            if (!id) return;
+            subscribe('/topic/room/' + id, (chatMessage) => {
+                handleIncomingMessage(JSON.parse(chatMessage.body));
+            });
+            // Send JOIN message
+            sendMessage(
+                "/app/chat.addUser/" + id,
+                { sender: username, type: 'JOIN', userId: userId, roomId: id, side: vote }
+            );
+        },
+        onError: (error) => {
+            console.error(error);
+            alert("Could not connect to WebSocket server. Please check backend.");
+        }
+    });
+
+    const handleIncomingMessage = (message: any) => {
+        if (message.type === 'JOIN' || message.type === 'LEAVE') {
+            return;
+        }
+
+        const displayMsg: DisplayMessage = {
+            ...message,
+            side: message.side || 'agree' // Fallback
+        };
+
+        setMessages((prev) => [...prev, displayMsg]);
+    };
+
 
     if (!discussion) return <div className={styles.container}>Discussion Not Found</div>;
 
@@ -261,6 +313,26 @@ const DiscussionRoomPage: React.FC = () => {
                                 {viewMode === 'result' ? '결과보기' : '다음'}
                             </button>
                         </div>
+                    </div>
+                </div>
+            )}
+
+            {viewMode === 'result' && (
+                <div className={styles.resultContainer}>
+                    <div className={styles.resultTopRow}>
+                        <div className={`${styles.resultBox} ${styles.topLeftBox}`}>Result Top Left</div>
+                        <div className={`${styles.resultBox} ${styles.topRightBox}`}>
+                            <h2>주제 : {topic}</h2>
+                            <p>내용 : {description}</p>
+                        </div>
+                    </div>
+                    <div className={styles.resultBottomRow}>
+                        <div className={styles.resultBox}>Result Bottom 1</div>
+                        <div className={styles.resultBox}>Result Bottom 2</div>
+                        <div className={styles.resultBox}>Result Bottom 3</div>
+                    </div>
+                    <div style={{ textAlign: 'right', marginTop: '20px' }}>
+                        <button className={styles.endButton} onClick={handleEnd}>종료</button>
                     </div>
                 </div>
             )}
