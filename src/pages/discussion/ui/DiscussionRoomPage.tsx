@@ -212,7 +212,7 @@ const DiscussionRoomPage: React.FC = () => {
             )}
 
 
-            {viewMode === 'vote' ? (
+            {viewMode === 'vote' && (
                 <>
                     <div className={styles.voteContainer}>
                         <button className={`${styles.voteButton} ${styles.agreeButton}`} onClick={() => setVote('agree')} style={{ opacity: vote === 'disagree' ? 0.3 : 1 }}>찬성</button>
@@ -220,7 +220,9 @@ const DiscussionRoomPage: React.FC = () => {
                     </div>
                     <button className={styles.startButton} onClick={() => vote ? setViewMode('chat') : alert('입장을 선택하세요')}>시작하기</button>
                 </>
-            ) : (
+            )}
+
+            {(viewMode === 'chat' || viewMode === 'verify' || viewMode === 'result') && (
                 <div className={styles.chatContainer}>
                     {/* 🟢 Top Section: King Image & Info */}
                     <div className={styles.topSection}>
@@ -317,7 +319,7 @@ const DiscussionRoomPage: React.FC = () => {
                 </div>
             )}
 
-            {viewMode === 'result' && (
+            {viewMode === 'final' && (
                 <div className={styles.resultContainer}>
                     <div className={styles.resultTopRow}>
                         <div className={`${styles.resultBox} ${styles.topLeftBox}`}>Result Top Left</div>
