@@ -1,6 +1,20 @@
 import React, { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import styles from './DiscussionRoomPage.module.css';
+import { useStomp } from '../../../shared/lib/useStomp';
+
+interface ChatMessage {
+    sender: string;
+    content: string;
+    type: 'CHAT' | 'JOIN' | 'LEAVE';
+    userId?: string;
+    roomId?: string;
+    side?: 'agree' | 'disagree';
+}
+
+interface DisplayMessage extends ChatMessage {
+    side: 'agree' | 'disagree';
+}
 
 const DiscussionRoomPage: React.FC = () => {
     const { id } = useParams();
@@ -11,7 +25,84 @@ const DiscussionRoomPage: React.FC = () => {
     const discussions = saved ? JSON.parse(saved) : [];
     const discussion = discussions.find((d: any) => String(d.id) === id);
 
-    // Fallback if not found (or while loading, though sync storage is instant)
+    const [vote, setVote] = useState<'agree' | 'disagree' | null>(null);
+    const [viewMode, setViewMode] = useState<'vote' | 'chat' | 'result'>('vote');
+
+    // Store message object
+    const [messages, setMessages] = useState<DisplayMessage[]>([]);
+    const [inputValue, setInputValue] = useState('');
+
+    // Mock user info
+    const [userId] = useState(`user-${Math.floor(Math.random() * 10000)}`);
+    const [username] = useState(`User ${Math.floor(Math.random() * 100)}`);
+
+    const { connect, disconnect, subscribe, sendMessage, isConnected } = useStomp({
+        url: 'http://localhost:8081/ws-stomp',
+        onConnect: (frame) => {
+            console.log('Connected: ' + frame);
+            if (!id) return;
+            subscribe('/topic/room/' + id, (chatMessage) => {
+                handleIncomingMessage(JSON.parse(chatMessage.body));
+            });
+            // Send JOIN message
+            sendMessage(
+                "/app/chat.addUser/" + id,
+                { sender: username, type: 'JOIN', userId: userId, roomId: id, side: vote }
+            );
+        },
+        onError: (error) => {
+            console.error(error);
+            alert("Could not connect to WebSocket server. Please check backend.");
+        }
+    });
+
+    const handleIncomingMessage = (message: any) => {
+        if (message.type === 'JOIN' || message.type === 'LEAVE') {
+            return;
+        }
+
+        const displayMsg: DisplayMessage = {
+            ...message,
+            side: message.side || 'agree' // Fallback
+        };
+
+        setMessages((prev) => [...prev, displayMsg]);
+    };
+
+
+    const handleStart = () => {
+        if (!vote) return alert('입장을 선택해주세요!');
+        setViewMode('chat');
+        connect();
+    };
+
+    const handleSendMessage = () => {
+        if (!inputValue.trim() || !vote || !isConnected) return;
+
+        const chatMessage = {
+            sender: username,
+            content: inputValue,
+            type: 'CHAT',
+            userId: userId,
+            roomId: id,
+            side: vote
+        };
+
+        sendMessage("/app/chat.sendMessage/" + id, chatMessage);
+        setInputValue('');
+    };
+
+    const handleEnd = () => {
+        if (!window.confirm("정말 종료하시겠습니까?")) return;
+        disconnect();
+        localStorage.setItem('openPanel', 'discussion');
+        navigate('/map');
+    };
+
+    const handleResult = () => {
+        setViewMode('result');
+    };
+
     if (!discussion) {
         return (
             <div className={styles.container}>
@@ -24,42 +115,7 @@ const DiscussionRoomPage: React.FC = () => {
     }
 
     const topic = discussion.title;
-    const description = discussion.description || discussion.content; // Fallback to content if desc missing
-
-    const [vote, setVote] = useState<'agree' | 'disagree' | null>(null);
-    const [viewMode, setViewMode] = useState<'vote' | 'chat' | 'result'>('vote');
-
-    // Store message object with text and side
-    const [messages, setMessages] = useState<{ text: string, side: 'agree' | 'disagree' }[]>([]);
-    const [inputValue, setInputValue] = useState('');
-
-    const handleStart = () => {
-        if (!vote) return alert('입장을 선택해주세요!'); // Ensure vote is selected
-        setViewMode('chat');
-    };
-
-    const handleSendMessage = () => {
-        if (!inputValue.trim() || !vote) return;
-
-        const newMessage = {
-            text: inputValue,
-            side: vote
-        };
-
-        setMessages([...messages, newMessage]);
-        setInputValue('');
-    };
-
-    const handleEnd = () => {
-        if (!window.confirm("정말 종료하시겠습니까?")) return;
-        // Set flag to open discussion panel on map
-        localStorage.setItem('openPanel', 'discussion');
-        navigate('/map');
-    };
-
-    const handleResult = () => {
-        setViewMode('result');
-    };
+    const description = discussion.description || discussion.content;
 
     return (
         <div className={styles.container}>
@@ -104,7 +160,7 @@ const DiscussionRoomPage: React.FC = () => {
                             <div className={styles.chatLog}>
                                 {messages.filter(m => m.side === 'agree').map((msg, idx) => (
                                     <div key={idx} className={`${styles.messageBubble} ${styles.agreeMessage}`}>
-                                        {msg.text}
+                                        <strong>{msg.sender}: </strong>{msg.content}
                                     </div>
                                 ))}
                             </div>
@@ -116,7 +172,7 @@ const DiscussionRoomPage: React.FC = () => {
                             <div className={styles.chatLog}>
                                 {messages.filter(m => m.side === 'disagree').map((msg, idx) => (
                                     <div key={idx} className={`${styles.messageBubble} ${styles.disagreeMessage}`}>
-                                        {msg.text}
+                                        <strong>{msg.sender}: </strong>{msg.content}
                                     </div>
                                 ))}
                             </div>
@@ -131,8 +187,9 @@ const DiscussionRoomPage: React.FC = () => {
                                 onChange={(e) => setInputValue(e.target.value)}
                                 onKeyDown={(e) => e.key === 'Enter' && handleSendMessage()}
                                 placeholder={`${vote === 'agree' ? '찬성' : '반대'} 의견을 입력하세요...`}
+                                disabled={!isConnected}
                             />
-                            <button className={styles.sendButton} onClick={handleSendMessage}>
+                            <button className={styles.sendButton} onClick={handleSendMessage} disabled={!isConnected}>
                                 전송
                             </button>
                         </div>
@@ -163,8 +220,6 @@ const DiscussionRoomPage: React.FC = () => {
                     </div>
                 </div>
             )}
-
-
         </div>
     );
 };
