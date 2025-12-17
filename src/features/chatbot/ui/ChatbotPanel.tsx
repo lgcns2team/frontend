@@ -20,9 +20,9 @@ export const ChatbotPanel = ({ onClose, initialPosition, initialSize, onStateCha
     // State
     const [input, setInput] = useState('');
     const [messages, setMessages] = useState<ChatMessage[]>([
-    { id: 1, text: '안녕하세요! 역사 챗봇 H.AI입니다. 무엇을 도와드릴까요?', sender: 'bot' }
-]);
-    const [position, setPosition] = useState(initialPosition || { x: 60, y: window.innerHeight - 730 });
+        { id: 1, text: '안녕하세요! 역사 챗봇 H.AI입니다. 무엇을 도와드릴까요?', sender: 'bot' }
+    ]);
+    const [position, setPosition] = useState(initialPosition || { x: window.innerWidth / 2 - 145, y: window.innerHeight / 2 - 250 });
     const [size, setSize] = useState(initialSize || { width: 350, height: 500 });
 
     const [isDragging, setIsDragging] = useState(false);
@@ -282,10 +282,10 @@ export const ChatbotPanel = ({ onClose, initialPosition, initialSize, onStateCha
                 const chunk = decoder.decode(value, { stream: true });
                 console.log(`📝 [DEBUG] Decoded chunk #${chunkCount}:`, chunk.substring(0, 100));
                 buffer += chunk;
-                
+
                 // SSE 이벤트 파싱 (개행으로 분리)
                 const lines = buffer.split('\n');
-                
+
                 // 마지막 줄은 불완전할 수 있으므로 버퍼에 보관
                 buffer = lines.pop() || '';
                 console.log(`📋 [DEBUG] Processing ${lines.length} lines, buffer remainder:`, buffer.substring(0, 50));
@@ -299,7 +299,7 @@ export const ChatbotPanel = ({ onClose, initialPosition, initialSize, onStateCha
                             // JSON 파싱
                             const event = JSON.parse(dataStr);
                             console.log('🎯 [DEBUG] Parsed event:', event.type, 'text length:', event.text?.length);
-                            
+
                             if (event.type === 'content' && event.text) {
                                 // 🔥 여기서 바로 메시지에 넣지 말고 버퍼에 추가만!
                                 typingBufferRef.current += event.text;
