@@ -21,9 +21,9 @@ export const ChatbotPanel = ({ onClose, initialPosition, initialSize, onStateCha
     // State
     const [input, setInput] = useState('');
     const [messages, setMessages] = useState<ChatMessage[]>([
-    { id: 1, text: '안녕하세요! 역사 챗봇 H.AI입니다. 무엇을 도와드릴까요?', sender: 'bot' }
-]);
-    const [position, setPosition] = useState(initialPosition || { x: 60, y: window.innerHeight - 730 });
+        { id: 1, text: '안녕하세요! 역사 챗봇 H.AI입니다. 무엇을 도와드릴까요?', sender: 'bot' }
+    ]);
+    const [position, setPosition] = useState(initialPosition || { x: window.innerWidth / 2 - 145, y: window.innerHeight / 2 - 250 });
     const [size, setSize] = useState(initialSize || { width: 350, height: 500 });
 
     const [isDragging, setIsDragging] = useState(false);
@@ -244,7 +244,7 @@ export const ChatbotPanel = ({ onClose, initialPosition, initialSize, onStateCha
 
         try {
             console.log('🚀 [DEBUG] Sending message to AI chat');
-            
+
             await sendGeneralMessage(input, (text) => {
                 // Add text to typing buffer
                 typingBufferRef.current += text;
