@@ -1,4 +1,4 @@
-import React from 'react';
+
 import './PlayControls.css';
 
 interface PlayControlsProps {

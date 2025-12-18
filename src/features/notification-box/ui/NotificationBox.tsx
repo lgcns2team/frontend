@@ -4,7 +4,7 @@ import './NotificationBox.css';
 export const NotificationBox = () => {
     // User requested "accumulated notifications count as a number"
     // Initializing with a sample number (e.g. 19)
-    const [count, setCount] = useState(19);
+    const [count] = useState(19);
 
     return (
         <div className="notification-box-container">

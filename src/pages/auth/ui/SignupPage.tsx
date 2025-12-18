@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Link as RouterLink, useNavigate } from 'react-router-dom';
 import { authApi } from '../../../shared/api/auth-api';
@@ -97,7 +98,7 @@ const SignupPage = () => {
     const navigate = useNavigate();
 
     const handleRoleChange = (
-        event: React.MouseEvent<HTMLElement>,
+        _event: React.MouseEvent<HTMLElement>,
         newRole: 'STUDENT' | 'TEACHER' | null,
     ) => {
         if (newRole !== null) {

@@ -83,7 +83,7 @@ export const useWarLayer = (map: L.Map | null, currentYear: number, isVisible: b
                 const hasRoute = battle.markerRoute && battle.markerRoute.coordinates && battle.markerRoute.coordinates.length > 0;
 
                 if (hasRoute) {
-                    const coords = battle.markerRoute.coordinates;
+                    const coords = battle.markerRoute!.coordinates;
                     // GeoJSON is [lng, lat], Leaflet needs [lat, lng]
                     let latLngs = coords.map(coord => [coord[1], coord[0]] as [number, number]);
 
