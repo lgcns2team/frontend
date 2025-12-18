@@ -254,9 +254,9 @@ export const useDiscussion = (roomId: string | undefined) => {
             if (nextMode !== 'vote') {
                 setVote(prevVote => {
                     if (prevVote === null) {
-                        const defaultVote = 'agree';
-                        console.log("🔄 Auto-voting as 'agree' for user who hadn't voted yet.");
-                        return defaultVote;
+                        const randomVote = Math.random() < 0.5 ? 'agree' : 'disagree';
+                        console.log(`🔄 Auto-voting as '${randomVote}' for user who hadn't voted yet.`);
+                        return randomVote;
                     }
                     return prevVote;
                 });
@@ -274,9 +274,9 @@ export const useDiscussion = (roomId: string | undefined) => {
             if (nextMode !== 'vote') {
                 setVote(prevVote => {
                     if (prevVote === null) {
-                        const defaultVote = 'agree';
-                        console.log("🔄 Auto-voting as 'agree' for user who hadn't voted yet.");
-                        return defaultVote;
+                        const randomVote = Math.random() < 0.5 ? 'agree' : 'disagree';
+                        console.log(`🔄 Auto-voting as '${randomVote}' for user who hadn't voted yet.`);
+                        return randomVote;
                     }
                     return prevVote;
                 });
@@ -393,7 +393,14 @@ export const useDiscussion = (roomId: string | undefined) => {
         console.log('✅ Mode change message sent via chat:', nextMode);
     };
 
-    const setVoteLocal = (v: 'agree' | 'disagree') => setVote(v);
+    const setVoteLocal = (v: 'agree' | 'disagree' | null) => {
+        console.log('🗳️ Vote changed:', { from: vote, to: v });
+        if (v === null) {
+            setVote(null);
+        } else {
+            setVote(v);
+        }
+    };
 
     return {
         // State
@@ -417,14 +424,15 @@ export const useDiscussion = (roomId: string | undefined) => {
                 console.warn('⚠️ Cannot start: no roomId');
                 return;
             }
-            // Default to 'agree' if no vote selected (as per user request)
-            const currentVote = vote || 'agree';
-            const status = currentVote === 'agree' ? 'PRO' : 'CON';
-
-            if (!vote) {
-                console.log('🔄 Auto-setting vote to agree');
-                setVote('agree');
+            // Randomly select if no vote selected
+            let currentVote = vote;
+            if (!currentVote) {
+                currentVote = Math.random() < 0.5 ? 'agree' : 'disagree';
+                console.log(`🔄 Auto-setting vote to ${currentVote}`);
+                setVote(currentVote);
             }
+
+            const status = currentVote === 'agree' ? 'PRO' : 'CON';
 
             console.log('📤 Sending status message:', { status, userId });
             sendMessage(

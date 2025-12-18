@@ -197,15 +197,27 @@ const DiscussionRoomPage: React.FC = () => {
 
             {viewMode !== 'vote' && (
                 <div className={styles.statusBar}>
-                    <div className={`${styles.statusStep} ${viewMode === 'chat' ? styles.active : ''}`} onClick={() => setViewMode('chat')}>
+                    <div
+                        className={`${styles.statusStep} ${viewMode === 'chat' ? styles.active : ''}`}
+                        onClick={() => localStorage.getItem('userRole') === 'TEACHER' && sendModeChange('chat')}
+                        style={{ cursor: localStorage.getItem('userRole') === 'TEACHER' ? 'pointer' : 'default' }}
+                    >
                         <div className={styles.circle}>의견제시</div>
                     </div>
                     <div className={styles.line} />
-                    <div className={`${styles.statusStep} ${viewMode === 'verify' ? styles.active : ''}`} onClick={() => setViewMode('verify')}>
+                    <div
+                        className={`${styles.statusStep} ${viewMode === 'verify' ? styles.active : ''}`}
+                        onClick={() => localStorage.getItem('userRole') === 'TEACHER' && sendModeChange('verify')}
+                        style={{ cursor: localStorage.getItem('userRole') === 'TEACHER' ? 'pointer' : 'default' }}
+                    >
                         <div className={styles.circle}>의견확인</div>
                     </div>
                     <div className={styles.line} />
-                    <div className={`${styles.statusStep} ${viewMode === 'result' ? styles.active : ''}`} onClick={() => setViewMode('result')}>
+                    <div
+                        className={`${styles.statusStep} ${viewMode === 'result' ? styles.active : ''}`}
+                        onClick={() => localStorage.getItem('userRole') === 'TEACHER' && sendModeChange('result')}
+                        style={{ cursor: localStorage.getItem('userRole') === 'TEACHER' ? 'pointer' : 'default' }}
+                    >
                         <div className={styles.circle}>반론</div>
                     </div>
                 </div>
@@ -213,7 +225,7 @@ const DiscussionRoomPage: React.FC = () => {
 
             {viewMode === 'vote' && (
                 <>
-                    <div className={styles.voteContainer} onClick={() => setVote(null)}>
+                    <div className={styles.voteContainer}>
                         <button
                             className={`${styles.voteButton} ${styles.agreeButton}`}
                             onClick={(e) => { e.stopPropagation(); setVote(vote === 'agree' ? null : 'agree'); }}
