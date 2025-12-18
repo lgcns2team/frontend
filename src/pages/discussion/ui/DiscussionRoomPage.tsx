@@ -7,9 +7,39 @@ const DiscussionRoomPage: React.FC = () => {
     const { id } = useParams();
     const navigate = useNavigate();
 
+<<<<<<< Updated upstream
     const saved = localStorage.getItem('discussions');
     const discussions = saved ? JSON.parse(saved) : [];
     const discussion = discussions.find((d: any) => String(d.id) === id);
+=======
+    const [discussion, setDiscussion] = useState<any>(null);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        const fetchRoom = async () => {
+            try {
+                const rooms = await getDiscussionRooms();
+                const found = rooms.find((r: any) => String(r.id) === id || String(r.roomId) === id);
+                if (found) {
+                    setDiscussion({
+                        ...found,
+                        title: found.topicTitle || found.title,
+                        description: found.topicDescription || found.description
+                    });
+                    // Initial sync of viewMode from backend
+                    if (found.viewMode) {
+                        setViewMode(found.viewMode as any);
+                    }
+                }
+            } catch (e) {
+                console.error("Failed to fetch room info", e);
+            } finally {
+                setLoading(false);
+            }
+        };
+        fetchRoom();
+    }, [id]);
+>>>>>>> Stashed changes
 
     // Use the high-level hook (Restores correct WebSocket logic)
     const {
@@ -22,7 +52,8 @@ const DiscussionRoomPage: React.FC = () => {
         isConnected,
         lastError,
         sendChat,
-        confirmStart
+        confirmStart,
+        sendModeChange
     } = useDiscussion(id);
 
     const [inputValue, setInputValue] = useState('');
@@ -61,9 +92,18 @@ const DiscussionRoomPage: React.FC = () => {
 
 
     const handleNext = () => {
-        if (viewMode === 'chat') setViewMode('verify');
-        else if (viewMode === 'verify') setViewMode('result');
-        else if (viewMode === 'result') setViewMode('final');
+        let next: 'vote' | 'chat' | 'verify' | 'result' | 'final' = viewMode;
+        if (viewMode === 'chat') next = 'verify';
+        else if (viewMode === 'verify') next = 'result';
+        else if (viewMode === 'result') next = 'final';
+
+        if (next !== viewMode) {
+            if (localStorage.getItem('userRole') === 'TEACHER') {
+                sendModeChange(next);
+            } else {
+                setViewMode(next);
+            }
+        }
     };
 
     const handleSendMessage = () => {
@@ -168,18 +208,29 @@ const DiscussionRoomPage: React.FC = () => {
                     <p ref={descRef} className={styles.description} style={{ fontSize: `${descFontSize}rem` }}>{description}</p>
                 </div>
             )}
-
             {viewMode !== 'vote' && (
                 <div className={styles.statusBar}>
-                    <div className={`${styles.statusStep} ${viewMode === 'chat' ? styles.active : ''}`} onClick={() => setViewMode('chat')}>
+                    <div
+                        className={`${styles.statusStep} ${viewMode === 'chat' ? styles.active : ''}`}
+                        onClick={() => localStorage.getItem('userRole') === 'TEACHER' && sendModeChange('chat')}
+                        style={{ cursor: localStorage.getItem('userRole') === 'TEACHER' ? 'pointer' : 'default' }}
+                    >
                         <div className={styles.circle}>의견제시</div>
                     </div>
                     <div className={styles.line} />
-                    <div className={`${styles.statusStep} ${viewMode === 'verify' ? styles.active : ''}`} onClick={() => setViewMode('verify')}>
+                    <div
+                        className={`${styles.statusStep} ${viewMode === 'verify' ? styles.active : ''}`}
+                        onClick={() => localStorage.getItem('userRole') === 'TEACHER' && sendModeChange('verify')}
+                        style={{ cursor: localStorage.getItem('userRole') === 'TEACHER' ? 'pointer' : 'default' }}
+                    >
                         <div className={styles.circle}>의견확인</div>
                     </div>
                     <div className={styles.line} />
-                    <div className={`${styles.statusStep} ${viewMode === 'result' ? styles.active : ''}`} onClick={() => setViewMode('result')}>
+                    <div
+                        className={`${styles.statusStep} ${viewMode === 'result' ? styles.active : ''}`}
+                        onClick={() => localStorage.getItem('userRole') === 'TEACHER' && sendModeChange('result')}
+                        style={{ cursor: localStorage.getItem('userRole') === 'TEACHER' ? 'pointer' : 'default' }}
+                    >
                         <div className={styles.circle}>반론</div>
                     </div>
                 </div>

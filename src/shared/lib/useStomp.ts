@@ -9,7 +9,7 @@ export interface ChatMessage {
     userId?: string;
     sender: string;
     content: string;
-    type: 'CHAT' | 'JOIN' | 'LEAVE' | 'STATUS';
+    type: 'CHAT' | 'JOIN' | 'LEAVE' | 'STATUS' | 'MODE_CHANGE';
     side?: 'agree' | 'disagree';
     status?: 'PRO' | 'CON';
 }
@@ -27,6 +27,24 @@ export interface CreateRoomPayload {
     teacherId: string;
 }
 
+<<<<<<< Updated upstream
+=======
+export interface DiscussionRoom {
+    roomId: string; // The DTO returns 'roomId' (UUID)
+    topicTitle: string;
+    topicDescription: string;
+    teacherCode: number;
+    participantCount: number;
+    createdAt: string;
+    // Helper fields for UI if needed, but strict DTO mapping is best.
+    id?: string; // We might map roomId to id for frontend compatibility
+    title?: string;
+    description?: string;
+    viewMode?: 'vote' | 'chat' | 'verify' | 'result' | 'final';
+}
+
+// --- API Functions ---
+>>>>>>> Stashed changes
 // --- API Functions ---
 export const createShortDiscussionRoom = async (payload: CreateRoomPayload) => {
     try {
@@ -159,6 +177,26 @@ export const useDiscussion = (roomId: string | undefined) => {
     const handleIncomingMessage = useCallback((message: any) => {
         if (message.type === 'JOIN' || message.type === 'LEAVE') return;
 
+        if (message.type === 'MODE_CHANGE') {
+            const nextMode = message.content;
+            setViewMode(nextMode);
+
+            // Auto-vote logic for students when moving past 'vote' stage
+            if (nextMode !== 'vote') {
+                setVote(prevVote => {
+                    if (prevVote === null) {
+                        const defaultVote = 'agree';
+                        console.log("Auto-voting status for user as they hadn't voted yet.");
+                        // Sync auto-vote with backend if possible, or just keep local.
+                        // For consistency, it's better to let the student hook handle it.
+                        return defaultVote;
+                    }
+                    return prevVote;
+                });
+            }
+            return;
+        }
+
         let side: 'agree' | 'disagree' = 'agree';
         if (message.status === 'CON') side = 'disagree';
         else if (message.status === 'PRO') side = 'agree';
@@ -243,6 +281,14 @@ export const useDiscussion = (roomId: string | undefined) => {
         setViewMode('chat');
     };
 
+    const sendModeChange = (nextMode: string) => {
+        if (!roomId || !isConnected) return;
+        sendMessage(
+            "/app/room/" + roomId + "/mode",
+            { viewMode: nextMode, userId: userId }
+        );
+    };
+
     const setVoteLocal = (v: 'agree' | 'disagree') => setVote(v);
 
     return {
@@ -260,6 +306,7 @@ export const useDiscussion = (roomId: string | undefined) => {
         setViewMode,
         sendChat,
         sendVoteStatus, // This combines setting vote (if needed) and sending status
+        sendModeChange,
         confirmStart: () => { // Replacement for handleStart logic
             if (!vote || !roomId) return;
             const status = vote === 'agree' ? 'PRO' : 'CON';
@@ -267,7 +314,12 @@ export const useDiscussion = (roomId: string | undefined) => {
                 "/app/room/" + roomId + "/status",
                 { status: status, userId: userId }
             );
-            setViewMode('chat');
+            // Also notify room about mode change if teacher
+            if (localStorage.getItem('userRole') === 'TEACHER') {
+                sendModeChange('chat');
+            } else {
+                setViewMode('chat');
+            }
         }
     };
 };
