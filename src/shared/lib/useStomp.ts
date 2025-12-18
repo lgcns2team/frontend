@@ -369,31 +369,27 @@ export const useDiscussion = (roomId: string | undefined) => {
         }
 
         const status = vote === 'agree' ? 'PRO' : 'CON';
-        console.log('📤 Sending chat message:', { content, status, parentId, userId });
 
-        // Add local echo immediately for better UX
-        const localEcho: DisplayMessage = {
-            id: `local-${Date.now()}`,
-            parentId: parentId,
-            userId: userId,
-            sender: username,
-            content: content,
-            type: 'CHAT',
-            side: vote,
-            status: status
-        };
-        console.log('🔊 Adding local echo:', localEcho);
-        setMessages((prev) => [...prev, localEcho]);
-
+        // Ensure status is sent to backend before sending chat
+        console.log('📤 Ensuring status is set:', status);
         sendMessage(
-            "/app/room/" + roomId + "/chat",
-            {
-                content: content,
-                status: status,
-                parentId: parentId,
-                userId: userId
-            }
+            "/app/room/" + roomId + "/status",
+            { status: status, userId: userId }
         );
+
+        // Small delay to ensure status is processed
+        setTimeout(() => {
+            console.log('📤 Sending chat message:', { content, status, parentId, userId });
+            sendMessage(
+                "/app/room/" + roomId + "/chat",
+                {
+                    content: content,
+                    status: status,
+                    parentId: parentId,
+                    userId: userId
+                }
+            );
+        }, 100);
     };
 
     const sendVoteStatus = (selectedVote: 'agree' | 'disagree') => {
