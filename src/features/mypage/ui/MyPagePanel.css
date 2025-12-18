@@ -1,0 +1,101 @@
+.mypage-panel {
+    position: absolute;
+    top: 70px;
+    /* Adjust based on header/button position */
+    right: 20px;
+    width: 300px;
+    background-color: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(10px);
+    border-radius: 16px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+    padding: 24px;
+    z-index: 2000;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    animation: slideIn 0.3s ease-out;
+}
+
+@keyframes slideIn {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.mypage-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding-bottom: 16px;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+.mypage-title {
+    font-size: 1.2rem;
+    font-weight: 700;
+    color: #333;
+}
+
+.mypage-content {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.info-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.info-label {
+    font-size: 0.9rem;
+    color: #666;
+    font-weight: 500;
+}
+
+.info-value {
+    font-size: 1rem;
+    color: #333;
+    font-weight: 600;
+}
+
+.role-badge {
+    padding: 4px 8px;
+    border-radius: 12px;
+    font-size: 0.8rem;
+    font-weight: 700;
+}
+
+.role-teacher {
+    background-color: #e3f2fd;
+    color: #1976d2;
+}
+
+.role-student {
+    background-color: #e8f5e9;
+    color: #2e7d32;
+}
+
+.logout-button {
+    width: 100%;
+    padding: 12px;
+    background-color: #f5f5f5;
+    border: none;
+    border-radius: 8px;
+    color: #d32f2f;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+    margin-top: 8px;
+}
+
+.logout-button:hover {
+    background-color: #ffebee;
+}

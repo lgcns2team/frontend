@@ -8,15 +8,19 @@ export interface LoginResponse {
     nickname: string;
     name: string;
     role: 'TEACHER' | 'STUDENT';
+    grade?: number;
+    classroom?: number;
+    teacherCode?: string;
 }
 
 export interface SignupRequest {
     nickname: string;
     password: string;
     name: string;
-    grade: number;
-    classroom: number;
+    grade?: number;
+    classroom?: number;
     role: 'TEACHER' | 'STUDENT';
+    teacherCode?: number;
 }
 
 const API_BASE_URL = '/api/user';
@@ -55,6 +59,10 @@ export const authApi = {
         if (responseData.nickname) localStorage.setItem('userNickname', responseData.nickname);
         if (responseData.userId) localStorage.setItem('userId', responseData.userId);
 
+        if (responseData.grade) localStorage.setItem('userGrade', String(responseData.grade));
+        if (responseData.classroom) localStorage.setItem('userClassroom', String(responseData.classroom));
+        if (responseData.teacherCode) localStorage.setItem('teacherCode', responseData.teacherCode);
+
         return responseData;
     },
 
@@ -76,6 +84,13 @@ export const authApi = {
     logout: () => {
         localStorage.removeItem('accessToken');
         localStorage.removeItem('refreshToken');
+        localStorage.removeItem('userRole');
+        localStorage.removeItem('userName');
+        localStorage.removeItem('userNickname');
+        localStorage.removeItem('userId');
+        localStorage.removeItem('userGrade');
+        localStorage.removeItem('userClassroom');
+        localStorage.removeItem('teacherCode');
 
     },
 

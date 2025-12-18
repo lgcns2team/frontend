@@ -3,18 +3,9 @@ import { useParams, useNavigate } from 'react-router-dom';
 import styles from './DiscussionRoomPage.module.css';
 import { useStomp } from '../../../shared/lib/useStomp';
 
-interface ChatMessage {
-    sender: string;
-    content: string;
-    type: 'CHAT' | 'JOIN' | 'LEAVE';
-    userId?: string;
-    roomId?: string;
-    side?: 'agree' | 'disagree';
-}
 
-interface DisplayMessage extends ChatMessage {
-    side: 'agree' | 'disagree';
-}
+
+
 
 const DiscussionRoomPage: React.FC = () => {
     const { id } = useParams();
@@ -27,14 +18,21 @@ const DiscussionRoomPage: React.FC = () => {
     const [vote, setVote] = useState<'agree' | 'disagree' | null>(null);
     // viewMode: vote -> chat -> verify -> result -> final(박스 5개 화면)
     const [viewMode, setViewMode] = useState<'vote' | 'chat' | 'verify' | 'result' | 'final'>('vote');
-    const [messages, setMessages] = useState<{ text: string, side: 'agree' | 'disagree' }[]>([]);
+    const [messages, setMessages] = useState<{ id: string, text: string, side: 'agree' | 'disagree', parentId?: string }[]>([]);
     const [inputValue, setInputValue] = useState('');
+    const [replyToId, setReplyToId] = useState<string | null>(null);
+
+    // Font size scaling refs & state
+    const titleRef = React.useRef<HTMLHeadingElement>(null);
+    const descRef = React.useRef<HTMLParagraphElement>(null);
+    const [titleFontSize, setTitleFontSize] = useState(2.5); // rem
+    const [descFontSize, setDescFontSize] = useState(1.5);   // rem
 
     // Mock user info
     const [userId] = useState(`user-${Math.floor(Math.random() * 10000)}`);
     const [username] = useState(`User ${Math.floor(Math.random() * 100)}`);
 
-    const { connect, disconnect, subscribe, sendMessage, isConnected } = useStomp({
+    const { subscribe, sendMessage } = useStomp({
         url: 'http://localhost:8081/ws-stomp',
         onConnect: (frame) => {
             console.log('Connected: ' + frame);
@@ -59,9 +57,16 @@ const DiscussionRoomPage: React.FC = () => {
             return;
         }
 
-        const displayMsg: DisplayMessage = {
-            ...message,
-            side: message.side || 'agree' // Fallback
+        const displayMsg = {
+<<<<<<< HEAD
+            id: message.id || `msg-${Date.now()}-${Math.random()}`,
+            text: message.content,
+            side: message.side || 'agree', // Fallback
+            parentId: message.parentId
+=======
+            text: message.content,
+            side: message.side || 'agree'
+>>>>>>> 74ed53f4692dd058cf48520a7a50359842621839
         };
 
         setMessages((prev) => [...prev, displayMsg]);
@@ -81,8 +86,17 @@ const DiscussionRoomPage: React.FC = () => {
 
     const handleSendMessage = () => {
         if (!inputValue.trim() || !vote) return;
-        setMessages([...messages, { text: inputValue, side: vote }]);
+
+        const newMsg = {
+            id: `msg-${Date.now()}`,
+            text: inputValue,
+            side: vote,
+            parentId: replyToId || undefined
+        };
+
+        setMessages([...messages, newMsg]);
         setInputValue('');
+        setReplyToId(null);
     };
 
 
@@ -145,6 +159,35 @@ const DiscussionRoomPage: React.FC = () => {
         }
     }, [messages]);
 
+    // Font size scaling state management
+    React.useEffect(() => {
+        setTitleFontSize(2.5);
+    }, [topic]);
+
+    React.useEffect(() => {
+        setDescFontSize(1.5);
+    }, [description]);
+
+    // Auto-scale font effect
+    React.useEffect(() => {
+
+        // Scale Title (2 lines limit)
+        if (titleRef.current) {
+            const el = titleRef.current;
+            if (el.scrollHeight > el.clientHeight && titleFontSize > 0.5) {
+                setTitleFontSize(prev => prev - 0.05);
+            }
+        }
+
+        // Scale Description (3 lines limit)
+        if (descRef.current) {
+            const el = descRef.current;
+            if (el.scrollHeight > el.clientHeight && descFontSize > 0.5) {
+                setDescFontSize(prev => prev - 0.05);
+            }
+        }
+    }, [topic, description, viewMode, titleFontSize, descFontSize]);
+
     const handleEnd = () => {
         if (!window.confirm("정말 종료하시겠습니까?")) return;
         localStorage.setItem('openPanel', 'discussion');
@@ -157,16 +200,28 @@ const DiscussionRoomPage: React.FC = () => {
             <div className={styles.container}>
                 <div className={styles.resultContainer}>
                     <div className={styles.resultTopRow}>
-                        <div className={`${styles.resultBox} ${styles.topLeftBox}`}>결과 요약 (25%)</div>
+                        <div className={`${styles.resultBox} ${styles.topLeftBox}`}>
+                            <img src="/assets/images/discussion/king.png" alt="King" className={styles.resultKingImage} />
+                        </div>
                         <div className={`${styles.resultBox} ${styles.topRightBox}`}>
-                            <h2>{topic}</h2>
-                            <p>{description}</p>
+                            <h2
+                                ref={titleRef}
+                                style={{ fontSize: `${titleFontSize}rem` }}
+                            >
+                                주제 : {topic}
+                            </h2>
+                            <p
+                                ref={descRef}
+                                style={{ fontSize: `${descFontSize}rem` }}
+                            >
+                                설명 : {description}
+                            </p>
                         </div>
                     </div>
                     <div className={styles.resultBottomRow}>
-                        <div className={styles.resultBox}>찬성측 통계</div>
-                        <div className={styles.resultBox}>반대측 통계</div>
-                        <div className={styles.resultBox}>최종 결론</div>
+                        <div className={styles.resultBox}>결론 1</div>
+                        <div className={styles.resultBox}>결론 2</div>
+                        <div className={styles.resultBox}>결론 3</div>
                     </div>
                 </div>
                 <button className={styles.startButton} onClick={handleEnd}>토론 끝내기</button>
@@ -179,8 +234,18 @@ const DiscussionRoomPage: React.FC = () => {
         <div className={styles.container}>
             {viewMode === 'vote' && (
                 <div className={styles.header}>
-                    <h1 className={styles.title}>주제 : {topic}</h1>
-                    <p className={styles.description}>
+                    <h1
+                        ref={titleRef}
+                        className={styles.title}
+                        style={{ fontSize: `${titleFontSize}rem` }}
+                    >
+                        주제 : {topic}
+                    </h1>
+                    <p
+                        ref={descRef}
+                        className={styles.description}
+                        style={{ fontSize: `${descFontSize}rem` }}
+                    >
                         {description}
                     </p>
                 </div>
@@ -214,11 +279,25 @@ const DiscussionRoomPage: React.FC = () => {
 
             {viewMode === 'vote' && (
                 <>
-                    <div className={styles.voteContainer}>
-                        <button className={`${styles.voteButton} ${styles.agreeButton}`} onClick={() => setVote('agree')} style={{ opacity: vote === 'disagree' ? 0.3 : 1 }}>찬성</button>
-                        <button className={`${styles.voteButton} ${styles.disagreeButton}`} onClick={() => setVote('disagree')} style={{ opacity: vote === 'agree' ? 0.3 : 1 }}>반대</button>
+                    <div className={styles.voteContainer} onClick={() => setVote(null)}>
+                        <button
+                            className={`${styles.voteButton} ${styles.agreeButton}`}
+                            onClick={(e) => { e.stopPropagation(); setVote(vote === 'agree' ? null : 'agree'); }}
+                            style={{ opacity: vote === 'disagree' ? 0.3 : 1 }}
+                        >
+                            찬성
+                        </button>
+                        <button
+                            className={`${styles.voteButton} ${styles.disagreeButton}`}
+                            onClick={(e) => { e.stopPropagation(); setVote(vote === 'disagree' ? null : 'disagree'); }}
+                            style={{ opacity: vote === 'agree' ? 0.3 : 1 }}
+                        >
+                            반대
+                        </button>
                     </div>
-                    <button className={styles.startButton} onClick={() => vote ? setViewMode('chat') : alert('입장을 선택하세요')}>시작하기</button>
+                    {localStorage.getItem('userRole') === 'TEACHER' && (
+                        <button className={styles.startButton} onClick={() => setViewMode('chat')}>시작하기</button>
+                    )}
                 </>
             )}
 
@@ -230,8 +309,20 @@ const DiscussionRoomPage: React.FC = () => {
                             <img src="/assets/images/discussion/king.png" alt="King" className={styles.kingImage} />
                         </div>
                         <div className={styles.infoSection}>
-                            <h2 className={styles.chatTitle}>{topic}</h2>
-                            <p className={styles.chatDescription}>{description}</p>
+                            <h2
+                                ref={titleRef}
+                                className={styles.chatTitle}
+                                style={{ fontSize: `${titleFontSize}rem` }}
+                            >
+                                {topic}
+                            </h2>
+                            <p
+                                ref={descRef}
+                                className={styles.chatDescription}
+                                style={{ fontSize: `${descFontSize}rem` }}
+                            >
+                                {description}
+                            </p>
                         </div>
                     </div>
 
@@ -240,16 +331,52 @@ const DiscussionRoomPage: React.FC = () => {
                         <div className={styles.chatColumn}>
                             <div className={`${styles.columnHeader} ${styles.agreeHeader}`}>찬성</div>
                             <div className={styles.chatLog}>
-                                {messages.filter(m => m.side === 'agree').map((msg, i) => (
-                                    <div key={i} className={`${styles.messageBubble} ${styles.agreeMessage}`}>{msg.text}</div>
+                                {messages.filter(m => m.side === 'agree' && !m.parentId).map((msg) => (
+                                    <React.Fragment key={msg.id}>
+                                        <div className={`${styles.messageBubble} ${styles.agreeMessage}`}>
+                                            {msg.text}
+                                            {viewMode === 'result' && (
+                                                <button
+                                                    className={styles.counterButton}
+                                                    onClick={() => setReplyToId(msg.id)}
+                                                >
+                                                    반론하기
+                                                </button>
+                                            )}
+                                        </div>
+                                        {/* Replies */}
+                                        {messages.filter(reply => reply.parentId === msg.id).map(reply => (
+                                            <div key={reply.id} className={`${styles.messageBubble} ${styles.agreeMessage} ${styles.replyMessage}`}>
+                                                ㄴ {reply.text}
+                                            </div>
+                                        ))}
+                                    </React.Fragment>
                                 ))}
                             </div>
                         </div>
                         <div className={styles.chatColumn}>
                             <div className={`${styles.columnHeader} ${styles.disagreeHeader}`}>반대</div>
                             <div className={styles.chatLog}>
-                                {messages.filter(m => m.side === 'disagree').map((msg, i) => (
-                                    <div key={i} className={`${styles.messageBubble} ${styles.disagreeMessage}`}>{msg.text}</div>
+                                {messages.filter(m => m.side === 'disagree' && !m.parentId).map((msg) => (
+                                    <React.Fragment key={msg.id}>
+                                        <div className={`${styles.messageBubble} ${styles.disagreeMessage}`}>
+                                            {msg.text}
+                                            {viewMode === 'result' && (
+                                                <button
+                                                    className={styles.counterButton}
+                                                    onClick={() => setReplyToId(msg.id)}
+                                                >
+                                                    반론하기
+                                                </button>
+                                            )}
+                                        </div>
+                                        {/* Replies */}
+                                        {messages.filter(reply => reply.parentId === msg.id).map(reply => (
+                                            <div key={reply.id} className={`${styles.messageBubble} ${styles.disagreeMessage} ${styles.replyMessage}`}>
+                                                ㄴ {reply.text}
+                                            </div>
+                                        ))}
+                                    </React.Fragment>
                                 ))}
                             </div>
                         </div>
@@ -294,31 +421,39 @@ const DiscussionRoomPage: React.FC = () => {
                                 value={inputValue}
                                 onChange={(e) => setInputValue(e.target.value)}
                                 onKeyDown={(e) => e.key === 'Enter' && handleSendMessage()}
-                                placeholder={viewMode === 'verify' ? "의견 확인 단계입니다." : "의견을 입력하세요..."}
-                                disabled={viewMode === 'verify'}
+                                placeholder={
+                                    viewMode === 'verify' ? "의견 확인 단계입니다." :
+                                        (viewMode === 'result' && !replyToId) ? "반론할 메세지를 선택하세요." :
+                                            (viewMode === 'result' && replyToId) ? "반론 내용을 입력하세요..." :
+                                                "의견을 입력하세요..."
+                                }
+                                disabled={viewMode === 'verify' || (viewMode === 'result' && !replyToId) || viewMode === 'chat'}
                             />
                             <button
                                 className={styles.sendButton}
                                 onClick={handleSendMessage}
-                                disabled={viewMode === 'verify'}
+                                disabled={viewMode === 'verify' || (viewMode === 'result' && !replyToId) || viewMode === 'chat'}
                                 style={{
-                                    backgroundColor: viewMode === 'verify' ? '#ccc' : '#2196F3',
-                                    cursor: viewMode === 'verify' ? 'not-allowed' : 'pointer'
+                                    backgroundColor: (viewMode === 'verify' || (viewMode === 'result' && !replyToId) || viewMode === 'chat') ? '#ccc' : '#2196F3',
+                                    cursor: (viewMode === 'verify' || (viewMode === 'result' && !replyToId) || viewMode === 'chat') ? 'not-allowed' : 'pointer'
                                 }}
                             >
                                 전송
                             </button>
                         </div>
-                        <div className={styles.actionButtons}>
-                            <button className={styles.endButton} onClick={handleEnd}>종료</button>
-                            <button className={viewMode === 'result' ? styles.resultButton : styles.startButton} style={{ position: 'static' }} onClick={handleNext}>
-                                {viewMode === 'result' ? '결과보기' : '다음'}
-                            </button>
-                        </div>
+                        {localStorage.getItem('userRole') === 'TEACHER' && (
+                            <div className={styles.actionButtons}>
+                                <button className={styles.endButton} onClick={handleEnd}>종료</button>
+                                <button className={viewMode === 'result' ? styles.resultButton : styles.startButton} style={{ position: 'static' }} onClick={handleNext}>
+                                    {viewMode === 'result' ? '결과보기' : '다음'}
+                                </button>
+                            </div>
+                        )}
                     </div>
                 </div>
             )}
 
+<<<<<<< HEAD
             {viewMode === 'final' && (
                 <div className={styles.resultContainer}>
                     <div className={styles.resultTopRow}>
@@ -329,15 +464,20 @@ const DiscussionRoomPage: React.FC = () => {
                         </div>
                     </div>
                     <div className={styles.resultBottomRow}>
-                        <div className={styles.resultBox}>Result Bottom 1</div>
-                        <div className={styles.resultBox}>Result Bottom 2</div>
-                        <div className={styles.resultBox}>Result Bottom 3</div>
+                        <div className={styles.resultBox}>결론 1</div>
+                        <div className={styles.resultBox}>결론 2</div>
+                        <div className={styles.resultBox}>결론 3</div>
                     </div>
-                    <div style={{ textAlign: 'right', marginTop: '20px' }}>
-                        <button className={styles.endButton} onClick={handleEnd}>종료</button>
-                    </div>
+                    {localStorage.getItem('userRole') === 'TEACHER' && (
+                        <div style={{ textAlign: 'right', marginTop: '20px' }}>
+                            <button className={styles.endButton} onClick={handleEnd}>종료</button>
+                        </div>
+                    )}
                 </div>
             )}
+=======
+
+>>>>>>> 74ed53f4692dd058cf48520a7a50359842621839
         </div>
     );
 };

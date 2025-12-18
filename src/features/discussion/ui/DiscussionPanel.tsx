@@ -78,9 +78,7 @@ const DiscussionPanel: React.FC = () => {
   const handleDelete = (e: React.MouseEvent, id: number) => {
     e.stopPropagation(); // Prevent navigation
     if (window.confirm('정말 삭제하시겠습니까?')) {
-      const updated = discussions
-        .filter(d => d.id !== id)
-        .map((d, index) => ({ ...d, id: index + 1 })); // Re-index sequentially
+      const updated = discussions.filter(d => d.id !== id);
       setDiscussions(updated);
       localStorage.setItem('discussions', JSON.stringify(updated));
     }
@@ -101,7 +99,10 @@ const DiscussionPanel: React.FC = () => {
     // If we want to test without auth, we can hardcode a UUID for now or user input.
     // Let's try to infer or use a placeholder.
     // FIXME: Replace with actual teacher ID from context or auth if available.
-    const TEST_TEACHER_ID = "00000000-0000-0000-0000-000000000000"; // Placeholder valid UUID format if needed? 
+<<<<<<< HEAD
+=======
+    // const TEST_TEACHER_ID = "00000000-0000-0000-0000-000000000000"; // Placeholder valid UUID format if needed? 
+>>>>>>> 74ed53f4692dd058cf48520a7a50359842621839
     // Actually, backend needs a valid existing user ID if checking DB.
     // We'll leave teacherId empty and hope for Auth, or if user requested "development mode", 
     // they should ensure a user exists. 
@@ -118,8 +119,18 @@ const DiscussionPanel: React.FC = () => {
       participantCount: parseInt(maxParticipants, 10),
       grade: 1, // Default or select
       classroom: 1, // Default or select
-      teacherId: "11111111-1111-1111-1111-111111111111" // Teacher Kim (Dev Mode Bypass)
+<<<<<<< HEAD
+      teacherId: localStorage.getItem('userId') || "11111111-1111-1111-1111-111111111111" // Use logged-in user ID or fallback
+=======
+      teacherId: localStorage.getItem('userId')
+>>>>>>> 74ed53f4692dd058cf48520a7a50359842621839
     };
+
+    const token = localStorage.getItem('accessToken');
+    if (!token) {
+      alert("로그인이 필요합니다.");
+      return;
+    }
 
     try {
       // Using /api prefix which should be proxied or full URL if CORS allowed
@@ -127,6 +138,7 @@ const DiscussionPanel: React.FC = () => {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
         },
         body: JSON.stringify(payload),
       });
@@ -135,7 +147,7 @@ const DiscussionPanel: React.FC = () => {
         const data = await response.json();
         // data.roomId is the string UUID
         const newId = data.roomId;
-        alert("Room Created! Room ID: " + newId);
+        alert("토론방이 생성되었습니다! 토론방 번호: " + (discussions.length + 1));
 
         // Update local state for display
         const newDiscussion = {
@@ -165,7 +177,7 @@ const DiscussionPanel: React.FC = () => {
   return (
     <div className={styles.charactersPanel}>
       <div className={styles.charactersList}>
-        {discussions.map((discussion) => (
+        {discussions.map((discussion, index) => (
           <div
             key={discussion.id}
             className={styles.characterItem}
@@ -178,16 +190,18 @@ const DiscussionPanel: React.FC = () => {
             >
               ×
             </button>
-            <div className={styles.roomNumber}>No. {discussion.id}</div>
+            <div className={styles.roomNumber}>No. {index + 1}</div>
             <h3 className={styles.characterName}>{discussion.title}</h3>
             <p className={styles.characterSummary}>{discussion.description || (discussion.content && discussion.content.split(', ')[1]) || '설명 없음'}</p>
             <div className={styles.participantCount}>인원수: {discussion.maxParticipants || (discussion.content && discussion.content.split('명')[0].split(': ')[1]) || '?'}명</div>
           </div>
         ))}
       </div>
-      <button className={styles.createRoomButton} onClick={addDiscussion}>
-        방 만들기
-      </button>
+      {localStorage.getItem('userRole') === 'TEACHER' && (
+        <button className={styles.createRoomButton} onClick={addDiscussion}>
+          방 만들기
+        </button>
+      )}
 
 
       {showCreateModal &&

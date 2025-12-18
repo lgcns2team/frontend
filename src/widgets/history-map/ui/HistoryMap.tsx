@@ -34,6 +34,7 @@ import { NukeExplosion } from '../../../features/nuke-explosion';
 import { FallingBomb } from '../../../features/falling-bomb';
 import { DiscussionPanel } from '../../../features/discussion';
 import { CloudTransition } from '../../../features/cloud-transition/ui/CloudTransition';
+import { MyPagePanel } from '../../../features/mypage';
 
 // Fix Leaflet marker icon issue
 import icon from 'leaflet/dist/images/marker-icon.png';
@@ -141,6 +142,9 @@ export default function HistoryMap() {
 
     // Cloud Transition State
     const [isCloudTransitionActive, setIsCloudTransitionActive] = useState(false);
+
+    // My Page State
+    const [showMyPage, setShowMyPage] = useState(false);
 
     const handleTransitionComplete = () => {
         setIsCloudTransitionActive(false);
@@ -672,7 +676,7 @@ export default function HistoryMap() {
 
             activeCapitals.forEach(capital => {
                 // Check if this country is visible on the map
-                const timelineCountryId = capital.countryId || getCountryId(capital.countryName);
+                // const timelineCountryId = capital.countryId || getCountryId(capital.countryName);
 
                 // If the country is NOT visible on the map, skip it
                 /* TEMPORARILY DISABLED FOR DEBUGGING
@@ -1090,7 +1094,9 @@ export default function HistoryMap() {
             <div className="top-right-overlay">
 
                 <div className={`header-controls-group ${!isUIVisible ? 'ui-hidden' : ''}`}>
-                    <ProfileButton />
+                    <div onClick={() => setShowMyPage(!showMyPage)}>
+                        <ProfileButton />
+                    </div>
 
                     <NotificationBox />
 
@@ -1099,6 +1105,11 @@ export default function HistoryMap() {
 
                 <SidebarMenu onItemClick={handleSidebarClick} currentYear={currentYear} />
             </div>
+
+            {/* My Page Panel */}
+            {showMyPage && (
+                <MyPagePanel onClose={() => setShowMyPage(false)} />
+            )}
 
             {/* Right Docking Panel */}
             <DockingPanel
