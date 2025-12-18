@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { createPortal } from 'react-dom';
 import { useNavigate } from 'react-router-dom';
 import { recommendDebateTopics, type DebateTopic } from '../../../shared/api/debate-api';
+import { createShortDiscussionRoom } from '../../../shared/lib/useStomp';
 import styles from './DiscussionPanel.module.css';
 
 const DiscussionPanel: React.FC = () => {
@@ -125,45 +126,27 @@ const DiscussionPanel: React.FC = () => {
       return;
     }
 
-    try {
-      // Using /api prefix which should be proxied or full URL if CORS allowed
-      const response = await fetch('http://localhost:8081/api/ai/debate/room', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`,
-        },
-        body: JSON.stringify(payload),
-      });
+    const result = await createShortDiscussionRoom(payload);
 
-      if (response.ok) {
-        const data = await response.json();
-        // data.roomId is the string UUID
-        const newId = data.roomId;
-        alert("토론방이 생성되었습니다! 토론방 번호: " + (discussions.length + 1));
+    if (result.success) {
+      const newId = result.roomId;
+      alert("Room Created! Room ID: " + newId);
 
-        // Update local state for display
-        const newDiscussion = {
-          id: newId,
-          title: topic,
-          content: description || '설명 없음',
-          description: description,
-          maxParticipants: maxParticipants,
-          displayContent: `인원수: ${maxParticipants}명`
-        };
-        const updatedDiscussions = [...discussions, newDiscussion];
-        setDiscussions(updatedDiscussions);
-        localStorage.setItem('discussions', JSON.stringify(updatedDiscussions));
-        setShowCreateModal(false);
-
-      } else {
-        console.warn("Backend creation failed", response.status, response.statusText);
-        const errorText = await response.text();
-        alert(`Failed to create room on server: ${response.status} ${errorText}`);
-      }
-    } catch (error) {
-      console.error("Error creating room:", error);
-      alert("Failed to connect to backend.");
+      // Update local state for display
+      const newDiscussion = {
+        id: newId,
+        title: topic,
+        content: description || '설명 없음',
+        description: description,
+        maxParticipants: maxParticipants,
+        displayContent: `인원수: ${maxParticipants}명`
+      };
+      const updatedDiscussions = [...discussions, newDiscussion];
+      setDiscussions(updatedDiscussions);
+      localStorage.setItem('discussions', JSON.stringify(updatedDiscussions));
+      setShowCreateModal(false);
+    } else {
+      alert(`Failed to create room: ${result.error}`);
     }
   };
 
