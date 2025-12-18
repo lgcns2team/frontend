@@ -42,7 +42,8 @@ const DiscussionRoomPage: React.FC = () => {
         isConnected,
         lastError,
         sendChat,
-        confirmStart
+        confirmStart,
+        sendModeChange
     } = useDiscussion(id);
 
     const [inputValue, setInputValue] = useState('');
@@ -80,9 +81,18 @@ const DiscussionRoomPage: React.FC = () => {
 
 
     const handleNext = () => {
-        if (viewMode === 'chat') setViewMode('verify');
-        else if (viewMode === 'verify') setViewMode('result');
-        else if (viewMode === 'result') setViewMode('final');
+        let next: 'vote' | 'chat' | 'verify' | 'result' | 'final' = viewMode;
+        if (viewMode === 'chat') next = 'verify';
+        else if (viewMode === 'verify') next = 'result';
+        else if (viewMode === 'result') next = 'final';
+
+        if (next !== viewMode) {
+            if (localStorage.getItem('userRole') === 'TEACHER') {
+                sendModeChange(next);
+            } else {
+                setViewMode(next);
+            }
+        }
     };
 
     const handleSendMessage = () => {

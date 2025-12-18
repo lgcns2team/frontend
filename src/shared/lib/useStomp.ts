@@ -219,6 +219,26 @@ export const useDiscussion = (roomId: string | undefined) => {
     const handleIncomingMessage = useCallback((message: any) => {
         if (message.type === 'JOIN' || message.type === 'LEAVE') return;
 
+        // Handle MODE_CHANGE messages for state synchronization
+        if (message.type === 'MODE_CHANGE') {
+            const nextMode = message.content;
+            console.log('📢 MODE_CHANGE received:', nextMode);
+            setViewMode(nextMode);
+
+            // Auto-vote logic for students when moving past 'vote' stage
+            if (nextMode !== 'vote') {
+                setVote(prevVote => {
+                    if (prevVote === null) {
+                        const defaultVote = 'agree';
+                        console.log("🔄 Auto-voting as 'agree' for user who hadn't voted yet.");
+                        return defaultVote;
+                    }
+                    return prevVote;
+                });
+            }
+            return;
+        }
+
         let side: 'agree' | 'disagree' = 'agree';
         if (message.status === 'CON') side = 'disagree';
         else if (message.status === 'PRO') side = 'agree';
@@ -303,6 +323,14 @@ export const useDiscussion = (roomId: string | undefined) => {
         setViewMode('chat');
     };
 
+    const sendModeChange = (nextMode: string) => {
+        if (!roomId || !isConnected) return;
+        sendMessage(
+            "/app/room/" + roomId + "/mode",
+            { viewMode: nextMode, userId: userId }
+        );
+    };
+
     const setVoteLocal = (v: 'agree' | 'disagree') => setVote(v);
 
     return {
@@ -320,14 +348,25 @@ export const useDiscussion = (roomId: string | undefined) => {
         setViewMode,
         sendChat,
         sendVoteStatus, // This combines setting vote (if needed) and sending status
+        sendModeChange,
         confirmStart: () => { // Replacement for handleStart logic
-            if (!vote || !roomId) return;
-            const status = vote === 'agree' ? 'PRO' : 'CON';
+            if (!roomId) return;
+            // Default to 'agree' if no vote selected (as per user request)
+            const currentVote = vote || 'agree';
+            const status = currentVote === 'agree' ? 'PRO' : 'CON';
+
+            if (!vote) setVote('agree');
+
             sendMessage(
                 "/app/room/" + roomId + "/status",
                 { status: status, userId: userId }
             );
-            setViewMode('chat');
+            // Also notify room about mode change if teacher
+            if (localStorage.getItem('userRole') === 'TEACHER') {
+                sendModeChange('chat');
+            } else {
+                setViewMode('chat');
+            }
         }
     };
 };
