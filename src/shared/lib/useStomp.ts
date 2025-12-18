@@ -344,8 +344,22 @@ export const useDiscussion = (roomId: string | undefined) => {
     };
 
     const sendChat = (content: string, parentId?: string) => {
-        if (!roomId || !viewMode) return;
+        console.log('💬 sendChat called:', { content, vote, roomId, viewMode, isConnected });
+
+        if (!roomId || !viewMode) {
+            console.warn('⚠️ Cannot send chat: missing roomId or viewMode');
+            return;
+        }
+
+        if (!vote) {
+            console.warn('⚠️ Cannot send chat: no vote selected');
+            alert('투표를 먼저 선택해주세요!');
+            return;
+        }
+
         const status = vote === 'agree' ? 'PRO' : 'CON';
+        console.log('📤 Sending chat message:', { content, status, parentId, userId });
+
         sendMessage(
             "/app/room/" + roomId + "/chat",
             {

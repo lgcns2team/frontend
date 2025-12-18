@@ -256,7 +256,10 @@ const DiscussionRoomPage: React.FC = () => {
                     </div>
 
                     <div className={styles.chatWrapper}>
-                        <div className={styles.chatColumn}>
+                        <div
+                            className={styles.chatColumn}
+                            style={{ border: vote === 'agree' ? '3px solid black' : 'none' }}
+                        >
                             <div className={`${styles.columnHeader} ${styles.agreeHeader}`}>찬성</div>
                             <div className={styles.chatLog}>
                                 {messages.filter(m => m.side === 'agree' && !m.parentId).map((msg) => (
@@ -276,7 +279,10 @@ const DiscussionRoomPage: React.FC = () => {
                                 ))}
                             </div>
                         </div>
-                        <div className={styles.chatColumn}>
+                        <div
+                            className={styles.chatColumn}
+                            style={{ border: vote === 'disagree' ? '3px solid black' : 'none' }}
+                        >
                             <div className={`${styles.columnHeader} ${styles.disagreeHeader}`}>반대</div>
                             <div className={styles.chatLog}>
                                 {messages.filter(m => m.side === 'disagree' && !m.parentId).map((msg) => (
