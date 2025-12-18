@@ -32,7 +32,7 @@ const DiscussionRoomPage: React.FC = () => {
     const [userId] = useState(`user-${Math.floor(Math.random() * 10000)}`);
     const [username] = useState(`User ${Math.floor(Math.random() * 100)}`);
 
-    const { subscribe, sendMessage } = useStomp({
+    const { connect, disconnect, subscribe, sendMessage, isConnected } = useStomp({
         url: 'http://localhost:8081/ws-stomp',
         onConnect: (frame) => {
             console.log('Connected: ' + frame);
@@ -58,15 +58,10 @@ const DiscussionRoomPage: React.FC = () => {
         }
 
         const displayMsg = {
-<<<<<<< HEAD
             id: message.id || `msg-${Date.now()}-${Math.random()}`,
             text: message.content,
             side: message.side || 'agree', // Fallback
             parentId: message.parentId
-=======
-            text: message.content,
-            side: message.side || 'agree'
->>>>>>> 74ed53f4692dd058cf48520a7a50359842621839
         };
 
         setMessages((prev) => [...prev, displayMsg]);
@@ -453,7 +448,6 @@ const DiscussionRoomPage: React.FC = () => {
                 </div>
             )}
 
-<<<<<<< HEAD
             {viewMode === 'final' && (
                 <div className={styles.resultContainer}>
                     <div className={styles.resultTopRow}>
@@ -475,9 +469,6 @@ const DiscussionRoomPage: React.FC = () => {
                     )}
                 </div>
             )}
-=======
-
->>>>>>> 74ed53f4692dd058cf48520a7a50359842621839
         </div>
     );
 };

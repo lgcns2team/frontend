@@ -99,10 +99,7 @@ const DiscussionPanel: React.FC = () => {
     // If we want to test without auth, we can hardcode a UUID for now or user input.
     // Let's try to infer or use a placeholder.
     // FIXME: Replace with actual teacher ID from context or auth if available.
-<<<<<<< HEAD
-=======
-    // const TEST_TEACHER_ID = "00000000-0000-0000-0000-000000000000"; // Placeholder valid UUID format if needed? 
->>>>>>> 74ed53f4692dd058cf48520a7a50359842621839
+
     // Actually, backend needs a valid existing user ID if checking DB.
     // We'll leave teacherId empty and hope for Auth, or if user requested "development mode", 
     // they should ensure a user exists. 
@@ -119,11 +116,7 @@ const DiscussionPanel: React.FC = () => {
       participantCount: parseInt(maxParticipants, 10),
       grade: 1, // Default or select
       classroom: 1, // Default or select
-<<<<<<< HEAD
-      teacherId: localStorage.getItem('userId') || "11111111-1111-1111-1111-111111111111" // Use logged-in user ID or fallback
-=======
       teacherId: localStorage.getItem('userId')
->>>>>>> 74ed53f4692dd058cf48520a7a50359842621839
     };
 
     const token = localStorage.getItem('accessToken');
