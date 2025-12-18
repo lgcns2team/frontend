@@ -30,7 +30,7 @@ export interface CreateRoomPayload {
 // --- API Functions ---
 export const createShortDiscussionRoom = async (payload: CreateRoomPayload) => {
     try {
-        const response = await fetch('http://localhost:8081/api/ai/debate/room', {
+        const response = await fetch('/api/ai/debate/room', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -180,7 +180,7 @@ export const useDiscussion = (roomId: string | undefined) => {
 
     // 4. WebSocket Integration
     const { connect, disconnect, subscribe, sendMessage, isConnected, lastError } = useStomp({
-        url: 'http://localhost:8081/ws-stomp',
+        url: '/ws-stomp',
         onConnect: (frame) => {
             if (!roomId) return;
             subscribe('/topic/room/' + roomId, (chatMessage) => {

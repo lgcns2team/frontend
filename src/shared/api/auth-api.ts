@@ -11,6 +11,8 @@ export interface LoginResponse {
     grade?: number;
     classroom?: number;
     teacherCode?: string;
+    createdTeacherCode?: string;
+    teacher_code?: number | string;
 }
 
 export interface SignupRequest {
@@ -61,7 +63,12 @@ export const authApi = {
 
         if (responseData.grade) localStorage.setItem('userGrade', String(responseData.grade));
         if (responseData.classroom) localStorage.setItem('userClassroom', String(responseData.classroom));
-        if (responseData.teacherCode) localStorage.setItem('teacherCode', responseData.teacherCode);
+
+        // Handle various possible field names from backend (camelCase, snake_case, etc.)
+        const teacherCode = responseData.teacher_code || responseData.teacherCode || responseData.createdTeacherCode;
+        if (teacherCode !== undefined && teacherCode !== null) {
+            localStorage.setItem('teacher_code', String(teacherCode));
+        }
 
         return responseData;
     },
@@ -90,7 +97,7 @@ export const authApi = {
         localStorage.removeItem('userId');
         localStorage.removeItem('userGrade');
         localStorage.removeItem('userClassroom');
-        localStorage.removeItem('teacherCode');
+        localStorage.removeItem('teacher_code');
 
     },
 

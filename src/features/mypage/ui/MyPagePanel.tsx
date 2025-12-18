@@ -15,7 +15,7 @@ export const MyPagePanel = ({ onClose }: MyPagePanelProps) => {
     const role = localStorage.getItem('userRole') as 'TEACHER' | 'STUDENT' | null;
     const grade = localStorage.getItem('userGrade');
     const classroom = localStorage.getItem('userClassroom');
-    const teacherCode = localStorage.getItem('teacherCode');
+    const teacherCode = localStorage.getItem('teacher_code');
 
     const handleLogout = () => {
         if (window.confirm('로그아웃 하시겠습니까?')) {
