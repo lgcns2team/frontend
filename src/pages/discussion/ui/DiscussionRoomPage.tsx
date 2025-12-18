@@ -111,11 +111,8 @@ const DiscussionRoomPage: React.FC = () => {
         setReplyToId(null);
     };
 
+
     const handleStart = () => {
-        if (!vote) {
-            alert('입장을 선택하세요');
-            return;
-        }
         confirmStart();
     };
 

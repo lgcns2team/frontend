@@ -217,12 +217,57 @@ export const useDiscussion = (roomId: string | undefined) => {
 
     // 3. Helpers
     const handleIncomingMessage = useCallback((message: any) => {
-        if (message.type === 'JOIN' || message.type === 'LEAVE') return;
+        console.log('🔍 handleIncomingMessage called with type:', message.type, 'full message:', message);
+
+        if (message.type === 'JOIN' || message.type === 'LEAVE') {
+            console.log('⏭️ Skipping JOIN/LEAVE message');
+            return;
+        }
 
         // Handle MODE_CHANGE messages for state synchronization
         if (message.type === 'MODE_CHANGE') {
             const nextMode = message.content;
             console.log('📢 MODE_CHANGE received:', nextMode);
+            setViewMode(nextMode);
+
+            // Auto-vote logic for students when moving past 'vote' stage
+            if (nextMode !== 'vote') {
+                setVote(prevVote => {
+                    if (prevVote === null) {
+                        const defaultVote = 'agree';
+                        console.log("🔄 Auto-voting as 'agree' for user who hadn't voted yet.");
+                        return defaultVote;
+                    }
+                    return prevVote;
+                });
+            }
+            return;
+        }
+
+        // Check for special mode change message sent via chat
+        if (message.content && typeof message.content === 'string' && message.content.startsWith('__MODE_CHANGE__:')) {
+            const nextMode = message.content.replace('__MODE_CHANGE__:', '');
+            console.log('📢 MODE_CHANGE detected via chat:', nextMode);
+            setViewMode(nextMode as any);
+
+            // Auto-vote logic for students when moving past 'vote' stage
+            if (nextMode !== 'vote') {
+                setVote(prevVote => {
+                    if (prevVote === null) {
+                        const defaultVote = 'agree';
+                        console.log("🔄 Auto-voting as 'agree' for user who hadn't voted yet.");
+                        return defaultVote;
+                    }
+                    return prevVote;
+                });
+            }
+            return; // Don't display this as a chat message
+        }
+
+        // Check if message contains viewMode field (alternative mode change detection)
+        if (message.viewMode) {
+            const nextMode = message.viewMode;
+            console.log('📢 ViewMode detected in message:', nextMode);
             setViewMode(nextMode);
 
             // Auto-vote logic for students when moving past 'vote' stage
@@ -264,7 +309,9 @@ export const useDiscussion = (roomId: string | undefined) => {
         onConnect: (frame) => {
             if (!roomId) return;
             subscribe('/topic/room/' + roomId, (chatMessage) => {
-                handleIncomingMessage(JSON.parse(chatMessage.body));
+                const parsed = JSON.parse(chatMessage.body);
+                console.log('📨 Received message:', parsed);
+                handleIncomingMessage(parsed);
             });
 
             // Auto-Join on Connect
@@ -324,11 +371,26 @@ export const useDiscussion = (roomId: string | undefined) => {
     };
 
     const sendModeChange = (nextMode: string) => {
-        if (!roomId || !isConnected) return;
+        console.log('🔄 sendModeChange called:', { nextMode, roomId, isConnected });
+        if (!roomId || !isConnected) {
+            console.warn('⚠️ Cannot send mode change: roomId or connection missing');
+            return;
+        }
+
+        // Update local state immediately for teacher
+        setViewMode(nextMode as any);
+        console.log('✅ Local viewMode updated to:', nextMode);
+
+        // Send as CHAT message with special format for students to detect
         sendMessage(
-            "/app/room/" + roomId + "/mode",
-            { viewMode: nextMode, userId: userId }
+            "/app/room/" + roomId + "/chat",
+            {
+                content: `__MODE_CHANGE__:${nextMode}`,
+                status: 'PRO',
+                userId: userId
+            }
         );
+        console.log('✅ Mode change message sent via chat:', nextMode);
     };
 
     const setVoteLocal = (v: 'agree' | 'disagree') => setVote(v);
@@ -350,21 +412,31 @@ export const useDiscussion = (roomId: string | undefined) => {
         sendVoteStatus, // This combines setting vote (if needed) and sending status
         sendModeChange,
         confirmStart: () => { // Replacement for handleStart logic
-            if (!roomId) return;
+            console.log('🚀 confirmStart called:', { roomId, vote, isConnected });
+            if (!roomId) {
+                console.warn('⚠️ Cannot start: no roomId');
+                return;
+            }
             // Default to 'agree' if no vote selected (as per user request)
             const currentVote = vote || 'agree';
             const status = currentVote === 'agree' ? 'PRO' : 'CON';
 
-            if (!vote) setVote('agree');
+            if (!vote) {
+                console.log('🔄 Auto-setting vote to agree');
+                setVote('agree');
+            }
 
+            console.log('📤 Sending status message:', { status, userId });
             sendMessage(
                 "/app/room/" + roomId + "/status",
                 { status: status, userId: userId }
             );
             // Also notify room about mode change if teacher
             if (localStorage.getItem('userRole') === 'TEACHER') {
+                console.log('👨‍🏫 Teacher: sending mode change to chat');
                 sendModeChange('chat');
             } else {
+                console.log('👨‍🎓 Student: setting local viewMode to chat');
                 setViewMode('chat');
             }
         }
