@@ -284,6 +284,12 @@ export const useDiscussion = (roomId: string | undefined) => {
             return;
         }
 
+        // Skip STATUS messages (they're for internal state management)
+        if (message.type === 'STATUS') {
+            console.log('⏭️ Skipping STATUS message');
+            return;
+        }
+
         let side: 'agree' | 'disagree' = 'agree';
         if (message.status === 'CON') side = 'disagree';
         else if (message.status === 'PRO') side = 'agree';
@@ -295,7 +301,12 @@ export const useDiscussion = (roomId: string | undefined) => {
             side: side
         };
 
-        setMessages((prev) => [...prev, displayMsg]);
+        console.log('➕ Adding message to display:', displayMsg);
+        setMessages((prev) => {
+            const newMessages = [...prev, displayMsg];
+            console.log('📝 Messages updated. Total count:', newMessages.length);
+            return newMessages;
+        });
 
         if (message.type === 'CHAT' && message.userId === userId) {
             // alert("✅ 채팅 전송 성공! (Backend를 거쳐 Redis에 저장되었습니다)");
@@ -359,6 +370,20 @@ export const useDiscussion = (roomId: string | undefined) => {
 
         const status = vote === 'agree' ? 'PRO' : 'CON';
         console.log('📤 Sending chat message:', { content, status, parentId, userId });
+
+        // Add local echo immediately for better UX
+        const localEcho: DisplayMessage = {
+            id: `local-${Date.now()}`,
+            parentId: parentId,
+            userId: userId,
+            sender: username,
+            content: content,
+            type: 'CHAT',
+            side: vote,
+            status: status
+        };
+        console.log('🔊 Adding local echo:', localEcho);
+        setMessages((prev) => [...prev, localEcho]);
 
         sendMessage(
             "/app/room/" + roomId + "/chat",

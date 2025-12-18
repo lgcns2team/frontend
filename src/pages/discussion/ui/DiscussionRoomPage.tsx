@@ -46,6 +46,13 @@ const DiscussionRoomPage: React.FC = () => {
         sendModeChange
     } = useDiscussion(id);
 
+    // Debug: Log messages changes
+    useEffect(() => {
+        console.log('🎬 DiscussionRoomPage - messages changed:', messages.length, messages);
+        console.log('🎬 Agree messages:', messages.filter(m => m.side === 'agree' && !m.parentId));
+        console.log('🎬 Disagree messages:', messages.filter(m => m.side === 'disagree' && !m.parentId));
+    }, [messages]);
+
     const [inputValue, setInputValue] = useState('');
     const [replyToId, setReplyToId] = useState<string | null>(null);
 
@@ -262,16 +269,29 @@ const DiscussionRoomPage: React.FC = () => {
                         >
                             <div className={`${styles.columnHeader} ${styles.agreeHeader}`}>찬성</div>
                             <div className={styles.chatLog}>
-                                {messages.filter(m => m.side === 'agree' && !m.parentId).map((msg) => (
-                                    <React.Fragment key={msg.id}>
-                                        <div className={`${styles.messageBubble} ${styles.agreeMessage}`}>
-                                            {msg.content}
+                                {messages.filter(m => m.side === 'agree' && !m.parentId).map((msg, index) => (
+                                    <React.Fragment key={msg.id || `msg-${index}`}>
+                                        <div
+                                            className={`${styles.messageBubble} ${styles.agreeMessage}`}
+                                            style={{
+                                                backgroundColor: 'lightblue',
+                                                color: 'black',
+                                                padding: '10px',
+                                                margin: '5px',
+                                                border: '2px solid blue'
+                                            }}
+                                        >
+                                            {msg.content || '[Empty message]'}
                                             {viewMode === 'result' && (
                                                 <button className={styles.counterButton} onClick={() => setReplyToId(msg.id || null)}>반론하기</button>
                                             )}
                                         </div>
-                                        {messages.filter(reply => reply.parentId === msg.id).map(reply => (
-                                            <div key={reply.id} className={`${styles.messageBubble} ${styles.agreeMessage} ${styles.replyMessage}`}>
+                                        {messages.filter(reply => reply.parentId === msg.id).map((reply, replyIndex) => (
+                                            <div
+                                                key={reply.id || `reply-${index}-${replyIndex}`}
+                                                className={`${styles.messageBubble} ${styles.agreeMessage} ${styles.replyMessage}`}
+                                                style={{ backgroundColor: 'lightcyan', color: 'black', padding: '8px', margin: '3px' }}
+                                            >
                                                 ㄴ {reply.content}
                                             </div>
                                         ))}
@@ -285,16 +305,29 @@ const DiscussionRoomPage: React.FC = () => {
                         >
                             <div className={`${styles.columnHeader} ${styles.disagreeHeader}`}>반대</div>
                             <div className={styles.chatLog}>
-                                {messages.filter(m => m.side === 'disagree' && !m.parentId).map((msg) => (
-                                    <React.Fragment key={msg.id}>
-                                        <div className={`${styles.messageBubble} ${styles.disagreeMessage}`}>
-                                            {msg.content}
+                                {messages.filter(m => m.side === 'disagree' && !m.parentId).map((msg, index) => (
+                                    <React.Fragment key={msg.id || `msg-${index}`}>
+                                        <div
+                                            className={`${styles.messageBubble} ${styles.disagreeMessage}`}
+                                            style={{
+                                                backgroundColor: 'lightcoral',
+                                                color: 'black',
+                                                padding: '10px',
+                                                margin: '5px',
+                                                border: '2px solid red'
+                                            }}
+                                        >
+                                            {msg.content || '[Empty message]'}
                                             {viewMode === 'result' && (
                                                 <button className={styles.counterButton} onClick={() => setReplyToId(msg.id || null)}>반론하기</button>
                                             )}
                                         </div>
-                                        {messages.filter(reply => reply.parentId === msg.id).map(reply => (
-                                            <div key={reply.id} className={`${styles.messageBubble} ${styles.disagreeMessage} ${styles.replyMessage}`}>
+                                        {messages.filter(reply => reply.parentId === msg.id).map((reply, replyIndex) => (
+                                            <div
+                                                key={reply.id || `reply-${index}-${replyIndex}`}
+                                                className={`${styles.messageBubble} ${styles.disagreeMessage} ${styles.replyMessage}`}
+                                                style={{ backgroundColor: 'pink', color: 'black', padding: '8px', margin: '3px' }}
+                                            >
                                                 ㄴ {reply.content}
                                             </div>
                                         ))}
