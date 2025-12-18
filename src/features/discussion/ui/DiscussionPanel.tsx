@@ -1,17 +1,13 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { useNavigate } from 'react-router-dom';
 import { recommendDebateTopics, type DebateTopic } from '../../../shared/api/debate-api';
-import { createShortDiscussionRoom } from '../../../shared/lib/useStomp';
+import { createShortDiscussionRoom, getDiscussionRooms, type DiscussionRoom } from '../../../shared/lib/useStomp';
 import styles from './DiscussionPanel.module.css';
 
 const DiscussionPanel: React.FC = () => {
-  const [discussions, setDiscussions] = useState<any[]>(() => {
-    const saved = localStorage.getItem('discussions');
-    return saved ? JSON.parse(saved) : [];
-  });
+  const [discussions, setDiscussions] = useState<DiscussionRoom[]>([]);
   const navigate = useNavigate();
-
 
   const [keyword, setKeyword] = useState('');
   const [topic, setTopic] = useState('');
@@ -26,10 +22,15 @@ const DiscussionPanel: React.FC = () => {
   const [isLoadingRecommendations, setIsLoadingRecommendations] = useState(false);
   const [recommendationError, setRecommendationError] = useState<string | null>(null);
 
-  // Update localStorage whenever discussions change (except purely purely initial partial loads, but simple approach is ok)
-  // Or better, update in handlers to avoid effect loops if not needed, but Effect is safer for consistency.
-  // Let's use handlers for simplicity as requested in plan, but Effect is cleaner for "persistence".
-  // Actually, setting state initializes it. Let's start with empty/load.
+  // Fetch rooms on mount
+  const fetchRooms = async () => {
+    const rooms = await getDiscussionRooms();
+    setDiscussions(rooms);
+  };
+
+  useEffect(() => {
+    fetchRooms();
+  }, []);
 
   const addDiscussion = () => {
     // Reset fields when opening
@@ -76,12 +77,18 @@ const DiscussionPanel: React.FC = () => {
     setDescription(selectedTopic.description);
   };
 
-  const handleDelete = (e: React.MouseEvent, id: number) => {
+  // Note: Deleting rooms from backend/Redis isn't fully implemented in the hook yet.
+  // We can just filter locally for now or add a delete API calling function if needed.
+  // User asked for "fetch from Redis", deletion logic might need backend support.
+  // For now, we'll keep the UI deletion but it won't persist to backend unless API exists.
+  // Assuming strict requirement update: "Get from Redis". Deletion should probably be ignored or mock for now as backend delete endpoint isn't clarified.
+  // I will just remove it from local view for now.
+  const handleDelete = (e: React.MouseEvent, id: string | undefined) => {
     e.stopPropagation(); // Prevent navigation
-    if (window.confirm('정말 삭제하시겠습니까?')) {
-      const updated = discussions.filter(d => d.id !== id);
-      setDiscussions(updated);
-      localStorage.setItem('discussions', JSON.stringify(updated));
+    if (!id) return;
+    if (window.confirm('정말 삭제하시겠습니까? (현재 뷰에서만 삭제됩니다)')) {
+      // TODO: Implement backend delete API
+      setDiscussions(prev => prev.filter(d => d.id !== id));
     }
   };
 
@@ -91,33 +98,13 @@ const DiscussionPanel: React.FC = () => {
       return;
     }
 
-    // Prepare payload for backend
-    // Backend expects DebateRoomRequestDTO:
-    // { participantCount, topicTitle, topicDescription, grade, classroom, teacherId? }
-
-    // For development without Auth, we can pass a teacherId if needed.
-    // Let's assume we have a test teacher UUID or relying on Auth if present.
-    // If we want to test without auth, we can hardcode a UUID for now or user input.
-    // Let's try to infer or use a placeholder.
-    // FIXME: Replace with actual teacher ID from context or auth if available.
-
-    // Actually, backend needs a valid existing user ID if checking DB.
-    // We'll leave teacherId empty and hope for Auth, or if user requested "development mode", 
-    // they should ensure a user exists. 
-    // Let's try to send a valid looking UUID if we strictly need to bypass auth.
-    // But since I don't know a valid ID in the DB, I will omit it and rely on Auth or fail with 401.
-    // Wait, the plan said "allow creating a room with a provided teacherId".
-    // I should probably provide one if I want to test.
-    // Let's assume the user has logged in or we use a fallback. 
-    // I'll just send the payload.
-
     const payload = {
       topicTitle: topic,
       topicDescription: description,
       participantCount: parseInt(maxParticipants, 10),
       grade: 1, // Default or select
       classroom: 1, // Default or select
-      teacherId: localStorage.getItem('userId')
+      teacherId: localStorage.getItem('userId') || ''
     };
 
     const token = localStorage.getItem('accessToken');
@@ -129,22 +116,10 @@ const DiscussionPanel: React.FC = () => {
     const result = await createShortDiscussionRoom(payload);
 
     if (result.success) {
-      const newId = result.roomId;
-      alert("Room Created! Room ID: " + newId);
-
-      // Update local state for display
-      const newDiscussion = {
-        id: newId,
-        title: topic,
-        content: description || '설명 없음',
-        description: description,
-        maxParticipants: maxParticipants,
-        displayContent: `인원수: ${maxParticipants}명`
-      };
-      const updatedDiscussions = [...discussions, newDiscussion];
-      setDiscussions(updatedDiscussions);
-      localStorage.setItem('discussions', JSON.stringify(updatedDiscussions));
+      alert("Room Created! Room ID: " + result.roomId);
       setShowCreateModal(false);
+      // Refresh list from backend
+      fetchRooms();
     } else {
       alert(`Failed to create room: ${result.error}`);
     }
@@ -155,7 +130,7 @@ const DiscussionPanel: React.FC = () => {
       <div className={styles.charactersList}>
         {discussions.map((discussion, index) => (
           <div
-            key={discussion.id}
+            key={discussion.id || index}
             className={styles.characterItem}
             onClick={() => navigate(`/discussion/${discussion.id}`)}
             style={{ cursor: 'pointer' }}
@@ -167,9 +142,9 @@ const DiscussionPanel: React.FC = () => {
               ×
             </button>
             <div className={styles.roomNumber}>No. {index + 1}</div>
-            <h3 className={styles.characterName}>{discussion.title}</h3>
-            <p className={styles.characterSummary}>{discussion.description || (discussion.content && discussion.content.split(', ')[1]) || '설명 없음'}</p>
-            <div className={styles.participantCount}>인원수: {discussion.maxParticipants || (discussion.content && discussion.content.split('명')[0].split(': ')[1]) || '?'}명</div>
+            <h3 className={styles.characterName}>{discussion.title || discussion.topicTitle}</h3>
+            <p className={styles.characterSummary}>{discussion.description || discussion.topicDescription || '설명 없음'}</p>
+            <div className={styles.participantCount}>인원수: {discussion.participantCount}명</div>
           </div>
         ))}
       </div>
