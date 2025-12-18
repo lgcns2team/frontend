@@ -27,13 +27,28 @@ export interface CreateRoomPayload {
     teacherId: string;
 }
 
+export interface DiscussionRoom {
+    roomId: string; // The DTO returns 'roomId' (UUID)
+    topicTitle: string;
+    topicDescription: string;
+    teacherCode: number;
+    participantCount: number;
+    createdAt: string;
+    // Helper fields for UI if needed, but strict DTO mapping is best.
+    id?: string; // We might map roomId to id for frontend compatibility
+    title?: string;
+    description?: string;
+}
+
+// --- API Functions ---
 // --- API Functions ---
 export const createShortDiscussionRoom = async (payload: CreateRoomPayload) => {
     try {
-        const response = await fetch('http://localhost:8081/api/ai/debate/room', {
+        const response = await fetch('/api/ai/debate/room', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
+                'Authorization': `Bearer ${localStorage.getItem('accessToken')}`
             },
             body: JSON.stringify(payload),
         });
@@ -48,6 +63,51 @@ export const createShortDiscussionRoom = async (payload: CreateRoomPayload) => {
     } catch (error) {
         console.error("Error creating room:", error);
         return { success: false, error: 'Failed to connect to backend' };
+    }
+};
+
+export const getDiscussionRooms = async (): Promise<DiscussionRoom[]> => {
+    try {
+        const token = localStorage.getItem('accessToken');
+        const userId = localStorage.getItem('userId');
+        console.log("Fetching rooms with token:", token ? "Present" : "Missing", "userId:", userId);
+
+        const headers: any = { 'Content-Type': 'application/json' };
+        if (token) headers['Authorization'] = `Bearer ${token}`;
+
+        let url = '/api/ai/debate/roomList';
+        if (userId) {
+            url += `?userId=${userId}`;
+        }
+
+        const response = await fetch(url, {
+            method: 'GET',
+            headers: headers
+        });
+
+        console.log("Fetch rooms status:", response.status);
+
+        if (response.ok) {
+            const data: DiscussionRoom[] = await response.json();
+            console.log("Rooms fetched:", data);
+
+            // Map backend DTO to frontend structure if necessary, or just return.
+            // Frontend currently expects: { id, title, description, content... }
+            // Let's normalize it here to avoid breaking UI.
+            return data.map(room => ({
+                ...room,
+                id: room.roomId,
+                title: room.topicTitle,
+                description: room.topicDescription,
+                content: room.topicDescription // Fallback for some UI logic
+            }));
+        } else {
+            console.error("Failed to fetch rooms:", await response.text());
+            return [];
+        }
+    } catch (error) {
+        console.error("Error fetching rooms:", error);
+        return [];
     }
 };
 

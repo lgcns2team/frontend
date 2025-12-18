@@ -1,15 +1,35 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import styles from './DiscussionRoomPage.module.css';
-import { useDiscussion, type DisplayMessage } from '../../../shared/lib/useStomp';
+import { useDiscussion, getDiscussionRooms, type DisplayMessage } from '../../../shared/lib/useStomp';
 
 const DiscussionRoomPage: React.FC = () => {
     const { id } = useParams();
     const navigate = useNavigate();
 
-    const saved = localStorage.getItem('discussions');
-    const discussions = saved ? JSON.parse(saved) : [];
-    const discussion = discussions.find((d: any) => String(d.id) === id);
+    const [discussion, setDiscussion] = useState<any>(null);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        const fetchRoom = async () => {
+            try {
+                const rooms = await getDiscussionRooms();
+                const found = rooms.find((r: any) => String(r.id) === id || String(r.roomId) === id);
+                if (found) {
+                    setDiscussion({
+                        ...found,
+                        title: found.topicTitle || found.title,
+                        description: found.topicDescription || found.description
+                    });
+                }
+            } catch (e) {
+                console.error("Failed to fetch room info", e);
+            } finally {
+                setLoading(false);
+            }
+        };
+        fetchRoom();
+    }, [id]);
 
     // Use the high-level hook (Restores correct WebSocket logic)
     const {
@@ -34,9 +54,8 @@ const DiscussionRoomPage: React.FC = () => {
     const [titleFontSize, setTitleFontSize] = useState(2.5); // rem
     const [descFontSize, setDescFontSize] = useState(1.5);   // rem
 
-    if (!discussion) return <div className={styles.container}>Discussion Not Found</div>;
-    const topic = discussion.title;
-    const description = discussion.description || discussion.content;
+    const topic = discussion?.title || '';
+    const description = discussion?.description || discussion?.content || '';
 
     // Font size scaling effects
     useEffect(() => { setTitleFontSize(2.5); }, [topic]);
