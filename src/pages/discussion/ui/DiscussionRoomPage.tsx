@@ -123,10 +123,6 @@ const DiscussionRoomPage: React.FC = () => {
     };
 
     const handleStart = () => {
-        if (!vote) {
-            alert('입장을 선택하세요');
-            return;
-        }
         confirmStart();
     };
 

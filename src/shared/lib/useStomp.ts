@@ -218,7 +218,7 @@ export const useDiscussion = (roomId: string | undefined) => {
 
     // 4. WebSocket Integration
     const { connect, disconnect, subscribe, sendMessage, isConnected, lastError } = useStomp({
-        url: 'http://localhost:8081/ws-stomp',
+        url: '/ws-stomp',
         onConnect: (frame) => {
             if (!roomId) return;
             subscribe('/topic/room/' + roomId, (chatMessage) => {
@@ -308,8 +308,13 @@ export const useDiscussion = (roomId: string | undefined) => {
         sendVoteStatus, // This combines setting vote (if needed) and sending status
         sendModeChange,
         confirmStart: () => { // Replacement for handleStart logic
-            if (!vote || !roomId) return;
-            const status = vote === 'agree' ? 'PRO' : 'CON';
+            if (!roomId) return;
+            // Default to 'agree' if no vote selected (as per user request)
+            const currentVote = vote || 'agree';
+            const status = currentVote === 'agree' ? 'PRO' : 'CON';
+
+            if (!vote) setVote('agree');
+
             sendMessage(
                 "/app/room/" + roomId + "/status",
                 { status: status, userId: userId }
