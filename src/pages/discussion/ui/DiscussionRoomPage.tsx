@@ -2,18 +2,29 @@ import React, { useState, useRef, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import styles from './DiscussionRoomPage.module.css';
 import { useDiscussion, type DisplayMessage } from '../../../shared/lib/useStomp';
+import { getDiscussionRooms } from '../../../shared/api/debate-api';
 
 const DiscussionRoomPage: React.FC = () => {
     const { id } = useParams();
     const navigate = useNavigate();
 
-<<<<<<< Updated upstream
-    const saved = localStorage.getItem('discussions');
-    const discussions = saved ? JSON.parse(saved) : [];
-    const discussion = discussions.find((d: any) => String(d.id) === id);
-=======
     const [discussion, setDiscussion] = useState<any>(null);
     const [loading, setLoading] = useState(true);
+
+    // Use the high-level hook (Restores correct WebSocket logic)
+    const {
+        messages,
+        vote,
+        setVote,
+        viewMode,
+        setViewMode,
+        userId,
+        isConnected,
+        lastError,
+        sendChat,
+        confirmStart,
+        sendModeChange
+    } = useDiscussion(id);
 
     useEffect(() => {
         const fetchRoom = async () => {
@@ -38,26 +49,11 @@ const DiscussionRoomPage: React.FC = () => {
             }
         };
         fetchRoom();
-    }, [id]);
->>>>>>> Stashed changes
-
-    // Use the high-level hook (Restores correct WebSocket logic)
-    const {
-        messages,
-        vote,
-        setVote,
-        viewMode,
-        setViewMode,
-        userId,
-        isConnected,
-        lastError,
-        sendChat,
-        confirmStart,
-        sendModeChange
-    } = useDiscussion(id);
+    }, [id, setViewMode]);
 
     const [inputValue, setInputValue] = useState('');
     const [replyToId, setReplyToId] = useState<string | null>(null);
+
 
     // Font size scaling refs & state (From User's Code)
     const titleRef = useRef<HTMLHeadingElement>(null);
@@ -65,9 +61,11 @@ const DiscussionRoomPage: React.FC = () => {
     const [titleFontSize, setTitleFontSize] = useState(2.5); // rem
     const [descFontSize, setDescFontSize] = useState(1.5);   // rem
 
+    if (loading) return <div className={styles.container}>Loading...</div>;
     if (!discussion) return <div className={styles.container}>Discussion Not Found</div>;
     const topic = discussion.title;
     const description = discussion.description || discussion.content;
+
 
     // Font size scaling effects
     useEffect(() => { setTitleFontSize(2.5); }, [topic]);

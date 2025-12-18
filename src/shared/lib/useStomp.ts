@@ -27,26 +27,9 @@ export interface CreateRoomPayload {
     teacherId: string;
 }
 
-<<<<<<< Updated upstream
-=======
-export interface DiscussionRoom {
-    roomId: string; // The DTO returns 'roomId' (UUID)
-    topicTitle: string;
-    topicDescription: string;
-    teacherCode: number;
-    participantCount: number;
-    createdAt: string;
-    // Helper fields for UI if needed, but strict DTO mapping is best.
-    id?: string; // We might map roomId to id for frontend compatibility
-    title?: string;
-    description?: string;
-    viewMode?: 'vote' | 'chat' | 'verify' | 'result' | 'final';
-}
-
-// --- API Functions ---
->>>>>>> Stashed changes
 // --- API Functions ---
 export const createShortDiscussionRoom = async (payload: CreateRoomPayload) => {
+
     try {
         const response = await fetch('http://localhost:8081/api/ai/debate/room', {
             method: 'POST',
