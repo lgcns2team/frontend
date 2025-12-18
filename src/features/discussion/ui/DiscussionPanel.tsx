@@ -118,7 +118,7 @@ const DiscussionPanel: React.FC = () => {
       participantCount: parseInt(maxParticipants, 10),
       grade: 1, // Default or select
       classroom: 1, // Default or select
-      teacherId: "11111111-1111-1111-1111-111111111111" // Teacher Kim (Dev Mode Bypass)
+      teacherId: localStorage.getItem('userId')
     };
 
     try {

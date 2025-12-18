@@ -55,7 +55,7 @@ export const useWarAnimation = ({
     }, [map]);
 
     useEffect(() => {
-        console.log('[useWarAnimation] Effect triggered:', { isActive, hasMap: !!map, hasLayer: !!animationLayer.current, warDataCount: warData.length });
+        // console.log('[useWarAnimation] Effect triggered:', { isActive, hasMap: !!map, hasLayer: !!animationLayer.current, warDataCount: warData.length });
 
         if (!isActive || !map || !animationLayer.current || warData.length === 0) {
             if (animationLayer.current) {
@@ -203,7 +203,7 @@ export const useWarAnimation = ({
                         opacity: 0 // Start invisible, will fade in when animation starts
                     }).addTo(animationLayer.current!);
 
-                    console.log('[useWarAnimation] Created marker for battle:', battle.battleName, 'startDelay:', startDelay, 'length:', length, 'duration:', calculatedDuration);
+                    // console.log('[useWarAnimation] Created marker for battle:', battle.battleName, 'startDelay:', startDelay, 'length:', length, 'duration:', calculatedDuration);
 
                     activeUnits.push({
                         marker,
@@ -238,7 +238,7 @@ export const useWarAnimation = ({
         const animate = (timestamp: number) => {
             if (!startTime.current) {
                 startTime.current = timestamp;
-                console.log('[useWarAnimation] Animation cycle started at:', timestamp);
+                // console.log('[useWarAnimation] Animation cycle started at:', timestamp);
             }
 
             // Time elapsed since animation cycle started
@@ -254,7 +254,7 @@ export const useWarAnimation = ({
                     unit.tooltipShown = false;
                     unit.marker.setOpacity(0);
                 });
-                console.log('[useWarAnimation] Restarting animation cycle after 10s pause');
+                // console.log('[useWarAnimation] Restarting animation cycle after 10s pause');
             }
 
             activeUnits.forEach(unit => {
@@ -315,13 +315,13 @@ export const useWarAnimation = ({
                             opacity: 1
                         }).openTooltip();
 
-                        console.log('[useWarAnimation] Tooltip opened for:', unit.battleName);
+                        // console.log('[useWarAnimation] Tooltip opened for:', unit.battleName);
 
                         // Remove tooltip after 3 seconds
                         setTimeout(() => {
                             if (unit.marker) {
                                 unit.marker.unbindTooltip();
-                                console.log('[useWarAnimation] Tooltip closed for:', unit.battleName);
+                                // console.log('[useWarAnimation] Tooltip closed for:', unit.battleName);
                             }
                         }, 1500);
                     }
@@ -398,7 +398,7 @@ export const useWarAnimation = ({
 
         startTime.current = null;
         animationFrameId.current = requestAnimationFrame(animate);
-        console.log('[useWarAnimation] Animation loop started with', activeUnits.length, 'units');
+        // console.log('[useWarAnimation] Animation loop started with', activeUnits.length, 'units');
 
         return () => {
             if (animationFrameId.current) {
