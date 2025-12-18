@@ -9,13 +9,10 @@ export default defineConfig({
       '/api/ai': {
         target: 'http://localhost:8081',
         changeOrigin: true,
+        ws: true,
       },
       '/api': {
         target: 'http://localhost:8080',
-        changeOrigin: true,
-      },
-      '/ws-stomp': {
-        target: 'http://localhost:8081',
         changeOrigin: true,
       },
     },

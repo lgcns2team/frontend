@@ -316,7 +316,7 @@ export const useDiscussion = (roomId: string | undefined) => {
 
     // 4. WebSocket Integration
     const { connect, disconnect, subscribe, sendMessage, isConnected, lastError } = useStomp({
-        url: '/ws-stomp',
+        url: '/api/ai/ws-stomp',
         onConnect: (frame) => {
             if (!roomId) return;
             subscribe('/topic/room/' + roomId, (chatMessage) => {
