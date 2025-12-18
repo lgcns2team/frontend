@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Link as RouterLink, useNavigate } from 'react-router-dom';
 import { authApi } from '../../../shared/api/auth-api';
@@ -91,12 +92,13 @@ const SignupPage = () => {
     const [name, setName] = useState('');
     const [grade, setGrade] = useState('');
     const [classroom, setClassroom] = useState('');
+    const [teacherCode, setTeacherCode] = useState('');
     const [role, setRole] = useState<'STUDENT' | 'TEACHER'>('STUDENT');
     const [error, setError] = useState('');
     const navigate = useNavigate();
 
     const handleRoleChange = (
-        event: React.MouseEvent<HTMLElement>,
+        _event: React.MouseEvent<HTMLElement>,
         newRole: 'STUDENT' | 'TEACHER' | null,
     ) => {
         if (newRole !== null) {
@@ -109,14 +111,20 @@ const SignupPage = () => {
         setError('');
 
         try {
-            await authApi.signup({
+            const signupData: any = {
                 nickname,
                 password,
                 name,
-                grade: parseInt(grade),
-                classroom: parseInt(classroom),
-                role: role
-            });
+                role
+            };
+
+            if (role === 'STUDENT') {
+                signupData.grade = parseInt(grade);
+                signupData.classroom = parseInt(classroom);
+                signupData.teacherCode = parseInt(teacherCode);
+            }
+
+            await authApi.signup(signupData);
             alert('회원가입이 완료되었습니다. 로그인해주세요.');
             navigate('/');
         } catch (err: any) {
@@ -173,6 +181,21 @@ const SignupPage = () => {
                                 </ToggleButtonGroup>
                             </Box>
 
+                            {role === 'STUDENT' && (
+                                <TextField
+                                    margin="normal"
+                                    required
+                                    fullWidth
+                                    id="teacherCode"
+                                    label="선생님 코드"
+                                    name="teacherCode"
+                                    value={teacherCode}
+                                    onChange={(e) => setTeacherCode(e.target.value)}
+                                    InputLabelProps={{ style: { color: '#888' } }}
+                                    helperText="선생님께 전달받은 코드를 입력해주세요"
+                                />
+                            )}
+
                             <TextField
                                 margin="normal"
                                 required
@@ -212,32 +235,34 @@ const SignupPage = () => {
                                 onChange={(e) => setName(e.target.value)}
                                 InputLabelProps={{ style: { color: '#888' } }}
                             />
-                            <Box sx={{ display: 'flex', gap: 2 }}>
-                                <TextField
-                                    margin="normal"
-                                    required
-                                    fullWidth
-                                    id="grade"
-                                    label="학년"
-                                    name="grade"
-                                    type="number"
-                                    value={grade}
-                                    onChange={(e) => setGrade(e.target.value)}
-                                    InputLabelProps={{ style: { color: '#888' } }}
-                                />
-                                <TextField
-                                    margin="normal"
-                                    required
-                                    fullWidth
-                                    id="classroom"
-                                    label="반"
-                                    name="classroom"
-                                    type="number"
-                                    value={classroom}
-                                    onChange={(e) => setClassroom(e.target.value)}
-                                    InputLabelProps={{ style: { color: '#888' } }}
-                                />
-                            </Box>
+                            {role === 'STUDENT' && (
+                                <Box sx={{ display: 'flex', gap: 2 }}>
+                                    <TextField
+                                        margin="normal"
+                                        required
+                                        fullWidth
+                                        id="grade"
+                                        label="학년"
+                                        name="grade"
+                                        type="number"
+                                        value={grade}
+                                        onChange={(e) => setGrade(e.target.value)}
+                                        InputLabelProps={{ style: { color: '#888' } }}
+                                    />
+                                    <TextField
+                                        margin="normal"
+                                        required
+                                        fullWidth
+                                        id="classroom"
+                                        label="반"
+                                        name="classroom"
+                                        type="number"
+                                        value={classroom}
+                                        onChange={(e) => setClassroom(e.target.value)}
+                                        InputLabelProps={{ style: { color: '#888' } }}
+                                    />
+                                </Box>
+                            )}
 
                             {error && (
                                 <Typography color="error" variant="body2" sx={{ mt: 1, textAlign: 'center' }}>

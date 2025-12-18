@@ -3,18 +3,9 @@ import { useParams, useNavigate } from 'react-router-dom';
 import styles from './DiscussionRoomPage.module.css';
 import { useStomp } from '../../../shared/lib/useStomp';
 
-interface ChatMessage {
-    sender: string;
-    content: string;
-    type: 'CHAT' | 'JOIN' | 'LEAVE';
-    userId?: string;
-    roomId?: string;
-    side?: 'agree' | 'disagree';
-}
 
-interface DisplayMessage extends ChatMessage {
-    side: 'agree' | 'disagree';
-}
+
+
 
 const DiscussionRoomPage: React.FC = () => {
     const { id } = useParams();
@@ -34,7 +25,7 @@ const DiscussionRoomPage: React.FC = () => {
     const [userId] = useState(`user-${Math.floor(Math.random() * 10000)}`);
     const [username] = useState(`User ${Math.floor(Math.random() * 100)}`);
 
-    const { connect, disconnect, subscribe, sendMessage, isConnected } = useStomp({
+    const { subscribe, sendMessage } = useStomp({
         url: 'http://localhost:8081/ws-stomp',
         onConnect: (frame) => {
             console.log('Connected: ' + frame);
@@ -59,9 +50,9 @@ const DiscussionRoomPage: React.FC = () => {
             return;
         }
 
-        const displayMsg: DisplayMessage = {
-            ...message,
-            side: message.side || 'agree' // Fallback
+        const displayMsg = {
+            text: message.content,
+            side: message.side || 'agree'
         };
 
         setMessages((prev) => [...prev, displayMsg]);
@@ -319,25 +310,7 @@ const DiscussionRoomPage: React.FC = () => {
                 </div>
             )}
 
-            {viewMode === 'final' && (
-                <div className={styles.resultContainer}>
-                    <div className={styles.resultTopRow}>
-                        <div className={`${styles.resultBox} ${styles.topLeftBox}`}>Result Top Left</div>
-                        <div className={`${styles.resultBox} ${styles.topRightBox}`}>
-                            <h2>주제 : {topic}</h2>
-                            <p>내용 : {description}</p>
-                        </div>
-                    </div>
-                    <div className={styles.resultBottomRow}>
-                        <div className={styles.resultBox}>Result Bottom 1</div>
-                        <div className={styles.resultBox}>Result Bottom 2</div>
-                        <div className={styles.resultBox}>Result Bottom 3</div>
-                    </div>
-                    <div style={{ textAlign: 'right', marginTop: '20px' }}>
-                        <button className={styles.endButton} onClick={handleEnd}>종료</button>
-                    </div>
-                </div>
-            )}
+
         </div>
     );
 };

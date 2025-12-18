@@ -14,9 +14,10 @@ export interface SignupRequest {
     nickname: string;
     password: string;
     name: string;
-    grade: number;
-    classroom: number;
+    grade?: number;
+    classroom?: number;
     role: 'TEACHER' | 'STUDENT';
+    teacherCode?: number;
 }
 
 const API_BASE_URL = '/api/user';

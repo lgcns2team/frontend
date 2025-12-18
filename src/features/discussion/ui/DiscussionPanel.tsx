@@ -101,7 +101,7 @@ const DiscussionPanel: React.FC = () => {
     // If we want to test without auth, we can hardcode a UUID for now or user input.
     // Let's try to infer or use a placeholder.
     // FIXME: Replace with actual teacher ID from context or auth if available.
-    const TEST_TEACHER_ID = "00000000-0000-0000-0000-000000000000"; // Placeholder valid UUID format if needed? 
+    // const TEST_TEACHER_ID = "00000000-0000-0000-0000-000000000000"; // Placeholder valid UUID format if needed? 
     // Actually, backend needs a valid existing user ID if checking DB.
     // We'll leave teacherId empty and hope for Auth, or if user requested "development mode", 
     // they should ensure a user exists. 

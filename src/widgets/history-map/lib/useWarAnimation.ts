@@ -17,7 +17,7 @@ interface UseWarAnimationProps {
 export const useWarAnimation = ({
     map,
     warData,
-    speed = 1,
+    // speed = 1,
     isActive,
     currentYear,
     historicalLayer

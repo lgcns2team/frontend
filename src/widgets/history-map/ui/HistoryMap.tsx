@@ -672,7 +672,7 @@ export default function HistoryMap() {
 
             activeCapitals.forEach(capital => {
                 // Check if this country is visible on the map
-                const timelineCountryId = capital.countryId || getCountryId(capital.countryName);
+                // const timelineCountryId = capital.countryId || getCountryId(capital.countryName);
 
                 // If the country is NOT visible on the map, skip it
                 /* TEMPORARILY DISABLED FOR DEBUGGING
