@@ -183,11 +183,9 @@ const DiscussionRoomPage: React.FC = () => {
                         <div className={styles.resultBox}>결론 2</div>
                         <div className={styles.resultBox}>결론 3</div>
                     </div>
-                    {localStorage.getItem('userRole') === 'TEACHER' && (
-                        <div style={{ textAlign: 'right', marginTop: '20px' }}>
-                            <button className={styles.endButton} onClick={handleEnd}>종료</button>
-                        </div>
-                    )}
+                    <div style={{ textAlign: 'right', marginTop: '10px' }}>
+                        <button className={styles.endButton} onClick={handleEnd}>종료</button>
+                    </div>
                 </div>
             </div>
         );
@@ -244,8 +242,13 @@ const DiscussionRoomPage: React.FC = () => {
                             style={{ opacity: vote === 'agree' ? 0.3 : 1 }}
                         >반대</button>
                     </div>
-                    {localStorage.getItem('userRole') === 'TEACHER' && (
-                        <button className={styles.startButton} onClick={handleStart}>시작하기</button>
+                    {localStorage.getItem('userRole') === 'TEACHER' ? (
+                        <div className={styles.voteActionButtons}>
+                            <button className={styles.endButton} onClick={handleEnd}>종료</button>
+                            <button className={styles.startButton} onClick={handleStart}>시작하기</button>
+                        </div>
+                    ) : (
+                        <button className={styles.studentEndButton} onClick={handleEnd}>종료</button>
                     )}
                 </>
             )}
@@ -273,13 +276,6 @@ const DiscussionRoomPage: React.FC = () => {
                                     <React.Fragment key={msg.id || `msg-${index}`}>
                                         <div
                                             className={`${styles.messageBubble} ${styles.agreeMessage}`}
-                                            style={{
-                                                backgroundColor: 'lightblue',
-                                                color: 'black',
-                                                padding: '10px',
-                                                margin: '5px',
-                                                border: '2px solid blue'
-                                            }}
                                         >
                                             {msg.content || '[Empty message]'}
                                             {viewMode === 'result' && (
@@ -290,7 +286,6 @@ const DiscussionRoomPage: React.FC = () => {
                                             <div
                                                 key={reply.id || `reply-${index}-${replyIndex}`}
                                                 className={`${styles.messageBubble} ${styles.agreeMessage} ${styles.replyMessage}`}
-                                                style={{ backgroundColor: 'lightcyan', color: 'black', padding: '8px', margin: '3px' }}
                                             >
                                                 ㄴ {reply.content}
                                             </div>
@@ -309,13 +304,6 @@ const DiscussionRoomPage: React.FC = () => {
                                     <React.Fragment key={msg.id || `msg-${index}`}>
                                         <div
                                             className={`${styles.messageBubble} ${styles.disagreeMessage}`}
-                                            style={{
-                                                backgroundColor: 'lightcoral',
-                                                color: 'black',
-                                                padding: '10px',
-                                                margin: '5px',
-                                                border: '2px solid red'
-                                            }}
                                         >
                                             {msg.content || '[Empty message]'}
                                             {viewMode === 'result' && (
@@ -326,7 +314,6 @@ const DiscussionRoomPage: React.FC = () => {
                                             <div
                                                 key={reply.id || `reply-${index}-${replyIndex}`}
                                                 className={`${styles.messageBubble} ${styles.disagreeMessage} ${styles.replyMessage}`}
-                                                style={{ backgroundColor: 'pink', color: 'black', padding: '8px', margin: '3px' }}
                                             >
                                                 ㄴ {reply.content}
                                             </div>

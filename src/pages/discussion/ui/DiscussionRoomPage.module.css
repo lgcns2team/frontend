@@ -97,9 +97,6 @@
 
 /* ---------- Common Buttons ---------- */
 .startButton {
-    position: absolute;
-    bottom: 30px;
-    right: 30px;
     padding: 15px 40px;
     background-color: #2196F3;
     color: white;
@@ -110,12 +107,49 @@
     cursor: pointer;
     box-shadow: 0 4px 15px rgba(33, 150, 243, 0.4);
     transition: transform 0.2s, background-color 0.2s;
-    z-index: 10;
 }
 
 .startButton:hover {
     transform: translateY(-2px);
     background-color: #1976D2;
+}
+
+/* Vote Action Buttons (Teacher) */
+.voteActionButtons {
+    position: absolute;
+    bottom: 30px;
+    right: 30px;
+    display: flex;
+    gap: 15px;
+    z-index: 10;
+}
+
+.voteActionButtons .endButton {
+    padding: 15px 40px;
+    font-size: 1.2rem;
+}
+
+/* Student End Button */
+.studentEndButton {
+    position: absolute;
+    bottom: 30px;
+    right: 30px;
+    padding: 15px 40px;
+    background-color: #f44336;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-size: 1.2rem;
+    font-weight: bold;
+    cursor: pointer;
+    box-shadow: 0 4px 15px rgba(244, 67, 54, 0.4);
+    transition: transform 0.2s, background-color 0.2s;
+    z-index: 10;
+}
+
+.studentEndButton:hover {
+    transform: translateY(-2px);
+    background-color: #d32f2f;
 }
 
 .endButton,
@@ -233,9 +267,42 @@
     opacity: 1;
 }
 
+/* Agree Messages */
+.agreeMessage {
+    background-color: #E3F2FD;
+    color: black;
+    padding: 10px;
+    margin: 5px;
+    border: none;
+}
+
+.agreeMessage.replyMessage {
+    background-color: #E1F5FE;
+    padding: 8px;
+    margin: 3px;
+    margin-left: 30px;
+    border: none;
+}
+
+/* Disagree Messages */
+.disagreeMessage {
+    background-color: #FCE4EC;
+    color: black;
+    padding: 10px;
+    margin: 5px;
+    border: none;
+}
+
+.disagreeMessage.replyMessage {
+    background-color: #F8BBD0;
+    padding: 8px;
+    margin: 3px;
+    margin-left: 30px;
+    border: none;
+}
+
+/* Reply Message Base (shared styles) */
 .replyMessage {
-    margin-left: 20px;
-    background-color: rgba(0, 0, 0, 0.03) !important;
     font-size: 0.9rem;
     border-left: 3px solid #ccc;
     border-radius: 4px 15px 15px 4px;
@@ -626,8 +693,8 @@
     width: 95%;
     max-width: 1400px;
     margin: 0 auto;
-    padding: 30px 30px 100px 30px;
-    /* Added bottom padding to avoid button overlap */
+    padding: 30px 30px 10px 30px;
+    /* Reduced padding to allow more space for content */
     display: flex;
     flex-direction: column;
     gap: 20px;
@@ -637,13 +704,15 @@
 .resultTopRow {
     display: flex;
     gap: 20px;
-    flex: 3;
+    flex: 2;
+    /* Reduced to make more room for bottom row */
 }
 
 .resultBottomRow {
     display: flex;
     gap: 20px;
-    flex: 7;
+    flex: 9;
+    /* Increased to make bottom boxes much taller */
 }
 
 .resultBox {
