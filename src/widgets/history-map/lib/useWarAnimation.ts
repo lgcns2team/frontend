@@ -124,6 +124,14 @@ export const useWarAnimation = ({
                 iconAnchor: [20, 20],
                 className: 'war-unit-icon'
             });
+        } else if (era.id === 'goryeo') {
+            // Goryeo-specific: load ksoldier for specific battles
+            ksoldierIcon = L.icon({
+                iconUrl: `/assets/images/goryeo/ksoldier.png`,
+                iconSize: [40, 40],
+                iconAnchor: [20, 20],
+                className: 'war-unit-icon'
+            });
         }
 
 
@@ -353,58 +361,65 @@ export const useWarAnimation = ({
                 // Start of icon switching logic
                 let targetIcon;
 
+                // Check for specific Goryeo battles that use ksoldier
+                const goryeoKsoldierBattles = ['석성 전투', '갈수 전투', '공험진 전투'];
+                if (goryeoKsoldierBattles.includes(unit.battleName) && ksoldierIcon) {
+                    targetIcon = ksoldierIcon;
+                }
                 // Check for specific naval battles that use Tship (Joseon era only)
-                const turtleShipBattles = ['한산도 대첩', '노량 해전', '명량 해전'];
-                if (turtleShipBattles.includes(unit.battleName)) {
-                    targetIcon = tshipIcon;
-                } else if (era.id === 'joseon') {
-                    // Joseon era: use complex logic with route colors and multiple soldier types
-                    if (unit.routeColor === '#9333ea') {
-                        // Purple route: always use soldier3, regardless of terrain
-                        targetIcon = soldier3Icon;
-                    } else if (historicalLayer) {
-                        // For red and blue routes, check if on land or sea
-                        let isOnLand = false;
+                else {
+                    const turtleShipBattles = ['한산도 대첩', '노량 해전', '명량 해전'];
+                    if (turtleShipBattles.includes(unit.battleName)) {
+                        targetIcon = tshipIcon;
+                    } else if (era.id === 'joseon') {
+                        // Joseon era: use complex logic with route colors and multiple soldier types
+                        if (unit.routeColor === '#9333ea') {
+                            // Purple route: always use soldier3, regardless of terrain
+                            targetIcon = soldier3Icon;
+                        } else if (historicalLayer) {
+                            // For red and blue routes, check if on land or sea
+                            let isOnLand = false;
 
-                        (historicalLayer as any).eachLayer((layer: any) => {
-                            if (isOnLand) return; // Already found
+                            (historicalLayer as any).eachLayer((layer: any) => {
+                                if (isOnLand) return; // Already found
 
-                            if (layer.feature && (layer.feature.geometry.type === 'Polygon' || layer.feature.geometry.type === 'MultiPolygon')) {
-                                const pt = turf.point([coords[0], coords[1]]);
-                                if (turf.booleanPointInPolygon(pt, layer.feature)) {
-                                    isOnLand = true;
+                                if (layer.feature && (layer.feature.geometry.type === 'Polygon' || layer.feature.geometry.type === 'MultiPolygon')) {
+                                    const pt = turf.point([coords[0], coords[1]]);
+                                    if (turf.booleanPointInPolygon(pt, layer.feature)) {
+                                        isOnLand = true;
+                                    }
                                 }
-                            }
-                        });
+                            });
 
-                        // Update icon based on route color and location
-                        const isBlueRoute = unit.routeColor === '#3b82f6';
-                        if (isBlueRoute) {
-                            // Blue route: ksoldier (land) / kwarship (sea)
-                            targetIcon = isOnLand ? ksoldierIcon : kwarshipIcon;
-                        } else {
-                            // Red route: soldier1 (land) / warship (sea)
+                            // Update icon based on route color and location
+                            const isBlueRoute = unit.routeColor === '#3b82f6';
+                            if (isBlueRoute) {
+                                // Blue route: ksoldier (land) / kwarship (sea)
+                                targetIcon = isOnLand ? ksoldierIcon : kwarshipIcon;
+                            } else {
+                                // Red route: soldier1 (land) / warship (sea)
+                                targetIcon = isOnLand ? soldierIcon : warshipIcon;
+                            }
+                        }
+                    } else {
+                        // Non-Joseon eras: simple logic - only soldier1 (land) or warship (sea), ignore route color
+                        if (historicalLayer) {
+                            let isOnLand = false;
+
+                            (historicalLayer as any).eachLayer((layer: any) => {
+                                if (isOnLand) return; // Already found
+
+                                if (layer.feature && (layer.feature.geometry.type === 'Polygon' || layer.feature.geometry.type === 'MultiPolygon')) {
+                                    const pt = turf.point([coords[0], coords[1]]);
+                                    if (turf.booleanPointInPolygon(pt, layer.feature)) {
+                                        isOnLand = true;
+                                    }
+                                }
+                            });
+
+                            // Use only soldier1 for land, warship for sea (regardless of route color)
                             targetIcon = isOnLand ? soldierIcon : warshipIcon;
                         }
-                    }
-                } else {
-                    // Non-Joseon eras: simple logic - only soldier1 (land) or warship (sea), ignore route color
-                    if (historicalLayer) {
-                        let isOnLand = false;
-
-                        (historicalLayer as any).eachLayer((layer: any) => {
-                            if (isOnLand) return; // Already found
-
-                            if (layer.feature && (layer.feature.geometry.type === 'Polygon' || layer.feature.geometry.type === 'MultiPolygon')) {
-                                const pt = turf.point([coords[0], coords[1]]);
-                                if (turf.booleanPointInPolygon(pt, layer.feature)) {
-                                    isOnLand = true;
-                                }
-                            }
-                        });
-
-                        // Use only soldier1 for land, warship for sea (regardless of route color)
-                        targetIcon = isOnLand ? soldierIcon : warshipIcon;
                     }
                 }
 
