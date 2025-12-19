@@ -52,6 +52,20 @@ const DiscussionRoomPage: React.FC = () => {
     const [inputValue, setInputValue] = useState('');
     const [replyToId, setReplyToId] = useState<string | null>(null);
 
+    // Refs for auto-scrolling chat logs
+    const agreeChatRef = useRef<HTMLDivElement>(null);
+    const disagreeChatRef = useRef<HTMLDivElement>(null);
+
+    // Auto-scroll to bottom when messages change
+    useEffect(() => {
+        if (agreeChatRef.current) {
+            agreeChatRef.current.scrollTop = agreeChatRef.current.scrollHeight;
+        }
+        if (disagreeChatRef.current) {
+            disagreeChatRef.current.scrollTop = disagreeChatRef.current.scrollHeight;
+        }
+    }, [messages]);
+
     const topic = discussion?.title || '';
     const description = discussion?.description || discussion?.content || '';
 
@@ -81,9 +95,20 @@ const DiscussionRoomPage: React.FC = () => {
             return;
         }
 
+        const parentMessageId = replyToId;
         sendChat(inputValue, replyToId || undefined);
         setInputValue('');
         setReplyToId(null);
+
+        // If this was a reply, scroll to the parent message after a short delay
+        if (parentMessageId) {
+            setTimeout(() => {
+                const parentElement = document.querySelector(`[data-message-id="${parentMessageId}"]`);
+                if (parentElement) {
+                    parentElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                }
+            }, 100);
+        }
     };
 
 
@@ -250,11 +275,12 @@ const DiscussionRoomPage: React.FC = () => {
                             className={`${styles.chatColumn} ${vote === 'agree' ? styles.selectedColumn : ''}`}
                         >
                             <div className={`${styles.columnHeader} ${styles.agreeHeader}`}>찬성</div>
-                            <div className={styles.chatLog}>
+                            <div className={styles.chatLog} ref={agreeChatRef}>
                                 {messages.filter(m => m.side === 'agree' && !m.parentId).map((msg, index) => (
                                     <React.Fragment key={msg.id || `msg-${index}`}>
                                         <div
                                             className={`${styles.messageBubble} ${styles.agreeMessage}`}
+                                            data-message-id={msg.id}
                                         >
                                             {msg.content || '[Empty message]'}
                                             {viewMode === 'result' && (
@@ -277,11 +303,12 @@ const DiscussionRoomPage: React.FC = () => {
                             className={`${styles.chatColumn} ${vote === 'disagree' ? styles.selectedColumn : ''}`}
                         >
                             <div className={`${styles.columnHeader} ${styles.disagreeHeader}`}>반대</div>
-                            <div className={styles.chatLog}>
+                            <div className={styles.chatLog} ref={disagreeChatRef}>
                                 {messages.filter(m => m.side === 'disagree' && !m.parentId).map((msg, index) => (
                                     <React.Fragment key={msg.id || `msg-${index}`}>
                                         <div
                                             className={`${styles.messageBubble} ${styles.disagreeMessage}`}
+                                            data-message-id={msg.id}
                                         >
                                             {msg.content || '[Empty message]'}
                                             {viewMode === 'result' && (
