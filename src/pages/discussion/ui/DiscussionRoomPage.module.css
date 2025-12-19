@@ -1319,11 +1319,10 @@
 }
 
 .selectedColumn {
-    /* Selected State: Matches Hover + Gold Border */
-    transform: translateY(-2px) !important;
-    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.35) !important;
-    border-color: #FFD700 !important;
-    /* Switch border to Gold */
+    /* Selected State: Scale Up instead of Gold Border */
+    transform: scale(1.03) translateY(-5px) !important;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4) !important;
+    /* Deeper shadow for lift */
     z-index: 10;
 }
 
@@ -1347,19 +1346,21 @@
 
 /* Distinct Header Colors */
 .agreeHeader {
-    background-color: #1A237E;
-    /* Deep Royal Blue */
-    background-image: linear-gradient(to bottom, #283593, #1A237E);
-    /* Subtle gradient */
-    border-bottom: 2px solid #FFD700;
+    background-color: #C8E6C9;
+    /* Light Green */
+    background-image: none;
+    color: #1B5E20;
+    /* Dark Green Text */
+    border-bottom: 2px solid #388E3C;
 }
 
 .disagreeHeader {
-    background-color: #B71C1C;
-    /* Deep Royal Red */
-    background-image: linear-gradient(to bottom, #C62828, #B71C1C);
-    /* Subtle gradient */
-    border-bottom: 2px solid #FFD700;
+    background-color: #F3E5F5;
+    /* Very Light Purple */
+    background-image: none;
+    color: #6A1B9A;
+    /* Dark Purple Text */
+    border-bottom: 2px solid #AB47BC;
 }
 
 /* ---------- Status Bar (Resized & Relocated) ---------- */
