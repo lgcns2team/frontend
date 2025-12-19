@@ -1393,37 +1393,53 @@
 .resultTopRow {
     display: flex;
     gap: 20px;
-    flex: 2;
+    flex: 4;
+    /* Increased height for Topic */
     /* Reduced to make more room for bottom row */
+    min-height: 0;
+    /* Crucial for nested flex scrolling */
 }
 
 .resultBottomRow {
     display: flex;
     gap: 20px;
-    flex: 9;
-    /* Increased to make bottom boxes much taller */
+    flex: 6;
+    /* Balanced height for Conclusions */
 }
 
 .resultBox {
     flex: 1;
-    border-radius: 15px;
+    border-radius: 4px;
+    /* Traditional Sharpness */
     display: flex;
     justify-content: center;
     align-items: center;
     font-size: 1.2rem;
-    font-weight: bold;
-    color: #333;
-    background-color: rgba(255, 255, 255, 0.85);
-    backdrop-filter: blur(5px);
-    border: 1px solid rgba(255, 255, 255, 0.3);
-    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+    font-weight: 900;
+
+    /* Royal Court Style: Hanji Paper */
+    background-color: #FDF5E6;
+    background-image: url("https://www.transparenttextures.com/patterns/cream-paper.png");
+    color: #3E2723;
+    /* Dark Ink */
+
+    /* Double Border Frame */
+    border: 3px solid #5D4037;
+    /* Dark Wood */
+    outline: 2px solid #FFD700;
+    /* Gold */
+    outline-offset: -8px;
+
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+    font-family: 'Gungsuh', 'Batang', serif;
 }
 
 .topLeftBox {
     flex: 0.25;
-    background-color: transparent;
+    background: none;
     border: none;
     box-shadow: none;
+    outline: none;
     display: flex;
     justify-content: center;
     align-items: center;
@@ -1439,34 +1455,53 @@
 .topRightBox {
     flex: 0.75;
     padding: 30px;
-    background-color: rgba(255, 255, 255, 0.9);
+    /* Inherit background from .resultBox (Hanji) */
+
     display: flex;
     flex-direction: column;
     align-items: flex-start;
-    justify-content: center;
+    justify-content: flex-start;
+    /* Start from top */
+
+    overflow-y: auto;
+    /* Enable Scrolling */
+    max-height: 100%;
+    /* Ensure it doesn't grow beyond the row */
+
+    /* Scrollbar styling */
+    scrollbar-width: thin;
+    scrollbar-color: #5D4037 transparent;
+}
+
+.topRightBox::-webkit-scrollbar {
+    width: 8px;
+}
+
+.topRightBox::-webkit-scrollbar-thumb {
+    background-color: #5D4037;
+    border-radius: 4px;
+    border: 2px solid #FDF5E6;
+    /* Match BG */
+}
+
+.topRightBox::-webkit-scrollbar-track {
+    background: transparent;
 }
 
 .topRightBox h2 {
-    margin: 0 0 10px 0;
-    /* font-size controlled by inline style */
+    margin: 0 0 15px 0;
     line-height: 1.3;
-    display: -webkit-box;
-    -webkit-line-clamp: 2;
-    line-clamp: 2;
-    overflow: hidden;
-    -webkit-box-orient: vertical;
-    max-height: 2.6em;
+    color: #3E2723;
+    /* Dark Ink */
+    /* Removed truncation properties */
 }
 
 .topRightBox p {
     margin: 0;
-    /* font-size controlled by inline style */
-    color: #666;
-    line-height: 1.3;
-    display: -webkit-box;
-    -webkit-line-clamp: 3;
-    line-clamp: 3;
-    overflow: hidden;
-    -webkit-box-orient: vertical;
-    max-height: 3.9em;
+    line-height: 1.6;
+    color: #4E342E;
+    /* Ink */
+    white-space: pre-wrap;
+    /* Preserve line breaks */
+    /* Removed truncation properties */
 }
