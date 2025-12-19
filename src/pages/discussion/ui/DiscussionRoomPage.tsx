@@ -194,8 +194,12 @@ const DiscussionRoomPage: React.FC = () => {
         <div className={styles.container}>
             {viewMode === 'vote' && (
                 <div className={styles.header}>
-                    <h1 className={styles.title}>주제 : {topic}</h1>
-                    <p className={styles.description}>{description}</p>
+                    <img src="/assets/images/logo2.png" className={styles.headerDecoLeft} alt="decoration" />
+                    <img src="/assets/images/logo2.png" className={styles.headerDecoRight} alt="decoration" />
+                    <div className={styles.hyunpan}>
+                        <h1 className={styles.title}>{topic}</h1>
+                        <p className={styles.description}>{description}</p>
+                    </div>
                 </div>
             )}
 

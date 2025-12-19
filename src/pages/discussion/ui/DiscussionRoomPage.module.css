@@ -116,52 +116,127 @@
 }
 
 /* ---------- Header ---------- */
+/* ---------- Header (Vote Mode) ---------- */
+/* ---------- Header (Vote Mode) ---------- */
+/* ---------- Header (Vote Mode) ---------- */
 .header {
     position: absolute;
-    top: 5rem;
+    top: 0;
     left: 0;
     width: 100%;
-    text-align: center;
+    height: 30vh;
+    /* Occupy Top 30% */
     z-index: 20;
     pointer-events: none;
-    /* Let clicks pass through to buttons */
+
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+/* Decorative Flowers */
+.headerDecoLeft,
+.headerDecoRight {
+    position: absolute;
+    width: 120px;
+    /* Size */
+    height: 120px;
+    top: 50%;
+    transform: translateY(-50%);
+    opacity: 1;
+    z-index: 22;
+}
+
+.headerDecoLeft {
+    left: 3%;
+}
+
+.headerDecoRight {
+    right: 3%;
+}
+
+
+/* Hyunpan (Signboard) Container */
+.hyunpan {
+    pointer-events: auto;
+    /* Enable scrolling/selection */
+    display: inline-flex;
+    flex-direction: column;
+    align-items: center;
+    z-index: 20;
+
+    width: 80%;
+    /* Slightly narrower to fit flowers */
+    max-width: 1000px;
+    max-height: 160px;
+    /* Reduced height */
+    overflow-y: auto;
+
+    background-color: #FDF5E6;
+    /* Cream Hanji */
+    background-image: url("https://www.transparenttextures.com/patterns/cream-paper.png");
+
+    border: 12px solid #5D4037;
+    /* Thick Dark Wood Frame */
+    border-color: #795548 #3E2723 #281813 #5D4037;
+    /* 3D Bevel Lighting */
+    border-radius: 6px;
+
+    /* Inner Shadow + Deep 3D Drop Shadow */
+    box-shadow:
+        inset 0 0 15px rgba(0, 0, 0, 0.3),
+        /* Inner depth */
+        0 25px 60px rgba(0, 0, 0, 0.6),
+        /* Deep Drop Shadow */
+        0 5px 10px rgba(0, 0, 0, 0.4);
+    /* Close shadow */
+
+    padding: 15px 30px;
+    /* Compact padding */
+
+    /* Scrollbar */
+    scrollbar-width: thin;
+    scrollbar-color: #5D4037 transparent;
+}
+
+.hyunpan::-webkit-scrollbar {
+    width: 8px;
+}
+
+.hyunpan::-webkit-scrollbar-thumb {
+    background-color: #5D4037;
+    border-radius: 4px;
+    border: 2px solid #FDF5E6;
+}
+
+.hyunpan::-webkit-scrollbar-track {
+    background: transparent;
 }
 
 .title {
-    /* font-size: 2.5rem; */
-    /* Controlled by inline style */
-    margin-bottom: 20px;
-    color: #1a1a1a;
-    /* Dark Text */
-    text-shadow: 2px 2px 4px rgba(255, 255, 255, 0.8);
-    /* Light Shadow */
+    margin: 0 0 15px 0;
+    color: #3E2723;
+    /* Dark Ink */
+    /* Removed text-shadow for clean paper look */
     line-height: 1.3;
-    display: -webkit-box;
-    -webkit-line-clamp: 2;
-    line-clamp: 2;
-    overflow: hidden;
-    -webkit-box-orient: vertical;
-    max-height: 2.6em;
-    /* 2 lines * 1.3 */
+    font-family: 'Gungsuh', 'Batang', serif;
+    font-weight: 900;
+    font-size: 2.2rem;
+    border-bottom: 2px solid rgba(62, 39, 35, 0.2);
+    /* Subtle underline separator */
+    padding-bottom: 10px;
+    width: 100%;
 }
 
 .description {
-    margin-top: 12px;
-    max-width: 900px;
-    margin: 0 auto;
-    text-align: center;
-    /* font-size: 1.3rem; */
-    /* Controlled by inline style */
-    color: #444;
-    line-height: 1.3;
-    font-weight: 500;
-    display: -webkit-box;
-    -webkit-line-clamp: 3;
-    line-clamp: 3;
-    overflow: hidden;
-    -webkit-box-orient: vertical;
-    max-height: 3.9em;
-    /* 3 lines * 1.3 */
+    margin: 0;
+    width: 100%;
+    max-width: 100%;
+    color: #4E342E;
+    line-height: 1.6;
+    font-weight: 600;
+    white-space: pre-wrap;
+    font-family: 'Gungsuh', 'Batang', serif;
 }
 
 /* ... existing styles ... */
@@ -171,16 +246,20 @@
 /* ---------- Vote ---------- */
 /* ---------- Vote Screen (Sageuk Faction Style) ---------- */
 .voteContainer {
-    height: 100vh;
+    height: 75vh;
+    /* Occupy bottom 70% */
     width: 100vw;
     margin: 0;
     padding: 0;
     display: flex;
     position: absolute;
-    top: 0;
+    top: 25%;
+    /* Start below the header */
     left: 0;
     z-index: 5;
     overflow: hidden;
+    border-top: 5px solid #5D4037;
+    /* Separator line */
 }
 
 .voteButton {
@@ -254,8 +333,11 @@
 .vsBadge {
     position: absolute;
     top: 50%;
+    /* Center within the button area */
     left: 50%;
-    transform: translate(-50%, -50%);
+    transform: translate(-50%, -50%) skewY(-5deg);
+    /* Skew container */
+    z-index: 5;
     width: 140px;
     height: 140px;
 
