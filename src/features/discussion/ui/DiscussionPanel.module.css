@@ -1,3 +1,11 @@
+/* DiscussionPanel.module.css */
+
+/* Global Font for this module */
+.charactersPanel,
+.modalContent {
+  font-family: 'Gungsuh', 'Batang', serif;
+}
+
 .discussionPanel {
   padding: 16px;
   border: 1px solid #ccc;
@@ -97,22 +105,25 @@
   position: absolute;
   bottom: 20px;
   right: 20px;
-  padding: 10px 20px;
-  font-size: 1rem;
-  font-weight: 600;
-  border: none;
+  padding: 12px 24px;
+  font-size: 1.1rem;
+  font-weight: 900;
+  border: 2px solid #5D4037;
   border-radius: 8px;
   cursor: pointer;
-  background-color: white;
-  color: black;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-  transition: background-color 0.2s, transform 0.2s;
+  background-color: #FFF8E1;
+  color: #5D4037;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  font-family: 'Gungsuh', 'Batang', serif;
+  transition: all 0.2s;
+  z-index: 10;
 }
 
 .createRoomButton:hover {
-  background-color: #f5f5f5;
-  transform: translateY(1px);
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+  background-color: #5D4037;
+  color: #FFD700;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.4);
 }
 
 .deleteButton {
@@ -150,38 +161,54 @@
   display: flex;
   justify-content: center;
   align-items: center;
-  background-color: rgba(0, 0, 0, 0.5);
+  background-color: rgba(0, 0, 0, 0.7);
   z-index: 9999;
+  backdrop-filter: blur(2px);
 }
 
 .modalContent {
   position: relative;
   width: 75vw;
-  height: 75vh;
-  padding: 24px;
+  height: 80vh;
+  padding: 30px;
   display: flex;
   flex-direction: column;
   text-align: center;
   border-radius: 8px;
-  background-color: var(--ui-bg-secondary, white);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+
+  /* Royal Court Theme */
+  background-color: #FDF5E6;
+  background-image: url("https://www.transparenttextures.com/patterns/cream-paper.png");
+  border: 12px solid #5D4037;
+  /* Dark Wood Frame */
+  box-shadow:
+    inset 0 0 0 2px #FFD700,
+    /* Inner Gold */
+    0 25px 60px rgba(0, 0, 0, 0.6);
+  /* Deep Shadow */
+
+  color: #3E2723;
+  /* Dark Ink Text */
+  font-family: 'Gungsuh', 'Batang', serif;
 }
 
 .modalHeader {
-  margin-bottom: 20px;
-  padding-bottom: 10px;
-  font-size: 1.25rem;
-  font-weight: bold;
-  color: var(--ui-text-highlight, black);
-  border-bottom: 1px solid var(--ui-border, #eee);
+  margin-bottom: 24px;
+  padding-bottom: 12px;
+  font-size: 2rem;
+  font-weight: 900;
+  color: #3E2723;
+  border-bottom: 4px double #5D4037;
+  text-shadow: 1px 1px 0 rgba(255, 255, 255, 0.5);
 }
 
 .modalBody {
   flex: 1;
   display: flex;
-  gap: 24px;
+  gap: 30px;
   padding: 0 10px;
   overflow: hidden;
+  text-align: left;
 }
 
 .leftPanel,
@@ -189,7 +216,7 @@
   flex: 1;
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 20px;
 }
 
 .panelFill {
@@ -201,8 +228,12 @@
 .leftPanelFillBox {
   flex: 1;
   border-radius: 6px;
-  border: 1px solid var(--ui-border, #ccc);
-  background-color: #f9f9f9;
+  border: 2px solid #8D6E63;
+  /* Light Wood */
+  background-color: rgba(255, 248, 225, 0.6);
+  /* Slightly transparent Hanji */
+  overflow-y: auto;
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 /* Footer */
@@ -211,66 +242,82 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding-top: 16px;
+  padding-top: 20px;
+  border-top: 2px solid rgba(93, 64, 55, 0.3);
+  margin-top: 10px;
 }
 
 .footerControls {
   display: flex;
   align-items: center;
-  gap: 16px;
+  gap: 24px;
 }
 
 .footerInputItem {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 12px;
 }
 
 .footerLabel {
-  font-size: 0.9rem;
-  font-weight: 500;
+  font-size: 1.1rem;
+  font-weight: 600;
   white-space: nowrap;
+  color: #4E342E;
 }
 
 .footerSelect,
 .footerInput {
-  width: 80px;
-  padding: 6px;
-  font-size: 0.9rem;
+  width: 100px;
+  padding: 8px;
+  font-size: 1rem;
   border-radius: 4px;
-  border: 1px solid var(--ui-border, #ccc);
+  border: 2px solid #8D6E63;
+  background-color: #FFF8E1;
+  font-family: 'Gungsuh', 'Batang', serif;
+  color: #3E2723;
+  text-align: center;
 }
 
 .footerButtons {
   display: flex;
-  gap: 12px;
+  gap: 16px;
 }
 
 .modalButton {
-  padding: 8px 16px;
-  font-size: 0.9rem;
+  padding: 12px 28px;
+  font-size: 1.1rem;
+  font-weight: bold;
   border-radius: 6px;
   border: none;
   cursor: pointer;
-  transition: background-color 0.2s;
+  transition: all 0.2s;
+  font-family: 'Gungsuh', 'Batang', serif;
 }
 
 .cancelButton {
-  background-color: #f0f0f0;
-  color: #333;
+  background-color: #D7CCC8;
+  color: #3E2723;
+  border: 2px solid #8D6E63;
 }
 
 .cancelButton:hover {
-  background-color: #e0e0e0;
+  background-color: #BCAAA4;
 }
 
 .confirmButton {
-  background-color: var(--ui-primary, #007bff);
-  color: white;
+  background-color: #5D4037;
+  /* Dark Wood */
+  color: #FFD700;
+  /* Gold Text */
+  border: 2px solid #FFD700;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
 }
 
 .confirmButton:hover {
-  background-color: var(--ui-primary-dark, #0056b3);
+  background-color: #4E342E;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.4);
 }
 
 /* Form */
@@ -278,7 +325,7 @@
 .formRow {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 12px;
   margin-bottom: 16px;
   text-align: left;
 }
@@ -290,8 +337,8 @@
 
 .formLabel {
   min-width: 100px;
-  font-weight: 500;
-  color: var(--ui-text-highlight, black);
+  font-weight: 600;
+  color: #3E2723;
 }
 
 .input,
@@ -299,34 +346,55 @@
 .textarea,
 .topicTextarea {
   width: 100%;
-  padding: 10px;
-  font-size: 1rem;
+  padding: 14px;
+  font-size: 1.1rem;
   border-radius: 6px;
-  border: 1px solid var(--ui-border, #ccc);
+  border: 2px solid #8D6E63;
   box-sizing: border-box;
+  background-color: #FFF8E1;
+  font-family: 'Gungsuh', 'Batang', serif;
+  color: #3E2723;
+  outline: none;
+  transition: all 0.2s;
+  box-shadow: inset 1px 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.input:focus,
+.textarea:focus,
+.topicTextarea:focus {
+  border-color: #5D4037;
+  box-shadow: 0 0 0 2px #FFD700;
+  background-color: #ffffff;
 }
 
 .textarea,
 .topicTextarea {
   resize: none;
+  line-height: 1.6;
 }
 
 .topicTextarea {
   height: 9em;
+  font-weight: bold;
 }
 
 .recommendButton {
-  padding: 10px 16px;
+  padding: 12px 20px;
   border-radius: 6px;
-  border: none;
+  border: 2px solid #5D4037;
   cursor: pointer;
   white-space: nowrap;
-  background-color: var(--ui-secondary, #6c757d);
-  color: white;
+  background-color: #FFF8E1;
+  color: #5D4037;
+  font-family: 'Gungsuh', 'Batang', serif;
+  font-weight: bold;
+  transition: all 0.2s;
 }
 
 .recommendButton:hover {
-  background-color: var(--ui-secondary-dark, #5a6268);
+  background-color: #5D4037;
+  color: #FFD700;
+  transform: translateY(-1px);
 }
 
 .participantCount {
