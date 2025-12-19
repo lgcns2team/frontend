@@ -235,12 +235,15 @@ const DiscussionRoomPage: React.FC = () => {
                             className={`${styles.voteButton} ${styles.agreeButton}`}
                             onClick={(e) => { e.stopPropagation(); setVote(vote === 'agree' ? null : 'agree'); }}
                             style={{ opacity: vote === 'disagree' ? 0.3 : 1 }}
-                        >찬성</button>
+                        ><span>찬성</span></button>
+
+                        <div className={styles.vsBadge}>VS</div>
+
                         <button
                             className={`${styles.voteButton} ${styles.disagreeButton}`}
                             onClick={(e) => { e.stopPropagation(); setVote(vote === 'disagree' ? null : 'disagree'); }}
                             style={{ opacity: vote === 'agree' ? 0.3 : 1 }}
-                        >반대</button>
+                        ><span>반대</span></button>
                     </div>
                     {localStorage.getItem('userRole') === 'TEACHER' ? (
                         <div className={styles.voteActionButtons}>

@@ -17,7 +17,10 @@ export const MajorEventsPanel = ({ onYearChange, onEventClick }: MajorEventsPane
         const loadEvents = async () => {
             const data = await fetchMainEvents();
             // Sort by year ascending
-            const sorted = data.sort((a, b) => a.year - b.year);
+            const filtered = data.filter(event =>
+                event.eventName !== "기타/미분류 전쟁" && event.eventName !== "1년 기타/미분류 전쟁"
+            );
+            const sorted = filtered.sort((a, b) => a.year - b.year);
             setEvents(sorted);
             setLoading(false);
         };
