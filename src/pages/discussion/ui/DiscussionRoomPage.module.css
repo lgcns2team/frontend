@@ -277,11 +277,12 @@
 }
 
 .agreeMessage.replyMessage {
-    background-color: #E1F5FE;
+    background-color: #F5F5F5;
     padding: 8px;
     margin: 3px;
     margin-left: 30px;
-    border: none;
+    border: 2px solid #E3F2FD;
+    border-left: 3px solid #E3F2FD;
 }
 
 /* Disagree Messages */
@@ -294,17 +295,17 @@
 }
 
 .disagreeMessage.replyMessage {
-    background-color: #F8BBD0;
+    background-color: #F5F5F5;
     padding: 8px;
     margin: 3px;
     margin-left: 30px;
-    border: none;
+    border: 2px solid #FCE4EC;
+    border-left: 3px solid #FCE4EC;
 }
 
 /* Reply Message Base (shared styles) */
 .replyMessage {
     font-size: 0.9rem;
-    border-left: 3px solid #ccc;
     border-radius: 4px 15px 15px 4px;
 }
 
