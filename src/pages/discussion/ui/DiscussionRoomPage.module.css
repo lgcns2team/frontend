@@ -7,13 +7,112 @@
     display: flex;
     flex-direction: column;
     position: relative;
-    background: linear-gradient(rgba(255, 255, 255, 0.8), rgba(255, 255, 255, 0.8)),
-        url('/assets/images/background1.png');
-    background-size: cover;
-    background-position: center;
-    background-attachment: fixed;
-    background-repeat: no-repeat;
     overflow: hidden;
+
+    /* Frame: 3D Light Wood Border (Bamboo/Oak Style) */
+    border-style: solid;
+    border-width: 10px;
+    /* Reduced to ~1cm physical feel */
+    /* Top(Lightest), Right(Shadow), Bottom(Deep), Left(Mid) */
+    border-color: #F1D3A6 #A67C52 #8D6E63 #D4AC78;
+
+    box-sizing: border-box;
+    box-shadow: inset 0 0 30px rgba(93, 64, 55, 0.3);
+    /* Softer Shadow */
+
+    /* Royal Court Atmosphere: Clean Changhoji (Paper Window) */
+    background-color: #FDF5E6;
+    background-image:
+        linear-gradient(rgba(166, 124, 82, 0.15) 2px, transparent 2px),
+        linear-gradient(90deg, rgba(166, 124, 82, 0.15) 2px, transparent 2px),
+        /* Lighter Grid Lines */
+        url("https://www.transparenttextures.com/patterns/cream-paper.png");
+    background-size: 60px 60px, 60px 60px, auto;
+    background-position: center;
+    background-origin: border-box;
+    background-clip: border-box;
+}
+
+.container::before {
+    content: "";
+    position: absolute;
+    inset: 5px;
+    /* Tight fit */
+    pointer-events: none;
+    z-index: 0;
+    /* Changed from 1 to 0 (Behind characters) */
+
+    /* 
+       Intricate Corner Lattice (Meander/Greek Key Style)
+       Refined 3px/2px Lines for Ultra-Delicacy
+    */
+    background-image:
+        /* --- CORNER ACCENTS (Darker Wood #8D6E63) --- */
+
+        /* 1. Outer Frame L-Brackets */
+        linear-gradient(#8D6E63, #8D6E63), linear-gradient(#8D6E63, #8D6E63),
+        /* TL */
+        linear-gradient(#8D6E63, #8D6E63), linear-gradient(#8D6E63, #8D6E63),
+        /* TR */
+        linear-gradient(#8D6E63, #8D6E63), linear-gradient(#8D6E63, #8D6E63),
+        /* BL */
+        linear-gradient(#8D6E63, #8D6E63), linear-gradient(#8D6E63, #8D6E63),
+        /* BR */
+
+        /* 2. Inner "Meander" Turn */
+        linear-gradient(#8D6E63, #8D6E63), linear-gradient(#8D6E63, #8D6E63),
+        /* TL Hook */
+        linear-gradient(#8D6E63, #8D6E63), linear-gradient(#8D6E63, #8D6E63),
+        /* TR Hook */
+        linear-gradient(#8D6E63, #8D6E63), linear-gradient(#8D6E63, #8D6E63),
+        /* BL Hook */
+        linear-gradient(#8D6E63, #8D6E63), linear-gradient(#8D6E63, #8D6E63);
+    /* BR Hook */
+
+    background-size:
+        /* 1. Outer L: (H: 80x3, V: 3x80) - 3px lines */
+        80px 3px, 3px 80px,
+        /* TL */
+        80px 3px, 3px 80px,
+        /* TR */
+        80px 3px, 3px 80px,
+        /* BL */
+        80px 3px, 3px 80px,
+        /* BR */
+
+        /* 2. Inner Hook: (H: 40x2, V: 2x40) - 2px lines */
+        40px 2px, 2px 40px,
+        /* TL */
+        40px 2px, 2px 40px,
+        /* TR */
+        40px 2px, 2px 40px,
+        /* BL */
+        40px 2px, 2px 40px;
+    /* BR */
+
+    background-position:
+        /* 1. Outer Frame (Corners) */
+        0 0, 0 0,
+        /* TL */
+        100% 0, 100% 0,
+        /* TR */
+        0 100%, 0 100%,
+        /* BL */
+        100% 100%, 100% 100%,
+        /* BR */
+
+        /* 2. Inner Hook (Offset by 20px) */
+        20px 20px, 20px 20px,
+        /* TL */
+        calc(100% - 20px) 20px, calc(100% - 20px) 20px,
+        /* TR */
+        20px calc(100% - 20px), 20px calc(100% - 20px),
+        /* BL */
+        calc(100% - 20px) calc(100% - 20px), calc(100% - 20px) calc(100% - 20px);
+    /* BR */
+
+    background-repeat: no-repeat;
+    opacity: 0.9;
 }
 
 /* ---------- Header ---------- */
@@ -32,9 +131,10 @@
     /* font-size: 2.5rem; */
     /* Controlled by inline style */
     margin-bottom: 20px;
-    color: white;
-    /* Changed to white for better visibility on colored bg */
-    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8);
+    color: #1a1a1a;
+    /* Dark Text */
+    text-shadow: 2px 2px 4px rgba(255, 255, 255, 0.8);
+    /* Light Shadow */
     line-height: 1.3;
     display: -webkit-box;
     -webkit-line-clamp: 2;
@@ -64,7 +164,12 @@
     /* 3 lines * 1.3 */
 }
 
+/* ... existing styles ... */
+
+
+
 /* ---------- Vote ---------- */
+/* ---------- Vote Screen (Sageuk Faction Style) ---------- */
 .voteContainer {
     height: 100vh;
     width: 100vw;
@@ -80,6 +185,7 @@
 
 .voteButton {
     flex: 1;
+    /* Both start equal */
     border: none;
     font-size: 5rem;
     font-weight: 900;
@@ -87,182 +193,190 @@
     display: flex;
     justify-content: center;
     align-items: center;
-    color: #1F2937;
-    /* Dark Grey Text */
-    transition: all 0.3s ease;
-    text-shadow: 2px 2px 0px rgba(255, 255, 255, 0.5);
-    /* Lighter shadow for dark text */
+    color: #3E2723;
+    /* Revert to Dark Ink Text for readability on light BG */
+    transition: flex 0.5s ease, filter 0.3s ease;
+    /* Smooth expansion */
+    text-shadow: 1px 1px 0px rgba(255, 255, 255, 0.5);
+    /* Light shadow */
     position: relative;
     overflow: hidden;
-    /* italics for dynamic feel */
-    font-style: italic;
-    font-family: 'Impact', 'Arial Black', sans-serif;
-    transform: skewX(-5deg);
-    /* Slight overall skew for energy */
-}
-
-/* Burst Effect via Pseudo-element (Text > Overlay > Background) */
-/* Burst effect removed */
-
-/* Fix text skew inside button */
-.voteButton span {
-    transform: skewX(5deg);
-    z-index: 6;
-    /* Increased z-index for text */
-    position: relative;
-    /* Ensure text is readable on the new backgrounds */
-}
-
-.agreeButton {
-    background-color: #CBD5E1;
-    /* Grey-Blue */
-    clip-path: polygon(0 0, 100% 0, 85% 100%, 0% 100%);
-    margin-right: -100px;
-    /* Overlap to hide gap from skew/clip */
-    padding-right: 100px;
-    /* Center text compensation */
+    font-family: 'Gungsuh', 'Batang', serif;
+    /* Traditional Font */
     z-index: 1;
 }
-
-/* Agree burst removed */
-
-.disagreeButton {
-    background-color: #D6CCC2;
-    /* Grey-Brown */
-    clip-path: polygon(15% 0, 100% 0, 100% 100%, 0% 100%);
-    z-index: 1;
-}
-
-/* Disagree burst removed */
 
 .voteButton:hover {
-    filter: brightness(1.2) contrast(1.1);
-    transform: skewX(-5deg) scale(1.05);
-    z-index: 3;
-    /* Bring to front on hover */
+    flex: 1.5;
+    /* Expand on hover */
+    filter: brightness(0.95);
+    /* Darken slightly on hover */
+    z-index: 2;
 }
 
-/* Animations */
-@keyframes slam {
+.voteButton span {
+    position: relative;
+    z-index: 10;
+    transition: transform 0.3s ease;
+}
+
+.voteButton:hover span {
+    transform: scale(1.1);
+}
+
+/* Agree: Wood Style (Chanseong) */
+.agreeButton {
+    background-color: #FFF8E1;
+    /* Match "Next" Button */
+    border-right: 5px solid #5D4037;
+    /* Dark Wood */
+}
+
+/* Disagree: Wood Style (Bandae) */
+.disagreeButton {
+    background-color: #FFF8E1;
+    /* Match "Next" Button */
+    border-left: 5px solid #5D4037;
+    /* Dark Wood */
+}
+
+.selectedVote {
+    flex: 5 !important;
+    /* Dominate screen when selected */
+    filter: brightness(1.1);
+    box-shadow: inset 0 0 50px rgba(255, 215, 0, 0.5);
+    /* Inner Gold Glow */
+    z-index: 10;
+    color: #000;
+}
+
+/* VS Badge: Traditional Pattern */
+.vsBadge {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 140px;
+    height: 140px;
+
+    /* Pattern Sprite */
+    background-image: url('/assets/images/logo1.jpg');
+    background-size: 106% 106%;
+    /* User requested 100% for correct scale */
+    background-position: 70% 58%;
+    background-color: #FFF;
+    background-repeat: no-repeat;
+
+    border-radius: 50%;
+    border: 5px solid #5D4037;
+    /* Dark Wood Frame */
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.3);
+
+    display: flex;
+    justify-content: center;
+    align-items: center;
+
+    font-size: 0;
+    /* Hide Text */
+    color: transparent;
+
+    z-index: 20;
+    pointer-events: none;
+
+    /* Entrance Animation matched with transition for movement */
+    animation: sealSlam 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+    transition: left 0.5s ease;
+}
+
+/* Remove old inner fill */
+.vsBadge::before {
+    display: none;
+}
+
+/* Dynamic Badge Positioning */
+.agreeButton:hover~.vsBadge {
+    left: 60%;
+}
+
+.disagreeButton:hover~.vsBadge {
+    left: 40%;
+}
+
+.agreeButton.selectedVote~.vsBadge {
+    left: 83.33%;
+}
+
+.disagreeButton.selectedVote~.vsBadge {
+    left: 16.66%;
+}
+
+@keyframes sealSlam {
     0% {
-        transform: translate(-50%, -50%) rotate(-5deg) scale(3);
+        transform: translate(-50%, -50%) scale(3);
         opacity: 0;
     }
 
-    50% {
-        transform: translate(-50%, -50%) rotate(-5deg) scale(0.8);
-        opacity: 1;
-    }
-
-    70% {
-        transform: translate(-50%, -50%) rotate(-5deg) scale(1.1);
-    }
-
     100% {
-        transform: translate(-50%, -50%) rotate(-5deg) scale(1);
+        transform: translate(-50%, -50%) scale(1);
+        opacity: 1;
     }
 }
 
-@keyframes pulse {
-    0% {
-        transform: translate(-50%, -50%) rotate(-5deg) scale(1);
-    }
+/* Fade / Exit Animations */
+.exitLeft {
+    animation: slideOutLeft 0.8s cubic-bezier(0.6, -0.28, 0.735, 0.045) forwards !important;
+}
 
-    50% {
-        transform: translate(-50%, -50%) rotate(-5deg) scale(1.05);
-    }
+.exitRight {
+    animation: slideOutRight 0.8s cubic-bezier(0.6, -0.28, 0.735, 0.045) forwards !important;
+}
 
-    100% {
-        transform: translate(-50%, -50%) rotate(-5deg) scale(1);
+.fadeOut {
+    transition: opacity 0.5s ease;
+    opacity: 0 !important;
+}
+
+@keyframes slideOutLeft {
+    to {
+        transform: translateX(-100%);
+        opacity: 0;
     }
+}
+
+@keyframes slideOutRight {
+    to {
+        transform: translateX(100%);
+        opacity: 0;
+    }
+}
+
+/* Entrance Animations */
+.agreeButton {
+    animation: slideInLeft 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94) both;
+}
+
+.disagreeButton {
+    animation: slideInRight 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94) both;
 }
 
 @keyframes slideInLeft {
     from {
         transform: translateX(-100%);
-        opacity: 0;
     }
 
     to {
         transform: translateX(0);
-        opacity: 1;
     }
 }
 
 @keyframes slideInRight {
     from {
         transform: translateX(100%);
-        opacity: 0;
     }
 
     to {
         transform: translateX(0);
-        opacity: 1;
     }
-}
-
-/* VS Badge Center */
-.vsBadge {
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%) rotate(-5deg);
-    font-size: 8rem;
-    font-weight: 900;
-    color: #FFFFFF;
-    /* Explicitly White as requested */
-    font-style: italic;
-    font-family: 'Impact', 'Arial Black', sans-serif;
-    text-shadow:
-        5px 5px 0 #000,
-        -2px -2px 0 #000,
-        2px -2px 0 #000,
-        -2px 2px 0 #000,
-        5px 5px 0 #000;
-    z-index: 10;
-    pointer-events: none;
-    /* Slam entrance, then Pulse infinitely */
-    animation:
-        slam 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards,
-        pulse 1.5s ease-in-out infinite 0.6s;
-}
-
-.vsBadge::before {
-    content: '';
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    width: 200px;
-    height: 150px;
-    background: black;
-    clip-path: polygon(20% 0%, 80% 0%, 100% 20%, 100% 80%, 80% 100%, 20% 100%, 0% 80%, 0% 20%);
-    z-index: -1;
-}
-
-/* Update pseudo-elements for rotation */
-.agreeButton {
-    background-color: #CBD5E1;
-    /* Grey-Blue */
-    clip-path: polygon(0 0, 100% 0, 85% 100%, 0% 100%);
-    margin-right: -100px;
-    /* Overlap to hide gap from skew/clip */
-    padding-right: 100px;
-    /* Center text compensation */
-    z-index: 1;
-    /* Animation Entry */
-    animation: slideInLeft 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94) both;
-}
-
-/* Removed ::after (burst lines) */
-
-.disagreeButton {
-    background-color: #D6CCC2;
-    /* Grey-Brown */
-    clip-path: polygon(15% 0, 100% 0, 100% 100%, 0% 100%);
-    z-index: 1;
-    /* Animation Entry */
-    animation: slideInRight 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94) both;
 }
 
 /* Removed ::after (burst lines) */
@@ -270,20 +384,29 @@
 /* ---------- Common Buttons ---------- */
 .startButton {
     padding: 15px 40px;
-    background-color: #2196F3;
-    color: white;
-    border: none;
-    border-radius: 8px;
     font-size: 1.2rem;
-    font-weight: bold;
+    font-weight: 900;
     cursor: pointer;
-    box-shadow: 0 4px 15px rgba(33, 150, 243, 0.4);
-    transition: transform 0.2s, background-color 0.2s;
+    transition: transform 0.2s, box-shadow 0.2s;
+    font-family: 'Gungsuh', 'Batang', serif;
+    /* Traditional Font */
+
+    /* Wood Style (Paesul) - Matching Opinion Page */
+    background-color: #FFF8E1;
+    /* Light Wood/Hanji */
+    color: #3E2723;
+    /* Dark Ink */
+    border: 3px solid #5D4037;
+    /* Dark Wood Border */
+    border-radius: 8px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
 }
 
 .startButton:hover {
+    background-color: #FFE0B2;
+    /* Warmer Wood */
     transform: translateY(-2px);
-    background-color: #1976D2;
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4);
 }
 
 /* Vote Action Buttons (Teacher) */
@@ -299,6 +422,51 @@
 .voteActionButtons .endButton {
     padding: 15px 40px;
     font-size: 1.2rem;
+    /* Use global .endButton (Seal Red) but ensure sizing matches startButton */
+}
+
+.actionButtons {
+    position: absolute;
+    bottom: 20px;
+    right: 35px;
+    display: flex;
+    flex-direction: row;
+    gap: 10px;
+    z-index: 20;
+}
+
+.actionButtons button {
+    width: 90px !important;
+    /* Smaller Force width */
+    height: 40px !important;
+    /* Slightly smaller height */
+    padding: 0 !important;
+    /* Reset padding */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.9rem !important;
+    /* Slightly larger for readability */
+    white-space: nowrap;
+
+    /* Wooden Nameplate (Paesul) Style */
+    font-family: 'Gungsuh', 'Batang', serif;
+    background-color: #FFF8E1;
+    /* Light Wood/Hanji */
+    color: #3E2723;
+    /* Dark Ink */
+    border: 2px solid #5D4037;
+    /* Dark Wood Border */
+    border-radius: 6px;
+    box-shadow: 0 3px 6px rgba(0, 0, 0, 0.2);
+    font-weight: 900;
+}
+
+.actionButtons button:hover {
+    background-color: #FFE0B2;
+    /* Warmer Wood */
+    transform: translateY(-2px);
+    box-shadow: 0 5px 10px rgba(0, 0, 0, 0.3);
 }
 
 /* Student End Button */
@@ -307,21 +475,29 @@
     bottom: 30px;
     right: 30px;
     padding: 15px 40px;
-    background-color: #f44336;
-    color: white;
-    border: none;
-    border-radius: 8px;
     font-size: 1.2rem;
-    font-weight: bold;
+    font-weight: 900;
     cursor: pointer;
-    box-shadow: 0 4px 15px rgba(244, 67, 54, 0.4);
-    transition: transform 0.2s, background-color 0.2s;
+    transition: transform 0.2s, box-shadow 0.2s;
+    font-family: 'Gungsuh', 'Batang', serif;
     z-index: 10;
+
+    /* Royal Seal (Oksae) Style - Softened to Persimmon */
+    background-color: #E64A19;
+    /* Deep Orange / Persimmon */
+    color: white;
+    border: 3px solid #FFD700;
+    /* Gold Border */
+    border-radius: 12px;
+    /* Stamp-like */
+    box-shadow: 0 4px 15px rgba(230, 74, 25, 0.4);
 }
 
 .studentEndButton:hover {
     transform: translateY(-2px);
-    background-color: #d32f2f;
+    background-color: #F4511E;
+    /* Brighter Persimmon */
+    box-shadow: 0 6px 20px rgba(230, 74, 25, 0.5);
 }
 
 .endButton,
@@ -329,28 +505,99 @@
     padding: 10px 30px;
     border-radius: 8px;
     font-size: 1rem;
-    font-weight: 600;
+    font-weight: 900;
     cursor: pointer;
-    border: none;
     transition: 0.2s;
+    font-family: 'Gungsuh', 'Batang', serif;
 }
 
 .endButton {
-    background-color: #f44336;
+    /* Royal Seal Style (Small) - Softened */
+    background-color: #E64A19;
+    /* Deep Orange */
     color: white;
+    border: 2px solid #FFD700;
+    /* Gold */
+    box-shadow: 0 3px 8px rgba(230, 74, 25, 0.3);
 }
 
 .endButton:hover {
-    background-color: #d32f2f;
+    background-color: #F4511E;
+    transform: translateY(-2px);
 }
 
 .resultButton {
+    /* Royal Scroll Style */
     background-color: #FB8C00;
+    /* Orange/Gold */
     color: white;
+    border: 2px solid #FFF3E0;
+    box-shadow: 0 3px 8px rgba(251, 140, 0, 0.3);
 }
 
 /* ---------- Chat ---------- */
 /* ---------- Chat ---------- */
+.humanImage {
+    width: 40px;
+    height: auto;
+    filter: drop-shadow(0 4px 4px rgba(0, 0, 0, 0.2));
+    transition: transform 0.3s ease;
+    position: absolute;
+    left: 5px;
+    /* Idle Sway Animation */
+    animation: idleSway 3s ease-in-out infinite;
+    transform-origin: bottom center;
+}
+
+.humanImage:hover {
+    transform: translateY(-10px) scale(1.1);
+    animation-play-state: paused;
+}
+
+/* Agree Group Distribution */
+.agreeGroup .humanImage:nth-child(1) {
+    top: 30px;
+    animation-delay: 0s;
+}
+
+.agreeGroup .humanImage:nth-child(2) {
+    top: calc(33% + 20px);
+    animation-delay: 1s;
+}
+
+.agreeGroup .humanImage:nth-child(3) {
+    top: calc(66% + 20px);
+    animation-delay: 2s;
+}
+
+/* Disagree Group Distribution */
+.disagreeGroup .humanImage {
+    right: 30px;
+    left: auto;
+}
+
+.disagreeGroup .humanImage:nth-child(1) {
+    top: 30px;
+    animation-delay: 0.5s;
+}
+
+.disagreeGroup .humanImage:nth-child(2) {
+    top: calc(33% + 20px);
+    animation-delay: 1.5s;
+}
+
+.disagreeGroup .humanImage:nth-child(3) {
+    top: calc(66% + 20px);
+    animation-delay: 2.5s;
+}
+
+.flipped {
+    transform: scaleX(-1);
+    /* Note: scaleX(-1) conflicts with rotation in idleSway if not careful. 
+       Better to flip container or use specific keyframes. 
+       For now, let's just keep simple sway. */
+}
+
 .chatContainer {
     flex: 1;
     width: 100%;
@@ -359,10 +606,156 @@
     display: flex;
     flex-direction: column;
     overflow: hidden;
-    background-color: rgba(255, 255, 255, 0.6);
-    backdrop-filter: blur(8px);
+    background-color: transparent;
+    /* Show root background */
     padding: 15px;
     box-shadow: none;
+    position: relative;
+    /* Anchor for humanSection overlay */
+}
+
+/* Character Overlay Section */
+.humanSection {
+    position: absolute;
+    inset: 0;
+    z-index: 15;
+    /* Above chat logs, below input (20) */
+    pointer-events: none;
+    /* Allow clicks through to chat */
+    overflow: hidden;
+}
+
+.humanGroup {
+    position: absolute;
+    top: 100px;
+    bottom: 100px;
+    width: 120px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-around;
+    align-items: center;
+}
+
+.agreeGroup {
+    left: 20px;
+}
+
+.disagreeGroup {
+    right: 20px;
+}
+
+/* Sageuk Speech Bubbles */
+.speechBubble {
+    position: absolute;
+    /* Royal Court Theme: Hanji Paper & Dark Wood */
+    background-color: #FFF8E1;
+    background-image: url("https://www.transparenttextures.com/patterns/cream-paper.png");
+    border: 3px solid #5D4037;
+    /* Dark Wood */
+    border-radius: 12px;
+    padding: 15px 20px;
+
+    max-width: 220px;
+    width: max-content;
+    /* Fit content */
+
+    font-family: 'Gungsuh', 'Batang', serif;
+    font-weight: 900;
+    font-size: 1rem;
+    color: #3E2723;
+    /* Dark Ink */
+
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+    z-index: 20;
+
+    animation: popIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) both;
+}
+
+.bubbleAgree {
+    left: 80px;
+    /* Starts at right edge of centered character (60+20) */
+    /* Green Tint Shadow for Agree */
+    box-shadow: 0 5px 15px rgba(46, 125, 50, 0.3);
+}
+
+.bubbleDisagree {
+    right: 80px;
+    /* Starts at left edge of centered character */
+    /* Red Tint Shadow for Disagree */
+    box-shadow: 0 5px 15px rgba(198, 40, 40, 0.3);
+}
+
+/* --- Speech Bubble Tails (Manhwa Style) --- */
+
+/* Agree (Left Tail) */
+.bubbleAgree::after,
+.bubbleAgree::before {
+    content: '';
+    position: absolute;
+    top: 25px;
+    right: 100%;
+    /* Attach to Left side */
+    width: 0;
+    height: 0;
+    border-style: solid;
+    pointer-events: none;
+}
+
+.bubbleAgree::before {
+    /* Border Triangle */
+    border-width: 10px;
+    border-color: transparent #5D4037 transparent transparent;
+    margin-top: -10px;
+}
+
+.bubbleAgree::after {
+    /* Fill Triangle (Hanji) */
+    border-width: 7px;
+    border-color: transparent #FFF8E1 transparent transparent;
+    margin-top: -7px;
+    margin-right: -4.5px;
+    /* Shift to reveal border */
+}
+
+/* Disagree (Right Tail) */
+.bubbleDisagree::after,
+.bubbleDisagree::before {
+    content: '';
+    position: absolute;
+    top: 25px;
+    left: 100%;
+    /* Attach to Right side */
+    width: 0;
+    height: 0;
+    border-style: solid;
+    pointer-events: none;
+}
+
+.bubbleDisagree::before {
+    /* Border Triangle */
+    border-width: 10px;
+    border-color: transparent transparent transparent #5D4037;
+    margin-top: -10px;
+}
+
+.bubbleDisagree::after {
+    /* Fill Triangle (Hanji) */
+    border-width: 7px;
+    border-color: transparent transparent transparent #FFF8E1;
+    margin-top: -7px;
+    margin-left: -4.5px;
+}
+
+@keyframes popIn {
+    0% {
+        transform: scale(0) translateY(20px);
+        opacity: 0;
+    }
+
+    100% {
+        transform: scale(1) translateY(0);
+        opacity: 1;
+    }
 }
 
 .chatWrapper {
@@ -398,21 +791,44 @@
     background-color: rgba(244, 67, 54, 0.85);
 }
 
+/* Chat Log Area */
 .chatLog {
     flex: 1;
-    padding: 20px;
     overflow-y: auto;
+    padding: 15px;
     display: flex;
     flex-direction: column;
-    gap: 12px;
+    gap: 15px;
+    background: transparent;
+    /* Show Hanji Texture */
+}
+
+/* Custom Wood Scrollbar for ChatLog */
+.chatLog::-webkit-scrollbar {
+    width: 6px;
+}
+
+.chatLog::-webkit-scrollbar-track {
+    background: rgba(93, 64, 55, 0.1);
+    border-radius: 3px;
+}
+
+.chatLog::-webkit-scrollbar-thumb {
+    background: #8D6E63;
+    border-radius: 3px;
+}
+
+.chatLog::-webkit-scrollbar-thumb:hover {
+    background: #5D4037;
 }
 
 .messageBubble {
-    padding: 10px 16px;
-    border-radius: 15px;
+    padding: 12px 18px;
+    border-radius: 18px;
     max-width: 85%;
     background-color: white;
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+    /* Softer shadow */
     word-break: break-word;
     font-size: 1rem;
     position: relative;
@@ -420,6 +836,103 @@
     justify-content: space-between;
     align-items: center;
     gap: 10px;
+    border-bottom: 2px solid rgba(0, 0, 0, 0.05);
+    /* Subtle bevel */
+}
+
+/* Input Polish */
+.bottomSection {
+    padding: 20px 0;
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.chatInputBar {
+    width: 70%;
+    /* Strict 70% match with Top Section */
+    margin: 0 auto;
+    display: flex;
+    align-items: center;
+    min-height: 80px;
+    gap: 20px;
+    padding: 20px 25px;
+    box-sizing: border-box;
+
+    /* Royal Court Theme: Writing Desk */
+    background: #FDF5E6;
+    /* Old Lace / Hanji-like */
+    background-image: url("https://www.transparenttextures.com/patterns/cream-paper.png");
+
+    /* Wood Frame */
+    border: 4px solid #5D4037;
+    outline: 2px solid #FFD700;
+    outline-offset: -8px;
+
+    border-radius: 4px;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+    position: relative;
+    z-index: 20;
+}
+
+.chatInput {
+    flex: 1;
+    padding: 12px 15px;
+    border: 1px solid #8D6E63;
+    /* Light Brown Ink Border */
+    border-radius: 4px;
+
+    /* Scroll Paper Style */
+    background-color: #FFF8E1;
+    /* Cosmic Latte / Paper */
+    color: #3E2723;
+    /* Dark Ink */
+    font-size: 1rem;
+    font-family: 'Batang', serif;
+    /* Brush stroke feel */
+
+    transition: box-shadow 0.3s ease;
+}
+
+.chatInput::placeholder {
+    color: #A1887F;
+    font-style: italic;
+}
+
+.chatInput:focus {
+    outline: none;
+    box-shadow: 0 0 0 2px #5D4037;
+}
+
+.sendButton {
+    padding: 10px 25px;
+    font-size: 1rem;
+    font-weight: 900;
+    font-family: 'Gungsuh', 'Batang', serif;
+    cursor: pointer;
+
+    /* Royal Seal (Oksae) Style */
+    background-color: #B71C1C;
+    /* Seal Red */
+    color: white;
+    border: 2px solid #D32F2F;
+    border-radius: 8px;
+    /* Stamp shape */
+
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+    transition: transform 0.1s ease, background-color 0.2s;
+    white-space: nowrap;
+}
+
+.sendButton:hover {
+    background-color: #C62828;
+    transform: translateY(-1px);
+}
+
+.sendButton:active {
+    transform: scale(0.95);
+    /* Stamping effect */
+    box-shadow: 0 2px 3px rgba(0, 0, 0, 0.3);
 }
 
 .counterButton {
@@ -484,55 +997,95 @@
 /* ---------- Top Section (King + Info) ---------- */
 /* ---------- Top Section (King + Info) ---------- */
 /* ---------- Top Section (King + Info) ---------- */
+/* Animations */
+@keyframes float {
+    0% {
+        transform: translateY(0px);
+    }
+
+    50% {
+        transform: translateY(-10px);
+    }
+
+    100% {
+        transform: translateY(0px);
+    }
+}
+
+@keyframes idleSway {
+    0% {
+        transform: rotate(0deg);
+    }
+
+    25% {
+        transform: rotate(2deg);
+    }
+
+    75% {
+        transform: rotate(-2deg);
+    }
+
+    100% {
+        transform: rotate(0deg);
+    }
+}
+
+@keyframes glow {
+    0% {
+        box-shadow: 0 0 5px rgba(255, 215, 0, 0.2);
+    }
+
+    50% {
+        box-shadow: 0 0 20px rgba(255, 215, 0, 0.6);
+    }
+
+    100% {
+        box-shadow: 0 0 5px rgba(255, 215, 0, 0.2);
+    }
+}
+
+/* ---------- Top Section (King + Info) ---------- */
+/* ---------- Top Section (King + Info) ---------- */
 .topSection {
     display: flex;
     align-items: center;
     justify-content: flex-start;
     width: 70%;
+    /* Reverted to 70% */
     margin: 10px auto 15px auto;
-    padding: 10px 20px;
-    gap: 20px;
-    background-color: rgba(255, 255, 255, 0.5);
-    border-radius: 12px;
-    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+    padding: 20px 30px;
+    gap: 25px;
+
+    /* Royal Court Theme: Hanji Paper & Double Border */
+    background: #FDF5E6;
+    /* Old Lace / Hanji-like */
+    background-image: url("https://www.transparenttextures.com/patterns/cream-paper.png");
+    /* Subtle texture if available, else solid */
+
+    /* Double Border: Inner Gold, Outer Dark Wood */
+    border: 4px solid #5D4037;
+    /* Dark Wood */
+    outline: 2px solid #FFD700;
+    /* Gold */
+    outline-offset: -8px;
+
+    border-radius: 4px;
+    /* Slight rounding, mostly rectangular for scroll feel */
+    box-shadow:
+        0 10px 30px rgba(0, 0, 0, 0.3),
+        /* Deep shadow */
+        inset 0 0 20px rgba(93, 64, 55, 0.1);
+    /* Inner shadow for depth */
+
     box-sizing: border-box;
+    transition: transform 0.3s ease;
+    position: relative;
+    /* For Royal Badge positioning */
 }
 
-/* ---------- Speech Bubbles ---------- */
-.speechBubble {
-    position: absolute;
-    background-color: white;
-    padding: 8px 12px;
-    border-radius: 12px;
-    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
-    font-size: 0.8rem;
-    color: #333;
-    z-index: 100;
-    max-width: 12vw;
-    word-break: break-word;
-    animation: fadeIn 0.3s ease;
-}
-
-@keyframes fadeIn {
-    from {
-        opacity: 0;
-        transform: scale(0.9);
-    }
-
-    to {
-        opacity: 1;
-        transform: scale(1);
-    }
-}
-
-.bubbleAgree {
-    left: 60px;
-    border-top-left-radius: 0;
-}
-
-.bubbleDisagree {
-    right: 60px;
-    border-top-right-radius: 0;
+.topSection:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.35);
 }
 
 .kingImageWrapper {
@@ -541,58 +1094,103 @@
     display: flex;
     justify-content: center;
     align-items: center;
+    position: relative;
+    /* Golden Aura/Frame */
+    filter: drop-shadow(0 0 8px rgba(255, 215, 0, 0.4));
 }
 
 .kingImage {
     width: 100%;
     height: auto;
     object-fit: contain;
+    animation: float 4s ease-in-out infinite;
 }
 
 .infoSection {
     flex: 1;
     display: flex;
     flex-direction: column;
-    justify-content: center;
+    justify-content: flex-start;
+    /* Align top for scrolling */
     text-align: left;
     max-height: 150px;
-    overflow: hidden;
+    /* Restored fixed height */
+    overflow-y: auto;
+    /* Enable vertical scroll */
+    padding-left: 10px;
+    padding-right: 5px;
+    /* Space for scrollbar */
 }
 
-.chatTitle {
-    /* font-size: 2.5rem; */
-    /* Controlled by inline style for auto-scaling */
-    color: #333;
-    margin: 0 0 10px 0;
-    font-weight: 800;
-    line-height: 1.3;
-    display: -webkit-box;
-    -webkit-line-clamp: 2;
-    line-clamp: 2;
-    overflow: hidden;
-    -webkit-box-orient: vertical;
-    max-height: 2.6em;
-    /* 2 lines * 1.3 line-height */
+/* Custom Wood Scrollbar for InfoSection */
+.infoSection::-webkit-scrollbar {
+    width: 6px;
+}
+
+.infoSection::-webkit-scrollbar-track {
+    background: rgba(93, 64, 55, 0.1);
+    /* Light wood tint */
+    border-radius: 3px;
+}
+
+.infoSection::-webkit-scrollbar-thumb {
+    background: #8D6E63;
+    /* Medium Wood */
+    border-radius: 3px;
+}
+
+.infoSection::-webkit-scrollbar-thumb:hover {
+    background: #5D4037;
+    /* Dark Wood */
+}
+
+/* Royal Badge (Red Stamp) */
+.royalBadge {
+    display: inline-block;
+    background-color: #B71C1C;
+    /* Deep Red */
+    color: white;
+    font-family: 'Gungsuh', 'Batang', serif;
+    /* Calligraphy style */
+    font-weight: bold;
+    font-size: 0.9rem;
+    padding: 2px 8px;
+    border-radius: 4px;
+    border: 1px solid #E57373;
+    margin-bottom: 5px;
+    width: fit-content;
     flex-shrink: 0;
+    /* Prevent shrinking */
+    box-shadow: 2px 2px 2px rgba(0, 0, 0, 0.2);
+}
+
+/* Fix Visibility: Ensure text is dark on light glass */
+.chatTitle {
+    color: #3E2723;
+    /* Dark Wood Color */
+    margin: 5px 0 10px 0;
+    font-family: 'Gungsuh', 'Batang', serif;
+    /* Traditional Font */
+    font-weight: 900;
+    font-size: 1.6rem;
+    /* Adjusted to fit */
+    line-height: 1.2;
+    /* Removed line-clamp for scrolling */
+    flex-shrink: 0;
+    text-shadow: 1px 1px 0px rgba(255, 255, 255, 0.5);
 }
 
 .chatDescription {
-    /* font-size: 1.5rem; */
-    /* Controlled by inline style for auto-scaling */
-    color: #555;
+    color: #5D4037;
+    /* Lighter Wood Color */
+    font-family: 'Batang', serif;
     margin: 0;
-    line-height: 1.3;
-    display: -webkit-box;
-    -webkit-line-clamp: 3;
-    /* Limit to 3 lines as per requirement */
-    line-clamp: 3;
-    overflow: hidden;
-    -webkit-box-orient: vertical;
-    max-height: 3.9em;
-    /* 3 lines * 1.3 line-height */
+    line-height: 1.4;
+    font-size: 1.1rem;
+    /* Adjusted to fit */
+    /* Removed line-clamp for scrolling */
 }
 
-/* ---------- Chat Area ---------- */
 /* ---------- Chat Area ---------- */
 .chatWrapper {
     flex: 1;
@@ -600,168 +1198,86 @@
     gap: 20px;
     min-height: 0;
     width: 70%;
+    /* Reverted to 70% */
     margin: 0 auto;
 }
 
-/* ... existing chatColumn ... */
+.chatColumn {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    /* Royal Court Theme: Hanji Paper & Double Border */
+    background: #FDF5E6;
+    /* Old Lace / Hanji-like */
+    background-image: url("https://www.transparenttextures.com/patterns/cream-paper.png");
+    /* Subtle texture */
 
-/* ---------- Human Section (Vertical Edges) ---------- */
-.humanSection {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    pointer-events: none;
+    /* Double Border: Inner Gold, Outer Dark Wood */
+    border: 4px solid #5D4037;
+    /* Dark Wood */
+    outline: 2px solid #FFD700;
+    /* Gold */
+    outline-offset: -8px;
+
+    border-radius: 4px;
+    /* Slight rounding */
+    overflow: hidden;
+    box-shadow:
+        0 10px 30px rgba(0, 0, 0, 0.3),
+        /* Deep shadow */
+        inset 0 0 20px rgba(93, 64, 55, 0.1);
+    /* Inner shadow */
+
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.chatColumn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.35);
+}
+
+.selectedColumn {
+    /* Selected State: Matches Hover + Gold Border */
+    transform: translateY(-2px) !important;
+    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.35) !important;
+    border-color: #FFD700 !important;
+    /* Switch border to Gold */
     z-index: 10;
 }
 
-.humanGroup {
-    position: absolute;
-    top: 0;
-    width: 50px;
-    height: 100%;
+.columnHeader {
+    padding: 15px;
+    text-align: center;
+    font-weight: 900;
+    font-size: 1.4rem;
+
+    /* Default Wooden Plaque Style (Fallback) */
+    background-color: #3E2723;
+    color: #FFC107;
+    /* Gold Text */
+    font-family: 'Gungsuh', 'Batang', serif;
+
+    border-bottom: 2px solid #FFD700;
+    /* Gold Separator */
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
+    letter-spacing: 2px;
 }
 
-.agreeGroup {
-    left: 0;
+/* Distinct Header Colors */
+.agreeHeader {
+    background-color: #1A237E;
+    /* Deep Royal Blue */
+    background-image: linear-gradient(to bottom, #283593, #1A237E);
+    /* Subtle gradient */
+    border-bottom: 2px solid #FFD700;
 }
 
-.disagreeGroup {
-    right: 0;
-}
-
-.humanImage {
-    width: 40px;
-    height: auto;
-    filter: drop-shadow(0 4px 4px rgba(0, 0, 0, 0.2));
-    transition: transform 0.3s ease;
-    position: absolute;
-    left: 5px;
-}
-
-.humanImage:hover {
-    transform: translateY(-5px);
-}
-
-/* Agree Group Distribution (Vertical: Top, 33%, 66%) */
-.agreeGroup .humanImage:nth-child(1) {
-    top: 30px;
-}
-
-.agreeGroup .humanImage:nth-child(2) {
-    top: calc(33% + 20px);
-}
-
-.agreeGroup .humanImage:nth-child(3) {
-    top: calc(66% + 20px);
-}
-
-/* Disagree Group Distribution (Vertical: Top, 33%, 66%) */
-/* Align right humans to the right side of their container or keep left if container is right-aligned */
-
-.disagreeGroup .humanImage {
-    right: 30px;
-    left: auto;
-}
-
-.disagreeGroup .humanImage:nth-child(1) {
-    top: 30px;
-}
-
-.disagreeGroup .humanImage:nth-child(2) {
-    top: calc(33% + 20px);
-}
-
-.disagreeGroup .humanImage:nth-child(3) {
-    top: calc(66% + 20px);
-}
-
-.flipped {
-    transform: scaleX(-1);
-}
-
-.flipped:hover {
-    transform: scaleX(-1) translateY(-5px);
-}
-
-.agreeMessage {
-    background-color: #E8F5E9;
-    align-self: flex-start;
-}
-
-.disagreeMessage {
-    background-color: #FFEBEE;
-    align-self: flex-start;
-}
-
-/* ---------- Input & Buttons ---------- */
-.bottomSection {
-    padding: 15px 0;
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
-}
-
-.chatInputBar {
-    height: 50px;
-    display: flex;
-    gap: 10px;
-    padding: 0 5px;
-    width: 70%;
-    margin: 0 auto;
-}
-
-@media (max-width: 1200px) {
-    .chatInputBar {
-        width: calc(100% - 480px);
-        /* Ensure 240px margin on each side to avoid button overlap */
-    }
-}
-
-.chatInput {
-    flex: 1;
-    height: 45px;
-    padding: 0 20px;
-    border: 1px solid #ccc;
-    border-radius: 25px;
-    background-color: rgba(255, 255, 255, 0.9);
-    font-size: 1rem;
-}
-
-.sendButton {
-    padding: 0 30px;
-    background-color: #2196F3;
-    color: white;
-    border: none;
-    border-radius: 25px;
-    font-weight: bold;
-    cursor: pointer;
-}
-
-.actionButtons {
-    position: absolute;
-    bottom: 20px;
-    right: 35px;
-    display: flex;
-    flex-direction: row;
-    gap: 10px;
-    z-index: 20;
-}
-
-.actionButtons button {
-    width: 90px !important;
-    /* Smaller Force width */
-    height: 40px !important;
-    /* Slightly smaller height */
-    padding: 0 !important;
-    /* Reset padding */
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 0.85rem !important;
-    /* Smaller font to fit "결과보기" */
-    white-space: nowrap;
+.disagreeHeader {
+    background-color: #B71C1C;
+    /* Deep Royal Red */
+    background-image: linear-gradient(to bottom, #C62828, #B71C1C);
+    /* Subtle gradient */
+    border-bottom: 2px solid #FFD700;
 }
 
 /* ---------- Status Bar (Resized & Relocated) ---------- */
