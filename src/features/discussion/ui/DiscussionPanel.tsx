@@ -104,7 +104,7 @@ const DiscussionPanel: React.FC = () => {
       participantCount: parseInt(maxParticipants, 10),
       grade: 1, // Default or select
       classroom: 1, // Default or select
-      teacherId: localStorage.getItem('userId') || ''
+      // teacherId: localStorage.getItem('userId') || ''
     };
 
     const token = localStorage.getItem('accessToken');

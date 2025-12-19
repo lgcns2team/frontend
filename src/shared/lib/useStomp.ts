@@ -6,7 +6,7 @@ import { Stomp, CompatClient, type Message } from '@stomp/stompjs';
 export interface ChatMessage {
     id?: string;
     parentId?: string;
-    userId?: string;
+    // userId?: string;
     sender: string;
     content: string;
     type: 'CHAT' | 'JOIN' | 'LEAVE' | 'STATUS';
@@ -24,7 +24,7 @@ export interface CreateRoomPayload {
     participantCount: number;
     grade: number;
     classroom: number;
-    teacherId: string;
+    // teacherId: string;
 }
 
 export interface DiscussionRoom {
@@ -69,16 +69,16 @@ export const createShortDiscussionRoom = async (payload: CreateRoomPayload) => {
 export const getDiscussionRooms = async (): Promise<DiscussionRoom[]> => {
     try {
         const token = localStorage.getItem('accessToken');
-        const userId = localStorage.getItem('userId');
-        console.log("Fetching rooms with token:", token ? "Present" : "Missing", "userId:", userId);
+        // const userId = localStorage.getItem('userId');
+        console.log("Fetching rooms with token:", token ? "Present" : "Missing");
 
         const headers: any = { 'Content-Type': 'application/json' };
         if (token) headers['Authorization'] = `Bearer ${token}`;
 
         let url = '/api/ai/debate/roomList';
-        if (userId) {
-            url += `?userId=${userId}`;
-        }
+        // if (userId) {
+        //     url += `?userId=${userId}`;
+        // }
 
         const response = await fetch(url, {
             method: 'GET',
@@ -136,27 +136,37 @@ export const useStomp = ({ url, onConnect, onDisconnect, onError }: UseStompConf
     }, [onConnect, onDisconnect, onError]);
 
     const connect = useCallback(() => {
-        if (stompClientRef.current?.connected) {
-            return; // Already connected
-        }
+    if (stompClientRef.current?.connected) {
+        return; // Already connected
+    }
 
-        const client = Stomp.over(() => new SockJS(url));
+    const token = localStorage.getItem('accessToken');
+    
+    // ✅ URL에 토큰을 쿼리 파라미터로 추가
+    const socketUrl = token ? `${url}?token=${token}` : url;
+    
+    console.log('🔌 Connecting to WebSocket with token:', token ? 'Present' : 'Missing');
 
-        client.connect({}, (frame: any) => {
-            console.log('Stomp Connected: ' + frame);
+    const client = Stomp.over(() => new SockJS(socketUrl));
+
+    client.connect(
+        {}, // 헤더는 비워둠 (SockJS에서는 CONNECT 헤더 제어가 어려움)
+        (frame: any) => {
+            console.log('✅ Stomp Connected: ' + frame);
             setIsConnected(true);
             setLastError(null);
             if (onConnectRef.current) onConnectRef.current(frame);
-        }, (error: any) => {
-            console.error('Stomp Error:', error);
+        },
+        (error: any) => {
+            console.error('❌ Stomp Error:', error);
             setIsConnected(false);
             setLastError(error);
             if (onErrorRef.current) onErrorRef.current(error);
-        });
+        }
+    );
 
-        stompClientRef.current = client;
-    }, [url]);
-
+    stompClientRef.current = client;
+}, [url]);
     const disconnect = useCallback(() => {
         if (stompClientRef.current) {
             stompClientRef.current.disconnect(() => {
@@ -207,8 +217,9 @@ export const useStomp = ({ url, onConnect, onDisconnect, onError }: UseStompConf
 // --- High-Level Hook: useDiscussion ---
 export const useDiscussion = (roomId: string | undefined) => {
     // 1. Mock Data Generation
-    const [userId] = useState(() => crypto.randomUUID());
-    const [username] = useState(() => `User ${Math.floor(Math.random() * 100)}`);
+    // const [userId] = useState(() => crypto.randomUUID());
+    // const [username] = useState(() => `User ${Math.floor(Math.random() * 100)}`);
+    const [username] = useState(() => localStorage.getItem('nickname') ?? 'Guest');
 
     // 2. State Management
     const [messages, setMessages] = useState<DisplayMessage[]>([]);
@@ -308,11 +319,11 @@ export const useDiscussion = (roomId: string | undefined) => {
             return newMessages;
         });
 
-        if (message.type === 'CHAT' && message.userId === userId) {
-            // alert("✅ 채팅 전송 성공! (Backend를 거쳐 Redis에 저장되었습니다)");
-            // Alert removed as per typical UX, or kept if requested. User removed it in recent edit.
-        }
-    }, [userId]);
+        // if (message.type === 'CHAT' && message.userId === userId) {
+        //     // alert("✅ 채팅 전송 성공! (Backend를 거쳐 Redis에 저장되었습니다)");
+        //     // Alert removed as per typical UX, or kept if requested. User removed it in recent edit.
+        // }
+    }, []);
 
     // 4. WebSocket Integration
     const { connect, disconnect, subscribe, sendMessage, isConnected, lastError } = useStomp({
@@ -326,10 +337,14 @@ export const useDiscussion = (roomId: string | undefined) => {
             });
 
             // Auto-Join on Connect
-            sendMessage(
-                "/app/room/" + roomId + "/join",
-                { sender: username, type: 'JOIN', userId: userId, roomId: roomId, side: vote }
-            );
+            // sendMessage(
+            //     "/app/room/" + roomId + "/join",
+            //     { sender: username, type: 'JOIN', roomId: roomId, side: vote }
+            // );
+            sendMessage('/app/room/' + roomId + '/join', {
+                sender: username,
+                type: 'JOIN',
+            });
         },
         onError: (error) => {
             const errorMsg = typeof error === 'string' ? error : (error?.headers?.message || "WebSocket Error");
@@ -346,11 +361,17 @@ export const useDiscussion = (roomId: string | undefined) => {
 
     // 5. Actions
     const joinRoom = () => {
+        // if (roomId && isConnected) {
+        //     sendMessage(
+        //         "/app/room/" + roomId + "/join",
+        //         { sender: username, type: 'JOIN', userId: userId, roomId: roomId, side: vote }
+        //     );
+        // }
         if (roomId && isConnected) {
-            sendMessage(
-                "/app/room/" + roomId + "/join",
-                { sender: username, type: 'JOIN', userId: userId, roomId: roomId, side: vote }
-            );
+            sendMessage('/app/room/' + roomId + '/join', {
+                sender: username,
+                type: 'JOIN',
+            });
         }
     };
 
@@ -372,21 +393,26 @@ export const useDiscussion = (roomId: string | undefined) => {
 
         // Ensure status is sent to backend before sending chat
         console.log('📤 Ensuring status is set:', status);
-        sendMessage(
-            "/app/room/" + roomId + "/status",
-            { status: status, userId: userId }
-        );
+        // sendMessage(
+        //     "/app/room/" + roomId + "/status",
+        //     { status: status, userId: userId }
+        // );
+        sendMessage('/app/room/' + roomId + '/chat', {
+            content,
+            parentId,
+            // status, // 서버가 필요하면 주석 해제
+        });
 
         // Small delay to ensure status is processed
         setTimeout(() => {
-            console.log('📤 Sending chat message:', { content, status, parentId, userId });
+            console.log('📤 Sending chat message:', { content, status, parentId });
             sendMessage(
                 "/app/room/" + roomId + "/chat",
                 {
                     content: content,
                     status: status,
                     parentId: parentId,
-                    userId: userId
+                    // userId: userId
                 }
             );
         }, 100);
@@ -400,7 +426,7 @@ export const useDiscussion = (roomId: string | undefined) => {
         const status = selectedVote === 'agree' ? 'PRO' : 'CON';
         sendMessage(
             "/app/room/" + roomId + "/status",
-            { status: status, userId: userId }
+            { status: status }
         );
         setViewMode('chat');
     };
@@ -421,8 +447,8 @@ export const useDiscussion = (roomId: string | undefined) => {
             "/app/room/" + roomId + "/chat",
             {
                 content: `__MODE_CHANGE__:${nextMode}`,
-                status: 'PRO',
-                userId: userId
+                status: 'PRO'
+                // userId: userId
             }
         );
         console.log('✅ Mode change message sent via chat:', nextMode);
@@ -442,7 +468,7 @@ export const useDiscussion = (roomId: string | undefined) => {
         messages,
         vote,
         viewMode,
-        userId,
+        // userId,
         username,
         isConnected, // Exposed for UI indicators
         lastError,
@@ -469,10 +495,10 @@ export const useDiscussion = (roomId: string | undefined) => {
 
             const status = currentVote === 'agree' ? 'PRO' : 'CON';
 
-            console.log('📤 Sending status message:', { status, userId });
+            console.log('📤 Sending status message:', { status });
             sendMessage(
                 "/app/room/" + roomId + "/status",
-                { status: status, userId: userId }
+                { status: status }
             );
             // Also notify room about mode change if teacher
             if (localStorage.getItem('userRole') === 'TEACHER') {
