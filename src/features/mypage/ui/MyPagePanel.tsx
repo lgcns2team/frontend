@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { authApi } from '../../../shared/api/auth-api';
 import './MyPagePanel.css';
@@ -9,6 +9,7 @@ interface MyPagePanelProps {
 
 export const MyPagePanel = ({ onClose }: MyPagePanelProps) => {
     const navigate = useNavigate();
+    const panelRef = useRef<HTMLDivElement>(null);
 
     // Retrieve user info from localStorage
     const name = localStorage.getItem('userName') || '사용자';
@@ -24,8 +25,39 @@ export const MyPagePanel = ({ onClose }: MyPagePanelProps) => {
         }
     };
 
+    // Outside click detection
+    useEffect(() => {
+        const handleClickOutside = (event: MouseEvent) => {
+            const target = event.target as Node;
+
+            // Check if click is inside the panel
+            if (panelRef.current && panelRef.current.contains(target)) {
+                return;
+            }
+
+            // Check if click is on the profile button (to allow toggle)
+            const profileButton = document.querySelector('.header-controls-group > div:first-child');
+            if (profileButton && profileButton.contains(target)) {
+                return;
+            }
+
+            // Click is outside both panel and profile button, close the panel
+            onClose();
+        };
+
+        // Add event listener with a slight delay to prevent immediate closing
+        const timeoutId = setTimeout(() => {
+            document.addEventListener('mousedown', handleClickOutside);
+        }, 100);
+
+        return () => {
+            clearTimeout(timeoutId);
+            document.removeEventListener('mousedown', handleClickOutside);
+        };
+    }, [onClose]);
+
     return (
-        <div className="mypage-panel" onClick={(e) => e.stopPropagation()}>
+        <div ref={panelRef} className="mypage-panel" onClick={(e) => e.stopPropagation()}>
             <div className="mypage-header">
                 <span className="mypage-title">마이 페이지</span>
             </div>

@@ -10,13 +10,15 @@ interface TimelineProps {
     onEventClick?: (event: ParsedMainEvent) => void;
     isVisible: boolean;
     onToggleVisibility: () => void;
+    showEvents?: boolean;
+    timelineVisibility?: 'full' | 'no-events' | 'hidden' | 'full-hidden';
 }
 
 
 const GLOBAL_MIN_YEAR = -2333;
 const GLOBAL_MAX_YEAR = 2024;
 
-export const Timeline = ({ currentYear, onYearChange, onEventClick, isVisible, onToggleVisibility }: TimelineProps) => {
+export const Timeline = ({ currentYear, onYearChange, onEventClick, isVisible, onToggleVisibility, showEvents = true, timelineVisibility = 'full' }: TimelineProps) => {
     const thumbColor = getEraColor(currentYear);
     const [mainEvents, setMainEvents] = useState<ParsedMainEvent[]>([]);
     // const [isVisible, setIsVisible] = useState(true); // Moved to parent
@@ -287,23 +289,47 @@ export const Timeline = ({ currentYear, onYearChange, onEventClick, isVisible, o
         <div className="timeline-component">
 
             {/* Sliding Panel */}
-            <div className={`timeline-panel ${!isVisible ? 'panel-hidden' : ''}`}>
+            <div
+                className={`timeline-panel ${!isVisible ? 'panel-hidden' : ''}`}
+                style={{
+                    backgroundImage: showEvents
+                        ? "url('/assets/images/paper_timeline2.png')"
+                        : "url('/assets/images/paper_timeline.png')",
+                    height: showEvents ? '250px' : '125px',
+                    backgroundSize: showEvents ? '100% 100%' : '100% 100%',
+                    backgroundPosition: showEvents ? 'center' : 'bottom'
+                }}
+            >
                 {/* Toggle Button - Always Visible (Moved Inside) */}
                 <button
                     className={`timeline-toggle-btn ${!isVisible ? 'btn-hidden-state' : ''}`}
                     onClick={onToggleVisibility}
                     aria-label={isVisible ? "Hide timeline" : "Show timeline"}
                 >
-                    {isVisible ? (
+                    {timelineVisibility === 'full' ? (
+                        <>
+                            <span style={{ marginRight: '8px', fontSize: '14px', fontWeight: 600 }}>연표 줄이기</span>
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                <path d="M19 9l-7 7-7-7" />
+                            </svg>
+                        </>
+                    ) : timelineVisibility === 'no-events' ? (
                         <>
                             <span style={{ marginRight: '8px', fontSize: '14px', fontWeight: 600 }}>연표 숨기기</span>
                             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                                 <path d="M19 9l-7 7-7-7" />
                             </svg>
                         </>
+                    ) : timelineVisibility === 'hidden' ? (
+                        <>
+                            <span style={{ marginRight: '8px', fontSize: '14px', fontWeight: 600 }}>모두 숨기기</span>
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                <path d="M5 15l7-7 7 7" />
+                            </svg>
+                        </>
                     ) : (
                         <>
-                            <span style={{ marginRight: '8px', fontSize: '14px', fontWeight: 600 }}>연표 보기</span>
+                            <span style={{ marginRight: '8px', fontSize: '14px', fontWeight: 600 }}>전부 보이기</span>
                             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                                 <path d="M5 15l7-7 7 7" />
                             </svg>
@@ -312,7 +338,12 @@ export const Timeline = ({ currentYear, onYearChange, onEventClick, isVisible, o
                 </button>
 
                 {/* Scroll Background Wrapper */}
-                <div className="timeline-scroll-bg">
+                <div
+                    className="timeline-scroll-bg"
+                    style={{
+                        marginTop: showEvents ? '0' : '-60px'
+                    }}
+                >
                     <button
                         className="nav-btn prev-btn"
                         onMouseDown={() => startNav(-1)}
@@ -364,48 +395,50 @@ export const Timeline = ({ currentYear, onYearChange, onEventClick, isVisible, o
                             </div>
 
                             {/* Main Event Markers */}
-                            <div className="timeline-event-markers">
-                                {processedEvents.map((event) => {
-                                    const totalRange = viewEnd - viewStart;
-                                    const percent = ((event.year - viewStart) / totalRange) * 100;
+                            {showEvents && (
+                                <div className="timeline-event-markers">
+                                    {processedEvents.map((event) => {
+                                        const totalRange = viewEnd - viewStart;
+                                        const percent = ((event.year - viewStart) / totalRange) * 100;
 
-                                    if (percent < 1 || percent > 99) return null;
+                                        if (percent < 1 || percent > 99) return null;
 
-                                    const formatEventName = (name: string) => {
-                                        return name.split(' ').join('\n');
-                                    };
+                                        const formatEventName = (name: string) => {
+                                            return name.split(' ').join('\n');
+                                        };
 
-                                    const isBelow = event.position === 'below';
+                                        const isBelow = event.position === 'below';
 
-                                    const displayName = event.shortName || event.eventName;
+                                        const displayName = event.shortName || event.eventName;
 
-                                    return (
-                                        <div
-                                            key={event.eventId}
-                                            className="event-marker"
-                                            style={{ left: `${percent}%` }}
-                                            onClick={(e) => {
-                                                e.stopPropagation();
-                                                onYearChange(event.year);
-                                                if (onEventClick) onEventClick(event);
-                                            }}
-                                        >
-                                            <div className="event-marker-dot" style={{ backgroundColor: getEraColor(event.year) }}></div>
+                                        return (
                                             <div
-                                                className="event-marker-label"
-                                                style={{
-                                                    borderColor: getEraColor(event.year),
-                                                    bottom: isBelow ? 'auto' : '15px',
-                                                    top: isBelow ? '25px' : 'auto',
-                                                    transformOrigin: isBelow ? 'top center' : 'bottom center'
+                                                key={event.eventId}
+                                                className="event-marker"
+                                                style={{ left: `${percent}%` }}
+                                                onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    onYearChange(event.year);
+                                                    if (onEventClick) onEventClick(event);
                                                 }}
                                             >
-                                                {formatEventName(displayName)}
+                                                <div className="event-marker-dot" style={{ backgroundColor: getEraColor(event.year) }}></div>
+                                                <div
+                                                    className="event-marker-label"
+                                                    style={{
+                                                        borderColor: getEraColor(event.year),
+                                                        bottom: isBelow ? 'auto' : '15px',
+                                                        top: isBelow ? '25px' : 'auto',
+                                                        transformOrigin: isBelow ? 'top center' : 'bottom center'
+                                                    }}
+                                                >
+                                                    {formatEventName(displayName)}
+                                                </div>
                                             </div>
-                                        </div>
-                                    );
-                                })}
-                            </div>
+                                        );
+                                    })}
+                                </div>
+                            )}
 
                             <input
                                 type="range"

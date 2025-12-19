@@ -173,7 +173,21 @@ export default function HistoryMap() {
     const [hiroshimaScreenPos, setHiroshimaScreenPos] = useState({ x: 0, y: 0 });
     const [nagasakiScreenPos, setNagasakiScreenPos] = useState({ x: 0, y: 0 });
     const [currentMapZoom, setCurrentMapZoom] = useState(6);
-    const [isUIVisible, setIsUIVisible] = useState(true);
+    // Timeline visibility: 'full' | 'no-events' | 'hidden' | 'full-hidden'
+    const [timelineVisibility, setTimelineVisibility] = useState<'full' | 'no-events' | 'hidden' | 'full-hidden'>('full');
+
+    const handleTimelineToggle = () => {
+        setTimelineVisibility(prev => {
+            if (prev === 'full') return 'no-events';
+            if (prev === 'no-events') return 'hidden';
+            if (prev === 'hidden') return 'full-hidden';
+            return 'full';
+        });
+    };
+
+    // Backward compatibility for UI visibility
+    const isUIVisible = timelineVisibility !== 'hidden' && timelineVisibility !== 'full-hidden';
+    const isAllUIHidden = timelineVisibility === 'full-hidden';
     // War Layer Hook
     // War Layer Hook
     useWarLayer(map.current, currentYear, layerType === 'battles', historicalLayer.current);
@@ -1077,15 +1091,19 @@ export default function HistoryMap() {
                     </div>
                 </FloatingPanel>
 
-                <TimeControls
-                    currentYear={currentYear}
-                />
+                {!isAllUIHidden && (
+                    <>
+                        <TimeControls
+                            currentYear={currentYear}
+                        />
 
-                <MapLayers
-                    activeLayer={layerType}
-                    onLayerChange={setLayerType}
-                    currentYear={currentYear}
-                />
+                        <MapLayers
+                            activeLayer={layerType}
+                            onLayerChange={setLayerType}
+                            currentYear={currentYear}
+                        />
+                    </>
+                )}
 
 
             </div>
@@ -1103,7 +1121,9 @@ export default function HistoryMap() {
                     <SettingsButton onClick={() => setActivePanel('settings')} />
                 </div>
 
-                <SidebarMenu onItemClick={handleSidebarClick} currentYear={currentYear} />
+                {!isAllUIHidden && (
+                    <SidebarMenu onItemClick={handleSidebarClick} currentYear={currentYear} />
+                )}
             </div>
 
             {/* My Page Panel */}
@@ -1200,9 +1220,11 @@ export default function HistoryMap() {
             )}
 
             {/* Bottom Left: Chatbot */}
-            <div className="bottom-left-overlay">
-                <ChatbotTrigger onClick={() => setIsChatbotOpen(prev => !prev)} />
-            </div>
+            {!isAllUIHidden && (
+                <div className="bottom-left-overlay">
+                    <ChatbotTrigger onClick={() => setIsChatbotOpen(prev => !prev)} />
+                </div>
+            )}
 
             {isChatbotOpen && (
                 <ChatbotPanel
@@ -1232,7 +1254,9 @@ export default function HistoryMap() {
                     onYearChange={handleYearChange}
                     onEventClick={setSelectedEvent}
                     isVisible={isUIVisible}
-                    onToggleVisibility={() => setIsUIVisible(!isUIVisible)}
+                    onToggleVisibility={handleTimelineToggle}
+                    showEvents={timelineVisibility === 'full'}
+                    timelineVisibility={timelineVisibility}
                 />
             </div>
 

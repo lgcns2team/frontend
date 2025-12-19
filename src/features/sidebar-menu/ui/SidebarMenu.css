@@ -12,6 +12,11 @@
     align-items: center;
     position: relative;
     transition: all 0.3s ease;
+    user-select: none;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    z-index: 1100;
 }
 
 /* --- Closed State --- */
@@ -41,6 +46,7 @@
     flex-direction: column;
     width: 100%;
     animation: unrollAnimation 0.5s ease-out forwards;
+    z-index: inherit;
 }
 
 @keyframes unrollAnimation {

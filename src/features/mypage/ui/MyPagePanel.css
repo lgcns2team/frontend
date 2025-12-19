@@ -1,8 +1,8 @@
 .mypage-panel {
     position: absolute;
-    top: 70px;
+    top: 90px;
     /* Adjust based on header/button position */
-    right: 20px;
+    right: 50px;
     width: 300px;
     background-color: rgba(255, 255, 255, 0.95);
     backdrop-filter: blur(10px);
