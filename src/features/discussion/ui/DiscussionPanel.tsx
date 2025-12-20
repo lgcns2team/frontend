@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { useNavigate } from 'react-router-dom';
 import { recommendDebateTopics, type DebateTopic } from '../../../shared/api/debate-api';
-import { createShortDiscussionRoom, getDiscussionRooms, type DiscussionRoom } from '../../../shared/lib/useStomp';
+import { createShortDiscussionRoom, getDiscussionRooms, deleteDiscussionRoom, type DiscussionRoom } from '../../../shared/lib/useStomp';
 import styles from './DiscussionPanel.module.css';
 
 const DiscussionPanel: React.FC = () => {
@@ -12,8 +12,8 @@ const DiscussionPanel: React.FC = () => {
   const [keyword, setKeyword] = useState('');
   const [topic, setTopic] = useState('');
   const [description, setDescription] = useState('');
-  const [timeLimit, setTimeLimit] = useState('10'); // Default 10 mins
-  const [maxParticipants, setMaxParticipants] = useState<string>('');
+  const [grade, setGrade] = useState('1');
+  const [classroom, setClassroom] = useState('1');
 
   const [showCreateModal, setShowCreateModal] = useState(false);
 
@@ -37,8 +37,8 @@ const DiscussionPanel: React.FC = () => {
     setKeyword('');
     setTopic('');
     setDescription('');
-    setTimeLimit('10');
-    setMaxParticipants('');
+    setGrade('1');
+    setClassroom('1');
     setRecommendedTopics([]);
     setRecommendationError(null);
     setShowCreateModal(true);
@@ -83,27 +83,33 @@ const DiscussionPanel: React.FC = () => {
   // For now, we'll keep the UI deletion but it won't persist to backend unless API exists.
   // Assuming strict requirement update: "Get from Redis". Deletion should probably be ignored or mock for now as backend delete endpoint isn't clarified.
   // I will just remove it from local view for now.
-  const handleDelete = (e: React.MouseEvent, id: string | undefined) => {
+  const handleDelete = async (e: React.MouseEvent, id: string | undefined) => {
     e.stopPropagation(); // Prevent navigation
     if (!id) return;
-    if (window.confirm('정말 삭제하시겠습니까? (현재 뷰에서만 삭제됩니다)')) {
-      // TODO: Implement backend delete API
-      setDiscussions(prev => prev.filter(d => d.id !== id));
+    if (window.confirm('정말 삭제하시겠습니까?')) {
+      const result = await deleteDiscussionRoom(id);
+      if (result.success) {
+        // Remove from local state and refresh from backend
+        setDiscussions(prev => prev.filter(d => d.id !== id));
+        console.log('Room deleted successfully:', id);
+      } else {
+        alert(`삭제 실패: ${result.error}`);
+      }
     }
   };
 
   const handleConfirmCreate = async () => {
-    if (!topic || !maxParticipants) {
-      alert('주제 또는 인원수가 입력되지 않았습니다.');
+    if (!topic) {
+      alert('주제가 입력되지 않았습니다.');
       return;
     }
 
     const payload = {
       topicTitle: topic,
       topicDescription: description,
-      participantCount: parseInt(maxParticipants, 10),
-      grade: 1, // Default or select
-      classroom: 1, // Default or select
+      participantCount: 30, // 기본값
+      grade: parseInt(grade, 10),
+      classroom: parseInt(classroom, 10),
       // teacherId: localStorage.getItem('userId') || ''
     };
 
@@ -125,10 +131,35 @@ const DiscussionPanel: React.FC = () => {
     }
   };
 
+  // Filter discussions for students: must match teacherCode, grade, and classroom
+  const filteredDiscussions = (() => {
+    const userRole = localStorage.getItem('userRole');
+    if (userRole === 'TEACHER') {
+      return discussions; // Teachers see all their rooms
+    }
+
+    // Student filtering
+    const studentTeacherCode = localStorage.getItem('teacherCode');
+    const studentGrade = localStorage.getItem('grade');
+    const studentClassroom = localStorage.getItem('classroom');
+
+    console.log('🎓 Student filter:', { studentTeacherCode, studentGrade, studentClassroom });
+
+    return discussions.filter(room => {
+      const matchTeacher = String(room.teacherCode) === String(studentTeacherCode);
+      const matchGrade = String(room.grade) === String(studentGrade);
+      const matchClassroom = String(room.classroom) === String(studentClassroom);
+
+      console.log(`📋 Room ${room.id}: teacherCode=${room.teacherCode}(${matchTeacher}), grade=${room.grade}(${matchGrade}), classroom=${room.classroom}(${matchClassroom})`);
+
+      return matchTeacher && matchGrade && matchClassroom;
+    });
+  })();
+
   return (
     <div className={styles.charactersPanel}>
       <div className={styles.charactersList}>
-        {discussions.map((discussion, index) => (
+        {filteredDiscussions.map((discussion, index) => (
           <div
             key={discussion.id || index}
             className={styles.characterItem}
@@ -144,7 +175,7 @@ const DiscussionPanel: React.FC = () => {
             <div className={styles.roomNumber}>No. {index + 1}</div>
             <h3 className={styles.characterName}>{discussion.title || discussion.topicTitle}</h3>
             <p className={styles.characterSummary}>{discussion.description || discussion.topicDescription || '설명 없음'}</p>
-            <div className={styles.participantCount}>인원수: {discussion.participantCount}명</div>
+            <div className={styles.participantCount}>{discussion.grade || '-'}학년 {discussion.classroom || '-'}반</div>
           </div>
         ))}
       </div>
@@ -259,32 +290,44 @@ const DiscussionPanel: React.FC = () => {
 
               <div className={styles.modalFooter}>
                 <div className={styles.footerControls}>
-                  {/* Time Limit */}
+                  {/* Grade */}
                   <div className={styles.footerInputItem}>
-                    <label className={styles.footerLabel}>의견 제시 시간</label>
+                    <label className={styles.footerLabel}>학년</label>
                     <select
                       className={styles.footerSelect}
-                      value={timeLimit}
-                      onChange={(e) => setTimeLimit(e.target.value)}
+                      value={grade}
+                      onChange={(e) => setGrade(e.target.value)}
                     >
-                      <option value="2">2분</option>
-                      <option value="3">3분</option>
-                      <option value="5">5분</option>
-                      <option value="10">10분</option>
+                      <option value="1">1학년</option>
+                      <option value="2">2학년</option>
+                      <option value="3">3학년</option>
+                      <option value="4">4학년</option>
+                      <option value="5">5학년</option>
+                      <option value="6">6학년</option>
                     </select>
                   </div>
 
-                  {/* Max Participants */}
+                  {/* Classroom */}
                   <div className={styles.footerInputItem}>
-                    <label className={styles.footerLabel}>참여 인원 수</label>
-                    <input
-                      type="number"
-                      className={styles.footerInput}
-                      placeholder="숫자"
-                      value={maxParticipants}
-                      onChange={(e) => setMaxParticipants(e.target.value)}
-                    />
-                    <span>명</span>
+                    <label className={styles.footerLabel}>반</label>
+                    <select
+                      className={styles.footerSelect}
+                      value={classroom}
+                      onChange={(e) => setClassroom(e.target.value)}
+                    >
+                      <option value="1">1반</option>
+                      <option value="2">2반</option>
+                      <option value="3">3반</option>
+                      <option value="4">4반</option>
+                      <option value="5">5반</option>
+                      <option value="6">6반</option>
+                      <option value="7">7반</option>
+                      <option value="8">8반</option>
+                      <option value="9">9반</option>
+                      <option value="10">10반</option>
+                      <option value="11">11반</option>
+                      <option value="12">12반</option>
+                    </select>
                   </div>
                 </div>
 

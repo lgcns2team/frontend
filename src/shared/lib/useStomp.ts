@@ -34,6 +34,8 @@ export interface DiscussionRoom {
     teacherCode: number;
     participantCount: number;
     createdAt: string;
+    grade?: number;
+    classroom?: number;
     // Helper fields for UI if needed, but strict DTO mapping is best.
     id?: string; // We might map roomId to id for frontend compatibility
     title?: string;
@@ -44,6 +46,9 @@ export interface DiscussionRoom {
 // --- API Functions ---
 export const createShortDiscussionRoom = async (payload: CreateRoomPayload) => {
     try {
+        console.log("📤 Creating room with payload:", payload);
+        console.log("📤 Grade:", payload.grade, "Classroom:", payload.classroom);
+
         const response = await fetch('/api/ai/debate/room', {
             method: 'POST',
             headers: {
@@ -108,6 +113,35 @@ export const getDiscussionRooms = async (): Promise<DiscussionRoom[]> => {
     } catch (error) {
         console.error("Error fetching rooms:", error);
         return [];
+    }
+};
+
+export const deleteDiscussionRoom = async (roomId: string): Promise<{ success: boolean; error?: string }> => {
+    try {
+        const token = localStorage.getItem('accessToken');
+        console.log("Deleting room:", roomId);
+
+        const headers: any = { 'Content-Type': 'application/json' };
+        if (token) headers['Authorization'] = `Bearer ${token}`;
+
+        const response = await fetch(`/api/ai/debate/room/${roomId}`, {
+            method: 'DELETE',
+            headers: headers
+        });
+
+        console.log("Delete room status:", response.status);
+
+        if (response.ok) {
+            console.log("Room deleted successfully:", roomId);
+            return { success: true };
+        } else {
+            const errorText = await response.text();
+            console.error("Failed to delete room:", errorText);
+            return { success: false, error: `${response.status} ${errorText}` };
+        }
+    } catch (error) {
+        console.error("Error deleting room:", error);
+        return { success: false, error: 'Failed to connect to backend' };
     }
 };
 
@@ -327,7 +361,7 @@ export const useDiscussion = (roomId: string | undefined) => {
     // 4. WebSocket Integration
     const { connect, disconnect, subscribe, sendMessage, isConnected, lastError } = useStomp({
         url: '/api/ai/ws-stomp',
-        onConnect: (frame) => {
+        onConnect: () => {
             console.log('🔗 onConnect callback triggered, roomId:', roomId);
             if (!roomId) return;
 
@@ -360,18 +394,33 @@ export const useDiscussion = (roomId: string | undefined) => {
         return () => disconnect();
     }, [roomId, connect, disconnect]);
 
+    // Track previous viewMode to detect transitions
+    const prevViewModeRef = useRef(viewMode);
+
+    // Auto-send vote status for STUDENTS when transitioning from 'vote' to other modes
+    useEffect(() => {
+        const prevMode = prevViewModeRef.current;
+        prevViewModeRef.current = viewMode;
+
+        // Only send if transitioning from 'vote' AND user is a student (not teacher)
+        if (prevMode === 'vote' && viewMode !== 'vote' && localStorage.getItem('userRole') !== 'TEACHER') {
+            // Determine vote to send (use current or random 50% if not voted)
+            const voteToSend = vote || (Math.random() < 0.5 ? 'agree' : 'disagree');
+            const status = voteToSend === 'agree' ? 'PRO' : 'CON';
+
+            console.log('📤 Student auto-sending vote status on mode change:', { status, userId, viewMode });
+
+            if (roomId && isConnected) {
+                sendMessage(
+                    "/app/room/" + roomId + "/status",
+                    { status: status, userId: userId }
+                );
+            }
+        }
+    }, [viewMode, vote, roomId, isConnected, sendMessage, userId]);
+
 
     // 5. Actions
-    const joinRoom = () => {
-        if (roomId && isConnected) {
-            console.log('📤 Sending JOIN message with userId:', userId);
-            sendMessage('/app/room/' + roomId + '/join', {
-                sender: username,
-                type: 'JOIN',
-                userId: userId,
-            });
-        }
-    };
 
     const sendChat = (content: string, parentId?: string) => {
         console.log('💬 sendChat called:', { content, vote, roomId, viewMode, isConnected, userId });
@@ -398,6 +447,8 @@ export const useDiscussion = (roomId: string | undefined) => {
                 status: status,
                 parentId: parentId,
                 userId: userId,
+                sender: username,
+                type: 'CHAT',
             }
         );
     };

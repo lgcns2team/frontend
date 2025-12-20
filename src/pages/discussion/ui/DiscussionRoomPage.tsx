@@ -105,7 +105,7 @@ const DiscussionRoomPage: React.FC = () => {
             setTimeout(() => {
                 const parentElement = document.querySelector(`[data-message-id="${parentMessageId}"]`);
                 if (parentElement) {
-                    parentElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    parentElement.scrollIntoView({ behavior: 'smooth', block: 'start' });
                 }
             }, 100);
         }
@@ -294,7 +294,7 @@ const DiscussionRoomPage: React.FC = () => {
                                         {messages.filter(reply => reply.parentId === msg.id).map((reply, replyIndex) => (
                                             <div
                                                 key={reply.id || `reply-${index}-${replyIndex}`}
-                                                className={`${styles.messageBubble} ${styles.agreeMessage} ${styles.replyMessage}`}
+                                                className={`${styles.messageBubble} ${reply.side === 'agree' ? styles.agreeMessage : styles.disagreeMessage} ${styles.replyMessage}`}
                                             >
                                                 ㄴ {reply.content}
                                             </div>
@@ -322,7 +322,7 @@ const DiscussionRoomPage: React.FC = () => {
                                         {messages.filter(reply => reply.parentId === msg.id).map((reply, replyIndex) => (
                                             <div
                                                 key={reply.id || `reply-${index}-${replyIndex}`}
-                                                className={`${styles.messageBubble} ${styles.disagreeMessage} ${styles.replyMessage}`}
+                                                className={`${styles.messageBubble} ${reply.side === 'agree' ? styles.agreeMessage : styles.disagreeMessage} ${styles.replyMessage}`}
                                             >
                                                 ㄴ {reply.content}
                                             </div>
