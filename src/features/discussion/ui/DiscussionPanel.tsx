@@ -3,6 +3,7 @@ import { createPortal } from 'react-dom';
 import { useNavigate } from 'react-router-dom';
 import { recommendDebateTopics, type DebateTopic } from '../../../shared/api/debate-api';
 import { createShortDiscussionRoom, getDiscussionRooms, deleteDiscussionRoom, type DiscussionRoom } from '../../../shared/lib/useStomp';
+import { GuestLoginPrompt, isGuestUser } from '../../../shared/components/GuestLoginPrompt';
 import styles from './DiscussionPanel.module.css';
 
 const DiscussionPanel: React.FC = () => {
@@ -130,6 +131,11 @@ const DiscussionPanel: React.FC = () => {
       alert(`Failed to create room: ${result.error}`);
     }
   };
+
+  // 게스트 사용자는 로그인 유도 화면 표시
+  if (isGuestUser()) {
+    return <GuestLoginPrompt featureName="토론" />;
+  }
 
   return (
     <div className={styles.charactersPanel}>

@@ -756,7 +756,9 @@
     overflow: hidden;
     background-color: transparent;
     /* Show root background */
-    padding: 15px;
+    /* 상하만 15px, 좌우는 최소화하여 캐릭터 앞까지 확장 */
+    padding: 15px 0;
+    box-sizing: border-box;
     box-shadow: none;
     position: relative;
     /* Anchor for humanSection overlay */
@@ -912,6 +914,10 @@
     gap: 20px;
     min-height: 0;
     width: 100%;
+    margin-left: 10px;
+    margin-right: 10px;
+    max-width: calc(100% - 20px);
+    box-sizing: border-box;
 }
 
 .chatColumn {
@@ -1424,9 +1430,9 @@
     display: flex;
     gap: 20px;
     min-height: 0;
-    width: 70%;
-    /* Reverted to 70% */
-    margin: 0 auto;
+    /* 캐릭터(yesman/noman) 바로 앞까지 확장 - 좌우 130px 여백 */
+    width: calc(100% - 250px);
+    margin: 0 120px;
 }
 
 .chatColumn {

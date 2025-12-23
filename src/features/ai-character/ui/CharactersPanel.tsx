@@ -1,6 +1,7 @@
 import { useEffect, useState, type ReactNode } from 'react';
 import { fetchCharacters, fetchCharacterDetail, type ParsedCharacter } from '../../../shared/api/characters-api';
 import { getEraForYear, ERAS } from '../../../shared/config/era-theme';
+import { GuestLoginPrompt, isGuestUser } from '../../../shared/components/GuestLoginPrompt';
 import './CharactersPanel.css';
 
 interface CharactersPanelProps {
@@ -98,6 +99,11 @@ export const CharactersPanel = ({ onYearChange, onCharacterClick, currentYear = 
             renderToggle(toggleElement);
         }
     }, [showAll, renderToggle]);
+
+    // 게스트 사용자는 로그인 유도 화면 표시
+    if (isGuestUser()) {
+        return <GuestLoginPrompt featureName="인물" />;
+    }
 
     if (loading) {
         return <div className="characters-loading">로딩 중...</div>;

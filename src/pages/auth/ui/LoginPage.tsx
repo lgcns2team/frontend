@@ -203,6 +203,30 @@ const LoginPage = () => {
                                     </Link>
                                 </Typography>
                             </Box>
+
+                            <Button
+                                fullWidth
+                                variant="outlined"
+                                size="large"
+                                sx={{
+                                    mt: 2,
+                                    py: 1.5,
+                                    fontSize: '1rem',
+                                    borderColor: '#90CAF9',
+                                    color: '#1976d2',
+                                    '&:hover': {
+                                        borderColor: '#42A5F5',
+                                        backgroundColor: 'rgba(33, 150, 243, 0.04)',
+                                    },
+                                }}
+                                onClick={() => {
+                                    localStorage.setItem('userRole', 'GUEST');
+                                    localStorage.setItem('userName', '게스트');
+                                    navigate('/map');
+                                }}
+                            >
+                                게스트 로그인
+                            </Button>
                         </Box>
                     </Paper>
                 </Container>

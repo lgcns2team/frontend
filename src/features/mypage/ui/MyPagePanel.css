@@ -83,6 +83,11 @@
     color: #2e7d32;
 }
 
+.role-guest {
+    background-color: #e3f2fd;
+    color: #1976d2;
+}
+
 .logout-button {
     width: 100%;
     padding: 12px;

@@ -13,7 +13,7 @@ export const MyPagePanel = ({ onClose }: MyPagePanelProps) => {
 
     // Retrieve user info from localStorage
     const name = localStorage.getItem('userName') || '사용자';
-    const role = localStorage.getItem('userRole') as 'TEACHER' | 'STUDENT' | null;
+    const role = localStorage.getItem('userRole') as 'TEACHER' | 'STUDENT' | 'GUEST' | null;
     const grade = localStorage.getItem('userGrade');
     const classroom = localStorage.getItem('userClassroom');
     const teacherCode = localStorage.getItem('teacher_code');
@@ -56,6 +56,15 @@ export const MyPagePanel = ({ onClose }: MyPagePanelProps) => {
         };
     }, [onClose]);
 
+    // 역할별 표시 텍스트 및 클래스
+    const getRoleDisplay = () => {
+        if (role === 'TEACHER') return { text: '선생님', className: 'role-teacher' };
+        if (role === 'STUDENT') return { text: '학생', className: 'role-student' };
+        // GUEST 또는 null/undefined는 게스트로 처리
+        return { text: '게스트', className: 'role-guest' };
+    };
+    const roleDisplay = getRoleDisplay();
+
     return (
         <div ref={panelRef} className="mypage-panel" onClick={(e) => e.stopPropagation()}>
             <div className="mypage-header">
@@ -70,8 +79,8 @@ export const MyPagePanel = ({ onClose }: MyPagePanelProps) => {
 
                 <div className="info-row">
                     <span className="info-label">직책</span>
-                    <span className={`role-badge ${role === 'TEACHER' ? 'role-teacher' : 'role-student'}`}>
-                        {role === 'TEACHER' ? '선생님' : '학생'}
+                    <span className={`role-badge ${roleDisplay.className}`}>
+                        {roleDisplay.text}
                     </span>
                 </div>
 

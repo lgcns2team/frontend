@@ -131,39 +131,6 @@ const DiscussionRoomPage: React.FC = () => {
         navigate('/map');
     };
 
-    // Speech Bubble Logic
-    const [activeBubbles, setActiveBubbles] = useState<{ id: number, side: 'agree' | 'disagree', index: number, text: string }[]>([]);
-    const agreeCounter = useRef(0);
-    const disagreeCounter = useRef(0);
-    const lastMessageCount = useRef(0);
-
-    useEffect(() => {
-        if (messages.length > lastMessageCount.current) {
-            const lastMsg = messages[messages.length - 1];
-            if (lastMsg.type !== 'CHAT' && lastMsg.type !== undefined) return;
-
-            // Determine rotation index
-            let index = 0;
-            if (lastMsg.side === 'agree') index = agreeCounter.current;
-            else index = disagreeCounter.current;
-
-            setActiveBubbles(prev => {
-                const isOccupied = prev.some(b => b.side === lastMsg.side && b.index === index);
-                if (isOccupied) return prev;
-
-                const newBubble = { id: Date.now(), side: lastMsg.side as 'agree' | 'disagree', index, text: lastMsg.content };
-                setTimeout(() => {
-                    setActiveBubbles(current => current.filter(b => b.id !== newBubble.id));
-                }, 3000);
-                return [...prev, newBubble];
-            });
-
-            if (lastMsg.side === 'agree') agreeCounter.current = (agreeCounter.current + 1) % 3;
-            else disagreeCounter.current = (disagreeCounter.current + 1) % 3;
-
-            lastMessageCount.current = messages.length;
-        }
-    }, [messages]);
 
     // 🟢 결과 화면 (박스 5개 레이아웃)
     if (viewMode === 'final') {
@@ -318,24 +285,13 @@ const DiscussionRoomPage: React.FC = () => {
                         </div>
                     </div>
 
+
                     <div className={styles.humanSection}>
                         <div className={`${styles.humanGroup} ${styles.agreeGroup}`}>
                             {[1, 2, 3].map((_, i) => <img key={`agree-human-${i}`} src="/assets/images/discussion/yesman.png" alt="Human" className={styles.humanImage} />)}
-                            {activeBubbles.filter(b => b.side === 'agree').map((bubble) => (
-                                <div key={bubble.id} className={`${styles.speechBubble} ${styles.bubbleAgree}`}
-                                    style={{ top: bubble.index === 0 ? '30px' : bubble.index === 1 ? 'calc(33% + 20px)' : 'calc(66% + 20px)' }}>
-                                    {bubble.text}
-                                </div>
-                            ))}
                         </div>
                         <div className={`${styles.humanGroup} ${styles.disagreeGroup}`}>
                             {[1, 2, 3].map((_, i) => <img key={`disagree-human-${i}`} src="/assets/images/discussion/noman.png" alt="Human" className={styles.humanImage} />)}
-                            {activeBubbles.filter(b => b.side === 'disagree').map((bubble) => (
-                                <div key={bubble.id} className={`${styles.speechBubble} ${styles.bubbleDisagree}`}
-                                    style={{ top: bubble.index === 0 ? '30px' : bubble.index === 1 ? 'calc(33% + 20px)' : 'calc(66% + 20px)' }}>
-                                    {bubble.text}
-                                </div>
-                            ))}
                         </div>
                     </div>
 
