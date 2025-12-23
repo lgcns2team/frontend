@@ -1055,12 +1055,12 @@ export default function HistoryMap() {
             <div id="map" ref={mapContainer}></div>
 
             {/* Top Center: Search Year only */}
-            <div className={`center-controls-group ${!isUIVisible ? 'ui-hidden' : ''}`}>
+            {/* <div className={`center-controls-group ${!isUIVisible ? 'ui-hidden' : ''}`}>
                 <SearchYear
                     currentYear={currentYear}
                     onYearChange={setCurrentYear}
                 />
-            </div>
+            </div> */}
 
             {/* Top Left: Year, Play, Speed, Layers */}
             <div className="top-left-overlay">
