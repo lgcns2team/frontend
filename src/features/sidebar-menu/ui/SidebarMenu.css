@@ -121,23 +121,24 @@
     cursor: pointer;
     background: transparent;
     border: none;
-    transition: background-color 0.2s ease;
+    /* transition: background-color 0.2s ease; */
     display: flex;
     flex-direction: row;
     align-items: center;
     justify-content: flex-start;
     gap: 12px;
     color: var(--ui-text, #333);
-    font-size: 33.6px;
+    font-size: 25px;
     font-weight: 700;
     font-family: 'CustomFont', sans-serif;
     text-align: left;
     padding-left: 20px;
 }
 
-.menu-item-zone:hover {
+/* Hover effect disabled */
+/* .menu-item-zone:hover {
     background-color: rgba(255, 255, 255, 0.15);
-}
+} */
 
 .menu-icon {
     width: 80px;

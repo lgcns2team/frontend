@@ -10,16 +10,11 @@ export default defineConfig(({ mode }) => {
     plugins: [react()],
     server: {
       proxy: {
-        '/api/ai': {
-          target: env.VITE_AI_API_URL || 'http://localhost:8081',
-          changeOrigin: true,
-          secure: false,
-          ws: true,
-        },
         '/api': {
           target: env.VITE_API_URL || 'http://localhost:8080',
           changeOrigin: true,
           secure: false,
+          ws: true,
         },
       },
     },

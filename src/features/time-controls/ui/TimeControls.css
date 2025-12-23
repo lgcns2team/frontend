@@ -1,19 +1,20 @@
 /* TimeControls.css */
 .time-controls-container {
     display: flex;
-    flex-direction: column;
+    flex-direction: row;
     align-items: center;
-    gap: 12px;
-    background: var(--ui-bg-solid, white);
+    gap: 15px;
+    background: #ffffff !important;
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
     transition: background-color 0.5s ease;
-    min-width: 300px;
-    width: 25vw;
-    /* Responsive width */
-    max-width: 600px;
-    padding: 5vh 3.5vw;
-    /* Responsive padding */
+    min-width: auto;
+    width: auto;
+    max-width: none;
+    padding: 8px 8px 8px 15px;
     box-sizing: border-box;
+    transform: scale(0.7);
+    transform-origin: center;
+    border-radius: 12px;
 }
 
 /* Colonial Theme Specifics */
@@ -28,22 +29,21 @@
     display: flex;
     flex-direction: column;
     align-items: center;
-    height: 64px;
-    /* Fixed height for year display area */
+    height: auto;
+    /* Auto height to match content */
     justify-content: center;
 }
 
 .year-text {
-    font-size: 60px;
+    font-size: 50px;
     font-weight: 900;
-    line-height: 70px;
+    line-height: 40px;
     /* Fixed line-height matching font-size */
     height: 42px;
     /* Fixed height */
-    font-family: inherit;
-    /* Inherits era font from HistoryMap container */
+    font-family: 'Nanum Myeongjo', serif;
     letter-spacing: -1px;
-    color: var(--ui-text-timecontrol, rgb(248, 248, 248));
+    color: #000000;
     /* Use theme text color or black as requested? User said black. */
     font-variant-numeric: tabular-nums;
     white-space: nowrap;
@@ -54,11 +54,11 @@
 /* Tablet adjustments for Year Text */
 @media (max-width: 1024px) {
     .year-text {
-        font-size: 42px;
+        font-size: 15px;
         /* Smaller font for tablets */
         letter-spacing: -2px;
         /* Tighter letter spacing */
-        line-height: 50px;
+        line-height: 30px;
     }
 }
 
@@ -105,7 +105,6 @@
     padding: 6px 10px;
     border-radius: 20px;
     height: 40px;
-    /* Fixed height */
     box-sizing: border-box;
 }
 

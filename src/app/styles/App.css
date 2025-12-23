@@ -1,3 +1,7 @@
 #root {
   width: 100%;
 }
+
+* {
+  font-family: 'Nanum Myeongjo', serif;
+}

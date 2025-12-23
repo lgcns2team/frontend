@@ -9,7 +9,8 @@ interface TimelineProps {
     onYearChange: (year: number) => void;
     onEventClick?: (event: ParsedMainEvent) => void;
     isVisible: boolean;
-    onToggleVisibility: () => void;
+    onIncreaseVisibility: () => void;
+    onDecreaseVisibility: () => void;
     showEvents?: boolean;
     timelineVisibility?: 'full' | 'no-events' | 'hidden' | 'full-hidden';
 }
@@ -18,7 +19,7 @@ interface TimelineProps {
 const GLOBAL_MIN_YEAR = -2333;
 const GLOBAL_MAX_YEAR = 2024;
 
-export const Timeline = ({ currentYear, onYearChange, onEventClick, isVisible, onToggleVisibility, showEvents = true, timelineVisibility = 'full' }: TimelineProps) => {
+export const Timeline = ({ currentYear, onYearChange, onEventClick, isVisible, onIncreaseVisibility, onDecreaseVisibility, showEvents = true, timelineVisibility = 'full' }: TimelineProps) => {
     const thumbColor = getEraColor(currentYear);
     const [mainEvents, setMainEvents] = useState<ParsedMainEvent[]>([]);
     // const [isVisible, setIsVisible] = useState(true); // Moved to parent
@@ -287,6 +288,38 @@ export const Timeline = ({ currentYear, onYearChange, onEventClick, isVisible, o
 
     return (
         <div className="timeline-component">
+            {/* Visibility Control Buttons - Outside panel to stay fixed */}
+            <div
+                className="timeline-visibility-controls"
+                style={{
+                    bottom: (timelineVisibility === 'full' || timelineVisibility === 'no-events')
+                        ? (showEvents ? '260px' : '135px')
+                        : '10px'
+                }}
+            >
+                <button
+                    className={`timeline-visibility-btn timeline-visibility-up ${timelineVisibility === 'full' ? 'visibility-btn-disabled' : ''}`}
+                    onClick={onDecreaseVisibility}
+                    disabled={timelineVisibility === 'full'}
+                    aria-label="Decrease visibility level"
+                    title="단계 낮추기"
+                >
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                        <path d="M5 15l7-7 7 7" />
+                    </svg>
+                </button>
+                <button
+                    className={`timeline-visibility-btn timeline-visibility-down ${timelineVisibility === 'full-hidden' ? 'visibility-btn-disabled' : ''}`}
+                    onClick={onIncreaseVisibility}
+                    disabled={timelineVisibility === 'full-hidden'}
+                    aria-label="Increase visibility level"
+                    title="단계 높이기"
+                >
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                        <path d="M19 9l-7 7-7-7" />
+                    </svg>
+                </button>
+            </div>
 
             {/* Sliding Panel */}
             <div
@@ -296,46 +329,10 @@ export const Timeline = ({ currentYear, onYearChange, onEventClick, isVisible, o
                         ? "url('/assets/images/paper_timeline2.png')"
                         : "url('/assets/images/paper_timeline.png')",
                     height: showEvents ? '250px' : '125px',
-                    backgroundSize: showEvents ? '100% 100%' : '100% 100%',
+                    backgroundSize: '100% 100%',
                     backgroundPosition: showEvents ? 'center' : 'bottom'
                 }}
             >
-                {/* Toggle Button - Always Visible (Moved Inside) */}
-                <button
-                    className={`timeline-toggle-btn ${!isVisible ? 'btn-hidden-state' : ''}`}
-                    onClick={onToggleVisibility}
-                    aria-label={isVisible ? "Hide timeline" : "Show timeline"}
-                >
-                    {timelineVisibility === 'full' ? (
-                        <>
-                            <span style={{ marginRight: '8px', fontSize: '14px', fontWeight: 600 }}>연표 줄이기</span>
-                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                <path d="M19 9l-7 7-7-7" />
-                            </svg>
-                        </>
-                    ) : timelineVisibility === 'no-events' ? (
-                        <>
-                            <span style={{ marginRight: '8px', fontSize: '14px', fontWeight: 600 }}>연표 숨기기</span>
-                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                <path d="M19 9l-7 7-7-7" />
-                            </svg>
-                        </>
-                    ) : timelineVisibility === 'hidden' ? (
-                        <>
-                            <span style={{ marginRight: '8px', fontSize: '14px', fontWeight: 600 }}>모두 숨기기</span>
-                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                <path d="M5 15l7-7 7 7" />
-                            </svg>
-                        </>
-                    ) : (
-                        <>
-                            <span style={{ marginRight: '8px', fontSize: '14px', fontWeight: 600 }}>전부 보이기</span>
-                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                <path d="M5 15l7-7 7 7" />
-                            </svg>
-                        </>
-                    )}
-                </button>
 
                 {/* Scroll Background Wrapper */}
                 <div

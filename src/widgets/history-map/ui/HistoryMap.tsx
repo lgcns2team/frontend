@@ -27,9 +27,7 @@ import { ChatPanel } from '../../../features/ai-chat';
 import type { ParsedCharacter } from '../../../shared/api/characters-api';
 import { fetchCountryByCode, type CountryData } from '../../../shared/api/country-api';
 import type { ParsedMainEvent } from '../../../shared/api/main-events-api';
-import { NotificationBox } from '../../../features/notification-box';
 import { ProfileButton } from '../../../features/profile-button';
-import { SettingsButton } from '../../../features/settings-button';
 import { NukeExplosion } from '../../../features/nuke-explosion';
 import { FallingBomb } from '../../../features/falling-bomb';
 import { DiscussionPanel } from '../../../features/discussion';
@@ -174,13 +172,22 @@ export default function HistoryMap() {
     const [nagasakiScreenPos, setNagasakiScreenPos] = useState({ x: 0, y: 0 });
     const [currentMapZoom, setCurrentMapZoom] = useState(6);
     // Timeline visibility: 'full' | 'no-events' | 'hidden' | 'full-hidden'
-    const [timelineVisibility, setTimelineVisibility] = useState<'full' | 'no-events' | 'hidden' | 'full-hidden'>('full');
+    const [timelineVisibility, setTimelineVisibility] = useState<'full' | 'no-events' | 'hidden' | 'full-hidden'>('no-events');
 
-    const handleTimelineToggle = () => {
+    const handleTimelineIncrease = () => {
         setTimelineVisibility(prev => {
             if (prev === 'full') return 'no-events';
             if (prev === 'no-events') return 'hidden';
             if (prev === 'hidden') return 'full-hidden';
+            return 'full-hidden';
+        });
+    };
+
+    const handleTimelineDecrease = () => {
+        setTimelineVisibility(prev => {
+            if (prev === 'full-hidden') return 'hidden';
+            if (prev === 'hidden') return 'no-events';
+            if (prev === 'no-events') return 'full';
             return 'full';
         });
     };
@@ -1047,14 +1054,8 @@ export default function HistoryMap() {
         <div className={`history-map-container theme-${currentEra.id}`}>
             <div id="map" ref={mapContainer}></div>
 
-            {/* Top Center: Play Controls & Search Year */}
+            {/* Top Center: Search Year only */}
             <div className={`center-controls-group ${!isUIVisible ? 'ui-hidden' : ''}`}>
-                <PlayControls
-                    isPlaying={isPlaying}
-                    speed={speed}
-                    onTogglePlay={() => setIsPlaying(!isPlaying)}
-                    onToggleSpeed={toggleSpeed}
-                />
                 <SearchYear
                     currentYear={currentYear}
                     onYearChange={setCurrentYear}
@@ -1093,10 +1094,6 @@ export default function HistoryMap() {
 
                 {!isAllUIHidden && (
                     <>
-                        <TimeControls
-                            currentYear={currentYear}
-                        />
-
                         <MapLayers
                             activeLayer={layerType}
                             onLayerChange={setLayerType}
@@ -1115,14 +1112,14 @@ export default function HistoryMap() {
                     <div onClick={() => setShowMyPage(!showMyPage)}>
                         <ProfileButton />
                     </div>
-
-                    <NotificationBox />
-
-                    <SettingsButton onClick={() => setActivePanel('settings')} />
                 </div>
 
                 {!isAllUIHidden && (
-                    <SidebarMenu onItemClick={handleSidebarClick} currentYear={currentYear} />
+                    <SidebarMenu
+                        onItemClick={handleSidebarClick}
+                        currentYear={currentYear}
+                        isDockingPanelOpen={!!activePanel}
+                    />
                 )}
             </div>
 
@@ -1249,12 +1246,34 @@ export default function HistoryMap() {
             <div
                 className="bottom-bar"
             >
+                {/* TimeControl with PlayControls inside */}
+                {!isAllUIHidden && (
+                    <div style={{
+                        position: 'fixed',
+                        bottom: timelineVisibility === 'full' ? '210px' : timelineVisibility === 'no-events' ? '98px' : '-60px',
+                        left: '50%',
+                        transform: 'translateX(-50%)',
+                        zIndex: 901,
+                        transition: 'bottom 0.4s cubic-bezier(0.4, 0, 0.2, 1)'
+                    }}>
+                        <TimeControls currentYear={currentYear}>
+                            <PlayControls
+                                isPlaying={isPlaying}
+                                speed={speed}
+                                onTogglePlay={() => setIsPlaying(!isPlaying)}
+                                onToggleSpeed={toggleSpeed}
+                            />
+                        </TimeControls>
+                    </div>
+                )}
+
                 <Timeline
                     currentYear={currentYear}
                     onYearChange={handleYearChange}
                     onEventClick={setSelectedEvent}
                     isVisible={isUIVisible}
-                    onToggleVisibility={handleTimelineToggle}
+                    onIncreaseVisibility={handleTimelineIncrease}
+                    onDecreaseVisibility={handleTimelineDecrease}
                     showEvents={timelineVisibility === 'full'}
                     timelineVisibility={timelineVisibility}
                 />

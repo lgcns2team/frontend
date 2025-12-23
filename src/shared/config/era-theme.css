@@ -216,100 +216,100 @@ body {
 /* Apply era-specific fonts to components */
 .theme-gojoseon .year-text,
 .theme-gojoseon .menu-item-zone {
-    font-family: 'EraFont-Gojoseon', 'Cinzel', serif !important;
+    font-family: 'Nanum Myeongjo', serif !important;
 }
 
 .theme-proto-three-kingdoms .year-text,
 .theme-proto-three-kingdoms .menu-item-zone {
-    font-family: 'EraFont-ProtoThreeKingdoms', 'Noto Serif KR', serif !important;
+    font-family: 'Nanum Myeongjo', serif !important;
 }
 
 .theme-three-kingdoms .year-text,
 .theme-three-kingdoms .menu-item-zone {
-    font-family: 'EraFont-ThreeKingdoms', 'Noto Serif KR', serif !important;
+    font-family: 'Nanum Myeongjo', serif !important;
 }
 
 .theme-north-south-states .year-text,
 .theme-north-south-states .menu-item-zone {
-    font-family: 'EraFont-NorthSouthStates', 'Noto Serif KR', serif !important;
+    font-family: 'Nanum Myeongjo', serif !important;
 }
 
 .theme-goryeo .year-text,
 .theme-goryeo .menu-item-zone {
-    font-family: 'EraFont-Goryeo', 'Nanum Myeongjo', serif !important;
+    font-family: 'Nanum Myeongjo', serif !important;
 }
 
 .theme-joseon .year-text,
 .theme-joseon .menu-item-zone {
-    font-family: 'EraFont-Joseon', 'Nanum Myeongjo', serif !important;
+    font-family: 'Nanum Myeongjo', serif !important;
 }
 
 .theme-korean-empire .year-text,
 .theme-korean-empire .menu-item-zone {
-    font-family: 'EraFont-KoreanEmpire', 'Nanum Myeongjo', serif !important;
+    font-family: 'Nanum Myeongjo', serif !important;
 }
 
 .theme-colonial .year-text,
 .theme-colonial .menu-item-zone {
-    font-family: 'EraFont-Colonial', 'Pretendard', sans-serif !important;
+    font-family: 'Nanum Myeongjo', serif !important;
 }
 
 .theme-liberation .year-text,
 .theme-liberation .menu-item-zone {
-    font-family: 'EraFont-Liberation', 'Pretendard', sans-serif !important;
+    font-family: 'Nanum Myeongjo', serif !important;
 }
 
 .theme-korean-war .year-text,
 .theme-korean-war .menu-item-zone {
-    font-family: 'EraFont-KoreanWar', 'Pretendard', sans-serif !important;
+    font-family: 'Nanum Myeongjo', serif !important;
 }
 
 .theme-republic .year-text,
 .theme-republic .menu-item-zone {
-    font-family: 'EraFont-Republic', 'Pretendard', sans-serif !important;
+    font-family: 'Nanum Myeongjo', serif !important;
 }
 
 /* Apply era-specific fonts to MapLayers tab labels */
 .theme-gojoseon .tab-label {
-    font-family: 'EraFont-Gojoseon', 'Cinzel', serif !important;
+    font-family: 'Nanum Myeongjo', serif !important;
 }
 
 .theme-proto-three-kingdoms .tab-label {
-    font-family: 'EraFont-ProtoThreeKingdoms', 'Noto Serif KR', serif !important;
+    font-family: 'Nanum Myeongjo', serif !important;
 }
 
 .theme-three-kingdoms .tab-label {
-    font-family: 'EraFont-ThreeKingdoms', 'Noto Serif KR', serif !important;
+    font-family: 'Nanum Myeongjo', serif !important;
 }
 
 .theme-north-south-states .tab-label {
-    font-family: 'EraFont-NorthSouthStates', 'Noto Serif KR', serif !important;
+    font-family: 'Nanum Myeongjo', serif !important;
 }
 
 .theme-goryeo .tab-label {
-    font-family: 'EraFont-Goryeo', 'Nanum Myeongjo', serif !important;
+    font-family: 'Nanum Myeongjo', serif !important;
 }
 
 .theme-joseon .tab-label {
-    font-family: 'EraFont-Joseon', 'Nanum Myeongjo', serif !important;
+    font-family: 'Nanum Myeongjo', serif !important;
 }
 
 .theme-korean-empire .tab-label {
-    font-family: 'EraFont-KoreanEmpire', 'Nanum Myeongjo', serif !important;
+    font-family: 'Nanum Myeongjo', serif !important;
 }
 
 .theme-colonial .tab-label {
-    font-family: 'EraFont-Colonial', 'Pretendard', sans-serif !important;
+    font-family: 'Nanum Myeongjo', serif !important;
 }
 
 .theme-liberation .tab-label {
-    font-family: 'EraFont-Liberation', 'Pretendard', sans-serif !important;
+    font-family: 'Nanum Myeongjo', serif !important;
 }
 
 .theme-korean-war .tab-label {
-    font-family: 'EraFont-KoreanWar', 'Pretendard', sans-serif !important;
+    font-family: 'Nanum Myeongjo', serif !important;
 }
 
 .theme-republic .tab-label {
-    font-family: 'EraFont-Republic', 'Pretendard', sans-serif !important;
+    font-family: 'Nanum Myeongjo', serif !important;
 }

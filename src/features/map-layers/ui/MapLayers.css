@@ -2,7 +2,7 @@
     display: grid;
     grid-template-columns: repeat(3, 1fr);
     gap: 8px;
-    width: 100%;
+    width: 280%;
     padding: 0;
     box-sizing: border-box;
 }
@@ -118,7 +118,7 @@
     top: 6px;
     left: 50%;
     transform: translateX(-50%);
-    font-size: 18px;
+    font-size: 14px;
     font-weight: 700;
     color: #ffffff;
     text-shadow:
