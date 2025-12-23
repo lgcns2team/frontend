@@ -1964,10 +1964,10 @@
     background: rgba(255, 255, 255, 0.5);
     border: none;
     overflow: hidden;
-    width: 70%;
-    max-width: 70%;
-    margin: 0 auto;
-    border-radius: 12px;
+    width: 100%;
+    max-width: 100%;
+    margin: 0;
+    border-radius: 0;
 }
 
 /* 카카오톡 스타일 채팅 로그 */
