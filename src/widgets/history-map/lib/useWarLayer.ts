@@ -117,7 +117,7 @@ export const useWarLayer = (map: L.Map | null, currentYear: number, isVisible: b
                         // 1. Draw the border/outline first (HoI4 style black border)
                         const borderLayer = L.polyline(smoothedLatLngs, {
                             color: '#000000',
-                            weight: 10,
+                            weight: 5,
                             opacity: 0.4,
                             pane: 'warPane',
                             interactive: false,
@@ -128,7 +128,7 @@ export const useWarLayer = (map: L.Map | null, currentYear: number, isVisible: b
                         // 2. Draw the main route on top (Solid thick line HoI4 style)
                         const routeLayer = L.polyline(smoothedLatLngs, {
                             color: routeColor,
-                            weight: 5,
+                            weight: 2,
                             opacity: 0.7,
                             pane: 'warPane',
                             interactive: true,
@@ -191,11 +191,11 @@ export const useWarLayer = (map: L.Map | null, currentYear: number, isVisible: b
                             layer.setStyle({
                                 opacity: 0.9,
                                 color: routeColorHover,
-                                weight: 8
+                                weight: 3
                             });
                             borderLayer.setStyle({
                                 opacity: 0.5,
-                                weight: 11
+                                weight: 4
                             });
                         });
 
@@ -204,11 +204,11 @@ export const useWarLayer = (map: L.Map | null, currentYear: number, isVisible: b
                             layer.setStyle({
                                 opacity: 0.7,
                                 color: routeColor,
-                                weight: 7
+                                weight: 4
                             });
                             borderLayer.setStyle({
                                 opacity: 0.4,
-                                weight: 10
+                                weight: 2
                             });
                         });
 
@@ -226,22 +226,9 @@ export const useWarLayer = (map: L.Map | null, currentYear: number, isVisible: b
                             </div>
                         `);
 
-                        // Only show start and end markers if latitude/longitude exist (not route-only entries)
+                        // Only show end marker if latitude/longitude exist (not route-only entries)
                         if (battle.latitude && battle.longitude) {
-                            // 2. Start Point (HoI4 style - larger circle with glow)
-                            const startPoint = latLngs[0]; // Use original start point
-                            L.circleMarker(startPoint, {
-                                radius: 8,
-                                fillColor: '#fbbf24', // Amber/Yellow like HoI4
-                                color: '#ffffff',
-                                weight: 3,
-                                opacity: 1,
-                                fillOpacity: 0.9,
-                                pane: 'warPane' // Use custom pane
-                            }).addTo(warLayer.current!)
-                                .bindPopup(`<b>${battle.battleName}</b> (출발지)`);
-
-                            // 3. End Point (Fortress)
+                            // End Point (Fortress)
                             const endPoint = smoothedLatLngs[smoothedLatLngs.length - 1];
                             const era = getEraForYear(currentYear);
 
