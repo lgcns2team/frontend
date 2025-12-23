@@ -469,7 +469,10 @@ export const useDiscussion = (roomId: string | undefined) => {
             "/app/room/" + roomId + "/status",
             { status: status, userId: userId }
         );
-        setViewMode('chat');
+        // vote 모드일 때만 chat으로 전환 (선생님이 다른 모드에서 버튼 누를 때는 모드 유지)
+        if (viewMode === 'vote') {
+            setViewMode('chat');
+        }
     };
 
     const sendModeChange = (nextMode: string) => {

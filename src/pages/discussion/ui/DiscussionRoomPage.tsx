@@ -268,21 +268,102 @@ const DiscussionRoomPage: React.FC = () => {
                         </button>
                     </div>
 
+
                     <div className={styles.chatWrapper}>
-                        <div className={styles.chatColumn}>
-                            <div className={styles.columnHeader}>의견</div>
-                            <div className={styles.chatLog} ref={agreeChatRef}>
-                                {messages.filter(m => !m.parentId).map((msg, index) => (
-                                    <div
-                                        key={msg.id || `msg-${index}`}
-                                        className={`${styles.messageBubble} ${msg.side === 'agree' ? styles.agreeMessage : styles.disagreeMessage}`}
-                                        data-message-id={msg.id}
-                                    >
-                                        {msg.content || '[Empty message]'}
-                                    </div>
-                                ))}
+                        {/* chat 모드: 통합된 단일 컬럼 */}
+                        {viewMode === 'chat' && (
+                            <div className={styles.chatColumn}>
+                                <div className={styles.columnHeader}>의견</div>
+                                <div className={styles.chatLog} ref={agreeChatRef}>
+                                    {messages.filter(m => !m.parentId).map((msg, index) => (
+                                        <div
+                                            key={msg.id || `msg-${index}`}
+                                            className={`${styles.messageGroup} ${msg.side === 'agree' ? styles.messageGroupAgree : styles.messageGroupDisagree}`}
+                                        >
+                                            <div
+                                                className={`${styles.messageBubble} ${msg.side === 'agree' ? styles.agreeMessage : styles.disagreeMessage}`}
+                                                data-message-id={msg.id}
+                                            >
+                                                <span className={styles.messageContent}>{msg.content || '[Empty message]'}</span>
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
                             </div>
-                        </div>
+                        )}
+
+                        {/* verify, result 모드: 찬성/반대 두 컬럼 */}
+                        {(viewMode === 'verify' || viewMode === 'result') && (
+                            <>
+                                {/* 찬성 컬럼 (왼쪽) */}
+                                <div className={styles.chatColumn}>
+                                    <div className={`${styles.columnHeader} ${styles.agreeHeader}`}>찬성</div>
+                                    <div className={styles.chatLog}>
+                                        {messages.filter(m => !m.parentId && m.side === 'agree').map((msg, index) => (
+                                            <div key={msg.id || `agree-msg-${index}`} className={styles.messageGroup}>
+                                                <div
+                                                    className={`${styles.messageBubble} ${styles.agreeMessage}`}
+                                                    data-message-id={msg.id}
+                                                >
+                                                    <span className={styles.messageContent}>{msg.content || '[Empty message]'}</span>
+                                                    {viewMode === 'result' && (
+                                                        <button
+                                                            className={styles.counterButton}
+                                                            onClick={() => setReplyToId(msg.id || null)}
+                                                        >
+                                                            반론
+                                                        </button>
+                                                    )}
+                                                </div>
+                                                {/* 반론 표시 */}
+                                                {messages.filter(reply => reply.parentId === msg.id).map((reply, replyIndex) => (
+                                                    <div key={reply.id || `reply-${replyIndex}`} className={styles.replyWrapper}>
+                                                        <div className={`${styles.messageBubble} ${styles.replyMessage} ${reply.side === 'agree' ? styles.replyAgree : styles.replyDisagree}`}>
+                                                            <span className={styles.replyArrow}>ㄴ</span>
+                                                            {reply.content || '[Empty reply]'}
+                                                        </div>
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
+
+                                {/* 반대 컬럼 (오른쪽) */}
+                                <div className={styles.chatColumn}>
+                                    <div className={`${styles.columnHeader} ${styles.disagreeHeader}`}>반대</div>
+                                    <div className={styles.chatLog} ref={disagreeChatRef}>
+                                        {messages.filter(m => !m.parentId && m.side === 'disagree').map((msg, index) => (
+                                            <div key={msg.id || `disagree-msg-${index}`} className={styles.messageGroup}>
+                                                <div
+                                                    className={`${styles.messageBubble} ${styles.disagreeMessage}`}
+                                                    data-message-id={msg.id}
+                                                >
+                                                    <span className={styles.messageContent}>{msg.content || '[Empty message]'}</span>
+                                                    {viewMode === 'result' && (
+                                                        <button
+                                                            className={styles.counterButton}
+                                                            onClick={() => setReplyToId(msg.id || null)}
+                                                        >
+                                                            반론
+                                                        </button>
+                                                    )}
+                                                </div>
+                                                {/* 반론 표시 */}
+                                                {messages.filter(reply => reply.parentId === msg.id).map((reply, replyIndex) => (
+                                                    <div key={reply.id || `reply-${replyIndex}`} className={styles.replyWrapper}>
+                                                        <div className={`${styles.messageBubble} ${styles.replyMessage} ${reply.side === 'agree' ? styles.replyAgree : styles.replyDisagree}`}>
+                                                            <span className={styles.replyArrow}>ㄴ</span>
+                                                            {reply.content || '[Empty reply]'}
+                                                        </div>
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
+                            </>
+                        )}
                     </div>
 
 
@@ -322,15 +403,34 @@ const DiscussionRoomPage: React.FC = () => {
 
                     {viewMode !== 'verify' && (
                         <div className={styles.bottomSection}>
+                            {/* 반론 대상 메시지 표시 */}
+                            {replyToId && (
+                                <div className={styles.replyIndicator}>
+                                    <span className={styles.replyIndicatorText}>
+                                        @ {messages.find(m => m.id === replyToId)?.content?.substring(0, 50)}...
+                                    </span>
+                                    <button
+                                        className={styles.replyIndicatorClose}
+                                        onClick={() => setReplyToId(null)}
+                                    >
+                                        ×
+                                    </button>
+                                </div>
+                            )}
                             <div className={styles.chatInputBar}>
                                 <input
                                     className={styles.chatInput}
                                     value={inputValue}
                                     onChange={(e) => setInputValue(e.target.value)}
                                     onKeyDown={(e) => e.key === 'Enter' && handleSendMessage()}
-                                    placeholder="의견을 입력하세요..."
+                                    placeholder={viewMode === 'result' && !replyToId ? "반론할 의견을 선택하세요..." : (replyToId ? "반론을 입력하세요..." : "의견을 입력하세요...")}
+                                    disabled={viewMode === 'result' && !replyToId}
                                 />
-                                <button className={styles.sendButton} onClick={handleSendMessage}>전송</button>
+                                <button
+                                    className={styles.sendButton}
+                                    onClick={handleSendMessage}
+                                    disabled={viewMode === 'result' && !replyToId}
+                                >전송</button>
                             </div>
                         </div>
                     )}
