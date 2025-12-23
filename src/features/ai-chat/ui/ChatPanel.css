@@ -138,10 +138,12 @@
 
 .chat-message.user {
     align-self: flex-end;
-    background-color: #e0e7ff;
-    color: black;
+    background-color: #e8eeec;
+    /* Light sage based on secondary */
+    color: var(--color-text-primary, #040316);
     border-radius: 18px;
-    border: 1px solid #c7d2fe;
+    border: 1px solid #c8d8d4;
+    /* Secondary-based border */
 }
 
 /* User message speech bubble tail (right side, middle) */
@@ -155,7 +157,7 @@
     height: 0;
     border-style: solid;
     border-width: 8px 0 8px 10px;
-    border-color: transparent transparent transparent #c7d2fe;
+    border-color: transparent transparent transparent #c8d8d4;
 }
 
 .chat-message.user::after {
@@ -168,7 +170,7 @@
     height: 0;
     border-style: solid;
     border-width: 7px 0 7px 9px;
-    border-color: transparent transparent transparent #e0e7ff;
+    border-color: transparent transparent transparent #e8eeec;
 }
 
 /* Chat Input Area */
