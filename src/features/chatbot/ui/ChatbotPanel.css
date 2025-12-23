@@ -3,16 +3,16 @@
     /* Coordinates set via inline styles */
     width: 350px;
     height: 500px;
-    background: var(--ui-bg, rgba(255, 255, 255, 0.95));
+    background: var(--color-bg-primary, #f9f7f1);
     backdrop-filter: blur(10px);
     border-radius: 16px;
     box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
     display: flex;
     flex-direction: column;
     z-index: 2000;
-    border: 1px solid var(--ui-border, rgba(255, 255, 255, 0.5));
+    border: 1px solid var(--color-border, #d4d1ca);
     animation: slideIn 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-    color: var(--ui-text, #333);
+    color: var(--color-text-primary, #040316);
 }
 
 @keyframes slideIn {
@@ -29,7 +29,7 @@
 
 .chatbot-header {
     padding: 16px;
-    background: var(--ui-accent, linear-gradient(135deg, #496b6e 0%, #3a5759 100%));
+    background: var(--color-main, #496b6e);
     color: white;
     display: flex;
     justify-content: space-between;
@@ -73,7 +73,7 @@
     flex: 1;
     padding: 16px;
     overflow-y: auto;
-    background: var(--ui-bg-solid, #f8fafc);
+    background: var(--color-bg-secondary, #f4f1ea);
     display: flex;
     flex-direction: column;
     gap: 12px;
@@ -88,15 +88,15 @@
 }
 
 .chat-message.bot {
-    background: var(--ui-bg, white);
-    border: 1px solid var(--ui-border, #e2e8f0);
+    background: var(--color-bg-white, #ffffff);
+    border: 1px solid var(--color-border, #d4d1ca);
     align-self: flex-start;
     border-top-left-radius: 4px;
-    color: var(--ui-text, #1e293b);
+    color: var(--color-text-primary, #040316);
 }
 
 .chat-message.user {
-    background: var(--ui-accent, #c49f64);
+    background: var(--color-accent, #c49f64);
     color: white;
     align-self: flex-end;
     border-top-right-radius: 4px;
@@ -104,8 +104,8 @@
 
 .chatbot-footer {
     padding: 12px;
-    background: var(--ui-bg, white);
-    border-top: 1px solid var(--ui-border, #e2e8f0);
+    background: var(--color-bg-white, #ffffff);
+    border-top: 1px solid var(--color-border, #d4d1ca);
     display: flex;
     gap: 8px;
     align-items: center;
@@ -115,21 +115,21 @@
     flex: 1;
     min-width: 0;
     padding: 10px 14px;
-    border: 1px solid var(--ui-border, #e2e8f0);
+    border: 1px solid var(--color-border, #d4d1ca);
     border-radius: 20px;
     outline: none;
     font-size: 14px;
     transition: border-color 0.2s;
-    background: var(--ui-bg-solid, white);
-    color: var(--ui-text, #333);
+    background: var(--color-bg-white, #ffffff);
+    color: var(--color-text-primary, #040316);
 }
 
 .chat-input:focus {
-    border-color: var(--ui-accent, #c49f64);
+    border-color: var(--color-main, #496b6e);
 }
 
 .send-btn {
-    background: var(--ui-accent, #c49f64);
+    background: var(--color-accent, #c49f64);
     color: white;
     border: none;
     border-radius: 50%;

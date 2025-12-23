@@ -4,17 +4,17 @@
     top: 0;
     right: 0;
     height: 100vh;
-    background-color: var(--ui-bg, white);
+    background-color: var(--color-bg-primary, #f9f7f1);
     background-image: url('/assets/images/background.png');
     background-size: auto;
     background-repeat: repeat;
     background-position: right bottom !important;
     background-attachment: fixed;
     background-blend-mode: multiply;
-    color: var(--ui-text, #333);
-    border-left: 5px solid var(--ui-border, #ccc);
+    color: var(--color-text-primary, #040316);
+    border-left: 5px solid var(--color-border, #d4d1ca);
     /* box-shadow: -4px 0 12px rgba(0, 0, 0, 0.1); */
-    box-shadow: var(--colonial-shadow);
+    box-shadow: 0 0 20px rgba(0, 0, 0, 0.15);
     z-index: 2000;
     /* Ensure it's above everything */
     display: flex;
@@ -61,7 +61,7 @@
 
 .docking-panel .resize-handle:hover,
 .docking-panel .resize-handle:active {
-    background: var(--ui-accent, #c49f64);
+    background: var(--color-accent, #c49f64);
     opacity: 0.8;
     /* Make it more visible */
 }
@@ -72,8 +72,8 @@
     justify-content: space-between;
     align-items: center;
     padding: 16px 20px;
-    border-bottom: 1px solid var(--ui-border, #ccc);
-    background-color: var(--ui-bg, white);
+    border-bottom: 1px solid var(--color-border, #d4d1ca);
+    background-color: var(--color-bg-primary, #f9f7f1);
     position: relative;
     z-index: 10;
 }
@@ -94,7 +94,7 @@
     margin: 0;
     font-size: 1.25rem;
     font-weight: 600;
-    color: var(--ui-text);
+    color: var(--color-text-primary, #040316);
     white-space: nowrap;
     letter-spacing: -0.3px;
 }
@@ -102,7 +102,7 @@
 .close-btn {
     background: none;
     border: none;
-    color: var(--ui-text-muted);
+    color: var(--color-text-muted, #6b6b7a);
     cursor: pointer;
     height: 36px;
     display: flex;
@@ -113,10 +113,10 @@
 }
 
 .docking-panel .close-btn:hover {
-    background: var(--ui-accent, #c49f64);
+    background: var(--color-accent, #c49f64);
     color: white;
     /* Keep white on hover for contrast against accent */
-    border-color: var(--ui-accent, #c49f64);
+    border-color: var(--color-accent, #c49f64);
     transform: scale(1.05);
 }
 

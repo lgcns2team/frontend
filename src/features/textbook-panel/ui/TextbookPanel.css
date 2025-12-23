@@ -2,8 +2,8 @@
     display: flex;
     flex-direction: column;
     height: 100%;
-    background-color: var(--ui-bg);
-    color: var(--ui-text);
+    background-color: var(--color-bg-primary, #f9f7f1);
+    color: var(--color-text-primary, #040316);
     overflow: hidden;
     padding: 0;
     margin: -20px;

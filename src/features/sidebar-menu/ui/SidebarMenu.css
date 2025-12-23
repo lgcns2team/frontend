@@ -127,7 +127,7 @@
     align-items: center;
     justify-content: flex-start;
     gap: 12px;
-    color: var(--ui-text, #333);
+    color: var(--color-text-primary, #040316);
     font-size: 25px;
     font-weight: 700;
     font-family: 'CustomFont', sans-serif;
