@@ -39,7 +39,8 @@ const DiscussionRoomPage: React.FC = () => {
         lastError,
         sendChat,
         confirmStart,
-        sendModeChange
+        sendModeChange,
+        sendVoteStatus
     } = useDiscussion(id);
 
     // Debug: Log messages changes
@@ -51,6 +52,8 @@ const DiscussionRoomPage: React.FC = () => {
 
     const [inputValue, setInputValue] = useState('');
     const [replyToId, setReplyToId] = useState<string | null>(null);
+    const [flippedBoxes, setFlippedBoxes] = useState<{ [key: number]: boolean }>({});
+    const [isTopicCollapsed, setIsTopicCollapsed] = useState(true);
 
     // Refs for auto-scrolling chat logs
     const agreeChatRef = useRef<HTMLDivElement>(null);
@@ -178,9 +181,22 @@ const DiscussionRoomPage: React.FC = () => {
                         </div>
                     </div>
                     <div className={styles.resultBottomRow}>
-                        <div className={styles.resultBox}>결론 1</div>
-                        <div className={styles.resultBox}>결론 2</div>
-                        <div className={styles.resultBox}>결론 3</div>
+                        {[1, 2, 3].map((num) => (
+                            <div
+                                key={num}
+                                className={`${styles.flipCard} ${flippedBoxes[num] ? styles.flipped : ''}`}
+                                onClick={() => setFlippedBoxes(prev => ({ ...prev, [num]: !prev[num] }))}
+                            >
+                                <div className={styles.flipCardInner}>
+                                    <div className={`${styles.flipCardFront} ${styles.resultBox}`}>
+                                        결론 {num}
+                                    </div>
+                                    <div className={`${styles.flipCardBack} ${styles.resultBox}`}>
+                                        뒷면 {num}
+                                    </div>
+                                </div>
+                            </div>
+                        ))}
                     </div>
                     <div style={{ textAlign: 'right', marginTop: '10px' }}>
                         <button className={styles.endButton} onClick={handleEnd}>종료</button>
@@ -263,71 +279,40 @@ const DiscussionRoomPage: React.FC = () => {
 
             {(viewMode === 'chat' || viewMode === 'verify' || viewMode === 'result') && (
                 <div className={styles.chatContainer}>
-                    <div className={styles.topSection}>
-                        <div className={styles.kingImageWrapper}>
-                            <img src="/assets/images/discussion/king.png" alt="King" className={styles.kingImage} />
+                    <div className={styles.topSectionWrapper}>
+                        <div className={`${styles.topSection} ${isTopicCollapsed ? styles.topSectionCollapsed : ''}`}>
+                            <div className={styles.kingImageWrapper}>
+                                <img src="/assets/images/discussion/king.png" alt="King" className={styles.kingImage} />
+                            </div>
+                            <div className={styles.infoSection}>
+                                <div className={styles.royalBadge}>논제</div>
+                                <h2 className={styles.chatTitle}>{topic}</h2>
+                                <p className={styles.chatDescription}>{description}</p>
+                            </div>
                         </div>
-                        <div className={styles.infoSection}>
-                            <div className={styles.royalBadge}>논제</div>
-                            <h2 className={styles.chatTitle}>{topic}</h2>
-                            <p className={styles.chatDescription}>{description}</p>
-                        </div>
+                        <button
+                            className={`${styles.collapseButton} ${isTopicCollapsed ? styles.collapseButtonHidden : ''}`}
+                            onClick={() => setIsTopicCollapsed(!isTopicCollapsed)}
+                        >
+                            <span>{isTopicCollapsed ? '논제 보기' : '논제 숨기기'}</span>
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                <path d={isTopicCollapsed ? "M5 15l7-7 7 7" : "M19 9l-7 7-7-7"} />
+                            </svg>
+                        </button>
                     </div>
 
                     <div className={styles.chatWrapper}>
-                        <div
-                            className={`${styles.chatColumn} ${vote === 'agree' ? styles.selectedColumn : ''}`}
-                        >
-                            <div className={`${styles.columnHeader} ${styles.agreeHeader}`}>찬성</div>
+                        <div className={styles.chatColumn}>
+                            <div className={styles.columnHeader}>의견</div>
                             <div className={styles.chatLog} ref={agreeChatRef}>
-                                {messages.filter(m => m.side === 'agree' && !m.parentId).map((msg, index) => (
-                                    <React.Fragment key={msg.id || `msg-${index}`}>
-                                        <div
-                                            className={`${styles.messageBubble} ${styles.agreeMessage}`}
-                                            data-message-id={msg.id}
-                                        >
-                                            {msg.content || '[Empty message]'}
-                                            {viewMode === 'result' && (
-                                                <button className={styles.counterButton} onClick={() => setReplyToId(msg.id || null)}>반론하기</button>
-                                            )}
-                                        </div>
-                                        {messages.filter(reply => reply.parentId === msg.id).map((reply, replyIndex) => (
-                                            <div
-                                                key={reply.id || `reply-${index}-${replyIndex}`}
-                                                className={`${styles.messageBubble} ${reply.side === 'agree' ? styles.agreeMessage : styles.disagreeMessage} ${styles.replyMessage}`}
-                                            >
-                                                ㄴ {reply.content}
-                                            </div>
-                                        ))}
-                                    </React.Fragment>
-                                ))}
-                            </div>
-                        </div>
-                        <div
-                            className={`${styles.chatColumn} ${vote === 'disagree' ? styles.selectedColumn : ''}`}
-                        >
-                            <div className={`${styles.columnHeader} ${styles.disagreeHeader}`}>반대</div>
-                            <div className={styles.chatLog} ref={disagreeChatRef}>
-                                {messages.filter(m => m.side === 'disagree' && !m.parentId).map((msg, index) => (
-                                    <React.Fragment key={msg.id || `msg-${index}`}>
-                                        <div
-                                            className={`${styles.messageBubble} ${styles.disagreeMessage}`}
-                                            data-message-id={msg.id}
-                                        >
-                                            {msg.content || '[Empty message]'}
-                                            {viewMode === 'result' && (
-                                                <button className={styles.counterButton} onClick={() => setReplyToId(msg.id || null)}>반론하기</button>
-                                            )}
-                                        </div>
-                                        {messages.filter(reply => reply.parentId === msg.id).map((reply, replyIndex) => (
-                                            <div
-                                                key={reply.id || `reply-${index}-${replyIndex}`}
-                                                className={`${styles.messageBubble} ${reply.side === 'agree' ? styles.agreeMessage : styles.disagreeMessage} ${styles.replyMessage}`}
-                                            >
-                                                ㄴ {reply.content}
-                                            </div>
-                                        ))}
-                                    </React.Fragment>
+                                {messages.filter(m => !m.parentId).map((msg, index) => (
+                                    <div
+                                        key={msg.id || `msg-${index}`}
+                                        className={`${styles.messageBubble} ${msg.side === 'agree' ? styles.agreeMessage : styles.disagreeMessage}`}
+                                        data-message-id={msg.id}
+                                    >
+                                        {msg.content || '[Empty message]'}
+                                    </div>
                                 ))}
                             </div>
                         </div>
@@ -356,36 +341,40 @@ const DiscussionRoomPage: React.FC = () => {
 
                     {localStorage.getItem('userRole') === 'TEACHER' && (
                         <div className={styles.actionButtons}>
-                            <button className={styles.endButton} onClick={handleEnd}>종료</button>
-                            <button className={viewMode === 'result' ? styles.resultButton : styles.startButton} onClick={handleNext}>
-                                {viewMode === 'result' ? '결과보기' : '다음'}
-                            </button>
+                            <div className={styles.voteButtons}>
+                                <button
+                                    className={`${styles.teacherVoteBtn} ${styles.agreeVoteButton} ${vote === 'agree' ? styles.activeVote : ''}`}
+                                    onClick={() => sendVoteStatus('agree')}
+                                >
+                                    찬성
+                                </button>
+                                <button
+                                    className={`${styles.teacherVoteBtn} ${styles.disagreeVoteButton} ${vote === 'disagree' ? styles.activeVote : ''}`}
+                                    onClick={() => sendVoteStatus('disagree')}
+                                >
+                                    반대
+                                </button>
+                            </div>
+                            <div className={styles.mainButtons}>
+                                <button className={styles.endButton} onClick={handleEnd}>종료</button>
+                                <button className={viewMode === 'result' ? styles.resultButton : styles.startButton} onClick={handleNext}>
+                                    {viewMode === 'result' ? '결과보기' : '다음'}
+                                </button>
+                            </div>
                         </div>
                     )}
 
                     {viewMode !== 'verify' && (
                         <div className={styles.bottomSection}>
                             <div className={styles.chatInputBar}>
-                                {replyToId && (
-                                    <div style={{ position: 'absolute', top: '-40px', left: 0, right: 0, backgroundColor: 'rgba(255,255,255,0.9)', padding: '8px', display: 'flex', justifyContent: 'space-between' }}>
-                                        <span>To: {messages.find(m => m.id === replyToId)?.content.substring(0, 20)}...</span>
-                                        <button onClick={() => setReplyToId(null)}>X</button>
-                                    </div>
-                                )}
                                 <input
                                     className={styles.chatInput}
                                     value={inputValue}
                                     onChange={(e) => setInputValue(e.target.value)}
                                     onKeyDown={(e) => e.key === 'Enter' && handleSendMessage()}
-                                    placeholder={
-                                        viewMode === 'verify' ? "의견 확인 단계입니다." :
-                                            (viewMode === 'result' && !replyToId) ? "반론할 메세지를 선택하세요." :
-                                                (viewMode === 'result' && replyToId) ? "반론 내용을 입력하세요..." :
-                                                    "의견을 입력하세요..."
-                                    }
-                                    disabled={viewMode === 'verify' || (viewMode === 'result' && !replyToId)}
+                                    placeholder="의견을 입력하세요..."
                                 />
-                                <button className={styles.sendButton} onClick={handleSendMessage} disabled={viewMode === 'verify' || (viewMode === 'result' && !replyToId)}>전송</button>
+                                <button className={styles.sendButton} onClick={handleSendMessage}>전송</button>
                             </div>
                         </div>
                     )}

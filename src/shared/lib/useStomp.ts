@@ -96,10 +96,17 @@ export const getDiscussionRooms = async (): Promise<DiscussionRoom[]> => {
             const data: DiscussionRoom[] = await response.json();
             console.log("Rooms fetched:", data);
 
+            // Sort by createdAt ascending (oldest first)
+            const sortedData = data.sort((a, b) => {
+                const dateA = Array.isArray(a.createdAt) ? new Date(a.createdAt[0], a.createdAt[1] - 1, a.createdAt[2], a.createdAt[3] || 0, a.createdAt[4] || 0, a.createdAt[5] || 0).getTime() : new Date(a.createdAt).getTime();
+                const dateB = Array.isArray(b.createdAt) ? new Date(b.createdAt[0], b.createdAt[1] - 1, b.createdAt[2], b.createdAt[3] || 0, b.createdAt[4] || 0, b.createdAt[5] || 0).getTime() : new Date(b.createdAt).getTime();
+                return dateA - dateB;
+            });
+
             // Map backend DTO to frontend structure if necessary, or just return.
             // Frontend currently expects: { id, title, description, content... }
             // Let's normalize it here to avoid breaking UI.
-            return data.map(room => ({
+            return sortedData.map(room => ({
                 ...room,
                 id: room.roomId,
                 title: room.topicTitle,

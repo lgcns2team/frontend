@@ -131,35 +131,10 @@ const DiscussionPanel: React.FC = () => {
     }
   };
 
-  // Filter discussions for students: must match teacherCode, grade, and classroom
-  const filteredDiscussions = (() => {
-    const userRole = localStorage.getItem('userRole');
-    if (userRole === 'TEACHER') {
-      return discussions; // Teachers see all their rooms
-    }
-
-    // Student filtering
-    const studentTeacherCode = localStorage.getItem('teacherCode');
-    const studentGrade = localStorage.getItem('grade');
-    const studentClassroom = localStorage.getItem('classroom');
-
-    console.log('🎓 Student filter:', { studentTeacherCode, studentGrade, studentClassroom });
-
-    return discussions.filter(room => {
-      const matchTeacher = String(room.teacherCode) === String(studentTeacherCode);
-      const matchGrade = String(room.grade) === String(studentGrade);
-      const matchClassroom = String(room.classroom) === String(studentClassroom);
-
-      console.log(`📋 Room ${room.id}: teacherCode=${room.teacherCode}(${matchTeacher}), grade=${room.grade}(${matchGrade}), classroom=${room.classroom}(${matchClassroom})`);
-
-      return matchTeacher && matchGrade && matchClassroom;
-    });
-  })();
-
   return (
     <div className={styles.charactersPanel}>
       <div className={styles.charactersList}>
-        {filteredDiscussions.map((discussion, index) => (
+        {discussions.map((discussion, index) => (
           <div
             key={discussion.id || index}
             className={styles.characterItem}
