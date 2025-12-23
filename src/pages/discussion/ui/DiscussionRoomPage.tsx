@@ -270,22 +270,24 @@ const DiscussionRoomPage: React.FC = () => {
 
 
                     <div className={styles.chatWrapper}>
-                        {/* chat 모드: 통합된 단일 컬럼 */}
+                        {/* chat 모드: 카카오톡 스타일 통합 채팅 */}
                         {viewMode === 'chat' && (
-                            <div className={styles.chatColumn}>
-                                <div className={styles.columnHeader}>의견</div>
-                                <div className={styles.chatLog} ref={agreeChatRef}>
+                            <div className={styles.kakaoColumn}>
+                                <div className={styles.kakaoChatLog} ref={agreeChatRef}>
                                     {messages.filter(m => !m.parentId).map((msg, index) => (
                                         <div
                                             key={msg.id || `msg-${index}`}
-                                            className={`${styles.messageGroup} ${msg.side === 'agree' ? styles.messageGroupAgree : styles.messageGroupDisagree}`}
+                                            className={`${styles.kakaoMessageRow} ${msg.side === 'agree' ? styles.kakaoLeft : styles.kakaoRight}`}
                                         >
-                                            <div
-                                                className={`${styles.messageBubble} ${msg.side === 'agree' ? styles.agreeMessage : styles.disagreeMessage}`}
-                                                data-message-id={msg.id}
-                                            >
-                                                <span className={styles.messageContent}>{msg.content || '[Empty message]'}</span>
+                                            {msg.side === 'agree' && (
+                                                <img src="/assets/images/discussion/yesman.png" alt="찬성" className={styles.kakaoProfileImg} />
+                                            )}
+                                            <div className={`${styles.kakaoBubble} ${msg.side === 'agree' ? styles.kakaoBubbleAgree : styles.kakaoBubbleDisagree}`}>
+                                                {msg.content || '[Empty message]'}
                                             </div>
+                                            {msg.side === 'disagree' && (
+                                                <img src="/assets/images/discussion/noman.png" alt="반대" className={styles.kakaoProfileImg} />
+                                            )}
                                         </div>
                                     ))}
                                 </div>
@@ -367,14 +369,17 @@ const DiscussionRoomPage: React.FC = () => {
                     </div>
 
 
-                    <div className={styles.humanSection}>
-                        <div className={`${styles.humanGroup} ${styles.agreeGroup}`}>
-                            {[1, 2, 3].map((_, i) => <img key={`agree-human-${i}`} src="/assets/images/discussion/yesman.png" alt="Human" className={styles.humanImage} />)}
+                    {/* 신하 아이콘 - chat 모드에서는 숨김 */}
+                    {viewMode !== 'chat' && (
+                        <div className={styles.humanSection}>
+                            <div className={`${styles.humanGroup} ${styles.agreeGroup}`}>
+                                {[1, 2, 3].map((_, i) => <img key={`agree-human-${i}`} src="/assets/images/discussion/yesman.png" alt="Human" className={styles.humanImage} />)}
+                            </div>
+                            <div className={`${styles.humanGroup} ${styles.disagreeGroup}`}>
+                                {[1, 2, 3].map((_, i) => <img key={`disagree-human-${i}`} src="/assets/images/discussion/noman.png" alt="Human" className={styles.humanImage} />)}
+                            </div>
                         </div>
-                        <div className={`${styles.humanGroup} ${styles.disagreeGroup}`}>
-                            {[1, 2, 3].map((_, i) => <img key={`disagree-human-${i}`} src="/assets/images/discussion/noman.png" alt="Human" className={styles.humanImage} />)}
-                        </div>
-                    </div>
+                    )}
 
                     {localStorage.getItem('userRole') === 'TEACHER' && (
                         <div className={styles.actionButtons}>
