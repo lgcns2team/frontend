@@ -135,11 +135,17 @@ const DiscussionRoomPage: React.FC = () => {
         if (userRole === 'TEACHER') {
             console.log('👨‍🏫 Teacher ending session, sending END_SESSION signal');
             sendEndSession();
-        }
 
-        // Navigate to map page
-        localStorage.setItem('openPanel', 'discussion');
-        navigate('/map');
+            // Wait a bit for message to be sent before navigating
+            setTimeout(() => {
+                localStorage.setItem('openPanel', 'discussion');
+                navigate('/map');
+            }, 300);
+        } else {
+            // Students navigate immediately
+            localStorage.setItem('openPanel', 'discussion');
+            navigate('/map');
+        }
     };
 
 

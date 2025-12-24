@@ -492,28 +492,6 @@ export const useDiscussion = (roomId: string | undefined) => {
                 type: 'JOIN',
                 userId: userId,
             });
-
-            // Students request current state from teacher
-            const userRole = localStorage.getItem('userRole');
-            if (userRole === 'STUDENT') {
-                console.log('👨‍🎓 Student requesting current state from teacher');
-
-                // Set timeout to fallback to 'vote' if no response
-                const stateTimeout = setTimeout(() => {
-                    console.warn('⏱️ No STATE_RESPONSE received, defaulting to vote mode');
-                    setViewMode('vote');
-                }, 3000); // 3 second timeout
-
-                // Store timeout ID to clear it when response is received
-                (window as any).__stateRequestTimeout = stateTimeout;
-
-                sendMessage('/app/room/' + roomId + '/chat', {
-                    type: 'STATE_REQUEST',
-                    userId: userId,
-                    sender: username,
-                    status: 'PRO'
-                });
-            }
         },
         onError: (error) => {
             const errorMsg = typeof error === 'string' ? error : (error?.headers?.message || "WebSocket Error");
@@ -526,6 +504,29 @@ export const useDiscussion = (roomId: string | undefined) => {
         if (roomId) connect();
         return () => disconnect();
     }, [roomId, connect, disconnect]);
+
+    // Send STATE_REQUEST when student connects
+    useEffect(() => {
+        const userRole = localStorage.getItem('userRole');
+        if (roomId && isConnected && userRole === 'STUDENT') {
+            console.log('👨‍🎓 Student connected, requesting current state from teacher');
+
+            // Set timeout to fallback to 'vote' if no response
+            const stateTimeout = setTimeout(() => {
+                console.warn('⏱️ No STATE_RESPONSE received, defaulting to vote mode');
+                setViewMode('vote');
+            }, 3000);
+
+            (window as any).__stateRequestTimeout = stateTimeout;
+
+            sendMessage('/app/room/' + roomId + '/chat', {
+                type: 'STATE_REQUEST',
+                userId: userId,
+                sender: username,
+                status: 'PRO'
+            });
+        }
+    }, [roomId, isConnected, sendMessage, userId, username]);
 
     // Track previous viewMode to detect transitions
     const prevViewModeRef = useRef(viewMode);
