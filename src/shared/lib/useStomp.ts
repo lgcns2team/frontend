@@ -9,9 +9,11 @@ export interface ChatMessage {
     // userId?: string;
     sender: string;
     content: string;
-    type: 'CHAT' | 'JOIN' | 'LEAVE' | 'STATUS';
+    type: 'CHAT' | 'JOIN' | 'LEAVE' | 'STATUS' | 'END_SESSION' | 'STATE_REQUEST' | 'STATE_RESPONSE';
     side?: 'agree' | 'disagree';
     status?: 'PRO' | 'CON';
+    viewMode?: string;
+    targetUserId?: string;
 }
 
 export interface DisplayMessage extends ChatMessage {
@@ -275,6 +277,66 @@ export const useDiscussion = (roomId: string | undefined) => {
             return;
         }
 
+        // Handle STATE_REQUEST - Teacher responds with current state
+        if (message.type === 'STATE_REQUEST') {
+            const userRole = localStorage.getItem('userRole');
+            if (userRole === 'TEACHER') {
+                console.log('👨‍🏫 Teacher received STATE_REQUEST from:', message.userId);
+                // Send current viewMode to requesting student
+                sendMessage('/app/room/' + roomId + '/chat', {
+                    type: 'STATE_RESPONSE',
+                    viewMode: viewMode,
+                    targetUserId: message.userId,
+                    sender: username,
+                    status: 'PRO'
+                });
+                console.log('✅ Sent STATE_RESPONSE:', viewMode);
+            }
+            return;
+        }
+
+        // Handle STATE_RESPONSE - Student syncs to teacher's state
+        if (message.type === 'STATE_RESPONSE') {
+            const userRole = localStorage.getItem('userRole');
+            // Only process if this response is for me
+            if (userRole === 'STUDENT' && message.targetUserId === userId) {
+                console.log('👨‍🎓 Student received STATE_RESPONSE:', message.viewMode);
+
+                // Clear timeout since we got a response
+                if ((window as any).__stateRequestTimeout) {
+                    clearTimeout((window as any).__stateRequestTimeout);
+                    (window as any).__stateRequestTimeout = null;
+                }
+
+                setViewMode(message.viewMode);
+
+                // Auto-vote if needed
+                if (message.viewMode !== 'vote') {
+                    setVote(prevVote => {
+                        if (prevVote === null) {
+                            const defaultVote = 'agree';
+                            console.log("🔄 Auto-voting as 'agree' after state sync");
+                            return defaultVote;
+                        }
+                        return prevVote;
+                    });
+                }
+            }
+            return;
+        }
+
+        // Handle END_SESSION messages - navigate students to map page
+        if (message.type === 'END_SESSION') {
+            console.log('🚪 END_SESSION received');
+            const userRole = localStorage.getItem('userRole');
+            if (userRole !== 'TEACHER') {
+                console.log('👨‍🎓 Student: navigating to map page');
+                localStorage.setItem('openPanel', 'discussion');
+                window.location.href = '/map';
+            }
+            return;
+        }
+
         // Handle MODE_CHANGE messages for state synchronization
         if (message.type === 'MODE_CHANGE') {
             const nextMode = message.content;
@@ -388,6 +450,28 @@ export const useDiscussion = (roomId: string | undefined) => {
                 type: 'JOIN',
                 userId: userId,
             });
+
+            // Students request current state from teacher
+            const userRole = localStorage.getItem('userRole');
+            if (userRole === 'STUDENT') {
+                console.log('👨‍🎓 Student requesting current state from teacher');
+
+                // Set timeout to fallback to 'vote' if no response
+                const stateTimeout = setTimeout(() => {
+                    console.warn('⏱️ No STATE_RESPONSE received, defaulting to vote mode');
+                    setViewMode('vote');
+                }, 3000); // 3 second timeout
+
+                // Store timeout ID to clear it when response is received
+                (window as any).__stateRequestTimeout = stateTimeout;
+
+                sendMessage('/app/room/' + roomId + '/chat', {
+                    type: 'STATE_REQUEST',
+                    userId: userId,
+                    sender: username,
+                    status: 'PRO'
+                });
+            }
         },
         onError: (error) => {
             const errorMsg = typeof error === 'string' ? error : (error?.headers?.message || "WebSocket Error");
@@ -499,6 +583,27 @@ export const useDiscussion = (roomId: string | undefined) => {
         console.log('✅ Mode change message sent via chat:', nextMode);
     };
 
+    const sendEndSession = () => {
+        console.log('🚪 sendEndSession called:', { roomId, isConnected });
+        if (!roomId || !isConnected) {
+            console.warn('⚠️ Cannot send end session: roomId or connection missing');
+            return;
+        }
+
+        console.log('📤 Sending END_SESSION message');
+        sendMessage(
+            "/app/room/" + roomId + "/chat",
+            {
+                type: 'END_SESSION',
+                content: '__END_SESSION__',
+                status: 'PRO',
+                userId: userId,
+                sender: username,
+            }
+        );
+        console.log('✅ End session message sent');
+    };
+
     const setVoteLocal = (v: 'agree' | 'disagree' | null) => {
         console.log('🗳️ Vote changed:', { from: vote, to: v });
         if (v === null) {
@@ -524,6 +629,7 @@ export const useDiscussion = (roomId: string | undefined) => {
         sendChat,
         sendVoteStatus, // This combines setting vote (if needed) and sending status
         sendModeChange,
+        sendEndSession,
         confirmStart: () => { // Replacement for handleStart logic
             console.log('🚀 confirmStart called:', { roomId, vote, isConnected });
             if (!roomId) {
