@@ -11,6 +11,43 @@
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+
+  /* ===== H.AI Brand Colors ===== */
+  /* Main Color - Deep Teal */
+  --color-main: #496b6e;
+  --color-main-dark: #3a5759;
+  --color-main-light: #5a7c7f;
+
+  /* Secondary Color - Sage Green */
+  --color-secondary: #88a09b;
+  --color-secondary-dark: #768e89;
+  --color-secondary-light: #a3b8b4;
+
+  /* Accent Color - Mustard Gold */
+  --color-accent: #c49f64;
+  --color-accent-dark: #b08d54;
+  --color-accent-light: #d4b47e;
+
+  /* Background Colors */
+  --color-bg-primary: #f9f7f1;
+  --color-bg-secondary: #f4f1ea;
+  --color-bg-tertiary: #edeae3;
+  --color-bg-white: #ffffff;
+
+  /* Text Colors */
+  --color-text-primary: #040316;
+  --color-text-secondary: #3d3d4a;
+  --color-text-muted: #6b6b7a;
+  --color-text-on-main: #ffffff;
+
+  /* Utility Colors */
+  --color-border: #d4d1ca;
+  --color-border-light: #e5e2db;
+
+  /* Status Colors */
+  --color-success: #22c55e;
+  --color-error: #ef4444;
+  --color-warning: #f59e0b;
 }
 
 a {

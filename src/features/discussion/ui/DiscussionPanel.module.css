@@ -40,7 +40,7 @@
 .charactersPanel {
   position: relative;
   height: 100%;
-  color: var(--ui-text);
+  color: var(--color-text-primary, #040316);
   display: flex;
   flex-direction: column;
   overflow: hidden;
@@ -65,32 +65,29 @@
   text-align: left;
   padding: 32px;
   border-radius: 8px;
-  border: 1px solid var(--ui-border);
-  background-color: var(--ui-bg-secondary);
-  background-image: url('/assets/images/background1.png');
-  background-size: 100% 100%;
-  background-repeat: no-repeat;
+  border: 1px solid var(--color-border, #d4d1ca);
+  background-color: var(--color-bg-white, #ffffff);
   transition: transform 0.2s, box-shadow 0.2s, border-color 0.2s;
 }
 
 .characterItem:hover {
   transform: translateY(-2px);
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-  border-color: var(--ui-primary);
+  border-color: var(--color-main, #496b6e);
 }
 
 .characterName {
   margin: 0 0 8px;
   font-size: 1rem;
   font-weight: 600;
-  color: var(--ui-text-highlight);
+  color: var(--color-text-primary, #040316);
 }
 
 .characterSummary {
   margin: 0;
   font-size: 0.85rem;
   line-height: 1.4;
-  color: var(--ui-text);
+  color: var(--color-text-secondary, #3d3d4a);
 }
 
 .roomNumber {
