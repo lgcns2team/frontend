@@ -303,7 +303,6 @@ export const useDiscussion = (roomId: string | undefined) => {
                 // Send current viewMode to requesting student
                 // Note: sendMessage will be available from WebSocket context
                 const currentViewMode = viewModeRef.current;
-                const currentRoomId = roomIdRef.current;
                 const currentUsername = usernameRef.current;
 
                 // We'll send this via a callback passed to onConnect
@@ -465,18 +464,24 @@ export const useDiscussion = (roomId: string | undefined) => {
 
                 // Handle STATE_REQUEST immediately here where sendMessage is available
                 if (parsed.type === 'STATE_REQUEST') {
+                    console.log('🔔 STATE_REQUEST detected!');
                     const userRole = localStorage.getItem('userRole');
+                    console.log('👤 Current user role:', userRole);
                     if (userRole === 'TEACHER') {
                         console.log('👨‍🏫 Teacher responding to STATE_REQUEST from:', parsed.userId);
-                        sendMessage('/app/room/' + roomId + '/chat', {
+                        const responseMessage = {
                             type: 'STATE_RESPONSE',
                             viewMode: viewModeRef.current,
                             targetUserId: parsed.userId,
                             sender: username,
                             status: 'PRO'
-                        });
+                        };
+                        console.log('📤 Sending STATE_RESPONSE:', responseMessage);
+                        sendMessage('/app/room/' + roomId + '/chat', responseMessage);
                         console.log('✅ Sent STATE_RESPONSE:', viewModeRef.current);
                         return; // Don't pass to handleIncomingMessage
+                    } else {
+                        console.log('⚠️ Not a teacher, ignoring STATE_REQUEST');
                     }
                 }
 
@@ -519,12 +524,15 @@ export const useDiscussion = (roomId: string | undefined) => {
 
             (window as any).__stateRequestTimeout = stateTimeout;
 
-            sendMessage('/app/room/' + roomId + '/chat', {
+            const stateRequestMessage = {
                 type: 'STATE_REQUEST',
                 userId: userId,
                 sender: username,
                 status: 'PRO'
-            });
+            };
+
+            console.log('📤 Sending STATE_REQUEST message:', stateRequestMessage);
+            sendMessage('/app/room/' + roomId + '/chat', stateRequestMessage);
         }
     }, [roomId, isConnected, sendMessage, userId, username]);
 

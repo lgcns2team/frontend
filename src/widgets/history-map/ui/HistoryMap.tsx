@@ -14,7 +14,6 @@ import { useWarLayer } from '../lib/useWarLayer';
 import { TimeControls } from '../../../features/time-controls';
 import { PlayControls } from '../../../features/play-controls';
 import { MapLayers } from '../../../features/map-layers';
-import { SearchYear } from '../../../features/search-year';
 import { SidebarMenu } from '../../../features/sidebar-menu';
 import { Timeline } from '../../../features/timeline';
 import { DockingPanel } from '../../../features/docking-panel/ui/DockingPanel';

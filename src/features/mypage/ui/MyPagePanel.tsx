@@ -1,4 +1,4 @@
-import React, { useRef, useEffect } from 'react';
+import { useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { authApi } from '../../../shared/api/auth-api';
 import './MyPagePanel.css';
