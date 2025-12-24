@@ -164,8 +164,29 @@ export const useWarAnimation = ({
 
         // Process each battle route - sort by date first (same logic as useWarLayer)
         warData.forEach(war => {
+            // Check if this is a "기타/미분류" (miscellaneous/unclassified) war
+            const isMiscellaneousWar = war.name.includes('기타') || war.name.includes('미분류');
+
+            // Get war start year
+            const warStartYear = war.warStartDate ? new Date(war.warStartDate).getFullYear() : null;
+
+            // Filter battles based on war type
+            // - Regular wars: show all battles when currentYear >= warStartYear
+            // - Miscellaneous wars: show only battles that match the currentYear (within +30 year range)
+            const filteredBattles = war.battles.filter(battle => {
+                if (!isMiscellaneousWar) {
+                    // Regular war: show if we've reached the war start year
+                    return warStartYear !== null && currentYear >= warStartYear;
+                } else {
+                    // Miscellaneous war: show only battles that match the exact currentYear
+                    if (!battle.battleDate) return false;
+                    const battleYear = new Date(battle.battleDate).getFullYear();
+                    return battleYear === currentYear;
+                }
+            });
+
             // Sort battles by date: valid dates first (chronological), null/invalid dates last
-            const sortedBattles = [...war.battles].sort((a, b) => {
+            const sortedBattles = [...filteredBattles].sort((a, b) => {
                 const dateA = a.battleDate ? new Date(a.battleDate).getTime() : null;
                 const dateB = b.battleDate ? new Date(b.battleDate).getTime() : null;
 
