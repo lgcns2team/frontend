@@ -9,8 +9,148 @@
     margin: -20px;
     width: calc(100% + 40px);
     height: calc(100% + 40px);
+    position: relative;
 }
 
+/* Floating Navigation Bar */
+.textbook-floating-nav {
+    position: absolute;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 20px;
+    background: rgba(255, 255, 255, 0.95);
+    border: 1px solid var(--color-border, #d4d1ca);
+    border-radius: 24px;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+    z-index: 100;
+    cursor: grab;
+    user-select: none;
+    backdrop-filter: blur(8px);
+}
+
+.textbook-floating-nav:active {
+    cursor: grabbing;
+}
+
+.textbook-floating-nav .nav-btn {
+    padding: 8px 14px;
+    background: transparent;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 13px;
+    color: var(--color-text-primary, #040316);
+    transition: background 0.2s, opacity 0.2s;
+    white-space: nowrap;
+}
+
+.textbook-floating-nav .nav-btn:hover:not(:disabled) {
+    background: var(--color-bg-secondary, #f4f1ea);
+}
+
+.textbook-floating-nav .nav-btn:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+}
+
+.textbook-floating-nav .nav-btn.accent {
+    color: var(--color-main, #496b6e);
+    border: 1px solid var(--color-main, #496b6e);
+}
+
+.textbook-floating-nav .nav-btn.accent:hover:not(:disabled) {
+    background: var(--color-main, #496b6e);
+    color: white;
+}
+
+.textbook-floating-nav .nav-btn.accent.disabled {
+    border-color: #ccc;
+    color: #ccc;
+}
+
+.textbook-floating-nav .page-indicator {
+    font-size: 14px;
+    font-weight: 500;
+    min-width: 60px;
+    text-align: center;
+    color: var(--color-text-primary, #040316);
+}
+
+.textbook-floating-nav .page-input {
+    width: 36px;
+    padding: 4px 6px;
+    border: 1px solid var(--color-border, #d4d1ca);
+    border-radius: 4px;
+    text-align: center;
+    font-size: 13px;
+    background: white;
+}
+
+.textbook-floating-nav .page-input:focus {
+    outline: none;
+    border-color: var(--color-main, #496b6e);
+}
+
+.textbook-floating-nav .nav-divider {
+    width: 1px;
+    height: 20px;
+    background: var(--color-border, #d4d1ca);
+    margin: 0 4px;
+}
+
+.textbook-floating-nav .nav-minimize-btn {
+    width: 28px;
+    height: 28px;
+    padding: 0;
+    background: var(--color-main, #496b6e);
+    color: white;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-left: 8px;
+    transition: all 0.2s ease;
+}
+
+.textbook-floating-nav .nav-minimize-btn:hover {
+    background: var(--color-accent, #c49f64);
+    transform: scale(1.1);
+}
+
+/* Collapsed Navigation Button */
+.nav-collapsed-btn {
+    position: absolute;
+    right: 20px;
+    bottom: 20px;
+    min-width: 56px;
+    height: 56px;
+    padding: 8px;
+    background: var(--color-main, #496b6e);
+    color: white;
+    border: none;
+    border-radius: 50%;
+    cursor: pointer;
+    font-size: 10px;
+    font-weight: 600;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+    transition: all 0.3s ease;
+    z-index: 100;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    line-height: 1.2;
+}
+
+.nav-collapsed-btn:hover {
+    background: var(--color-accent, #c49f64);
+    transform: scale(1.1);
+}
+
+/* Textbook Content */
 .textbook-content {
     flex: 1;
     overflow: hidden;
@@ -19,7 +159,6 @@
     align-items: center;
     padding: 0;
     background-color: transparent;
-    /* Removed dark background */
 }
 
 .page-container {
@@ -33,9 +172,7 @@
 .page-container.single .textbook-page {
     height: 100%;
     width: 100%;
-    /* Force width to fill container */
     object-fit: fill;
-    /* Fill the container, aspect ratio handled by container size */
 }
 
 .page-container.double .page-wrapper {
@@ -50,7 +187,5 @@
 .page-container.double .textbook-page {
     height: 100%;
     width: 100%;
-    /* Force width to fill container */
     object-fit: fill;
-    /* Fill the container */
 }

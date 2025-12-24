@@ -2,10 +2,7 @@
     display: flex;
     flex-direction: column;
     height: 100%;
-    background-image: url('/assets/images/background1.png');
-    background-size: cover;
-    background-position: center;
-    background-repeat: no-repeat;
+    background-color: var(--color-bg-secondary, #f4f1ea);
     overflow: hidden;
 }
 
@@ -16,8 +13,8 @@
     align-items: flex-start;
     justify-content: flex-start;
     padding: 20px;
-    background-color: var(--ui-bg);
-    border-bottom: 1px solid var(--ui-border);
+    background-color: var(--color-bg-primary, #f9f7f1);
+    border-bottom: 1px solid var(--color-border, #d4d1ca);
     flex-shrink: 0;
     gap: 16px;
     max-height: 25%;
@@ -26,8 +23,8 @@
 
 .chat-profile-image-container {
     position: relative;
-    width: 90px;
-    height: 90px;
+    width: 120px;
+    height: 120px;
     margin-bottom: 0;
     flex-shrink: 0;
 }
@@ -42,18 +39,8 @@
 }
 
 .chat-profile-frame {
-    position: absolute;
-    top: -8px;
-    left: -8px;
-    right: -8px;
-    bottom: -8px;
-    width: calc(100% + 16px);
-    height: calc(100% + 16px);
-    background-size: 100% 100%;
-    background-repeat: no-repeat;
-    background-position: center;
-    pointer-events: none;
-    z-index: 2;
+    display: none;
+    /* Frame hidden - cleaner look */
 }
 
 .chat-profile-info {

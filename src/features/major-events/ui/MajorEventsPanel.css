@@ -18,10 +18,7 @@
 }
 
 .major-event-item {
-    background-color: var(--color-bg-secondary, #f4f1ea);
-    background-image: url('/assets/images/background1.png');
-    background-size: 100% 100%;
-    background-repeat: no-repeat;
+    background-color: var(--color-bg-white, #ffffff);
     /* border: 1px solid var(--color-border); -- Replaced by frame */
     border-radius: 8px;
     /* Frame usually has its own corners, but keeping for background */

@@ -95,10 +95,7 @@
 }
 
 .character-item {
-    background-image: url('/assets/images/background1.png');
-    background-size: cover;
-    background-repeat: no-repeat;
-    background-position: center;
+    background-color: var(--color-bg-white, #ffffff);
     border: 1px solid var(--color-border, #d4d1ca);
     border-radius: 8px;
     padding: 16px;

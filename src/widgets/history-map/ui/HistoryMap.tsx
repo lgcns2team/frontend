@@ -14,7 +14,6 @@ import { useWarLayer } from '../lib/useWarLayer';
 import { TimeControls } from '../../../features/time-controls';
 import { PlayControls } from '../../../features/play-controls';
 import { MapLayers } from '../../../features/map-layers';
-import { SearchYear } from '../../../features/search-year';
 import { SidebarMenu } from '../../../features/sidebar-menu';
 import { Timeline } from '../../../features/timeline';
 import { DockingPanel } from '../../../features/docking-panel/ui/DockingPanel';
@@ -128,7 +127,6 @@ export default function HistoryMap() {
     const [textbookPage, setTextbookPage] = useState(0);
     const [textbookViewMode, setTextbookViewMode] = useState<'single' | 'double'>('single');
     const [dockingPanelWidth, setDockingPanelWidth] = useState(800);
-    const [pageInput, setPageInput] = useState('');
     const [isConversationMode, setIsConversationMode] = useState(false);
     const [chatCharacter, setChatCharacter] = useState<ParsedCharacter | null>(null);
 
@@ -785,10 +783,9 @@ export default function HistoryMap() {
         setSpeed(prev => prev >= 4 ? 1 : prev * 2);
     };
 
-    // Calculate optimal width for textbook
+    // Calculate optimal width for textbook (full height since no header)
     const calculateTextbookWidth = (mode: 'single' | 'double') => {
-        const headerHeight = 70; // Approximate header height + padding
-        const availableHeight = window.innerHeight - headerHeight;
+        const availableHeight = window.innerHeight; // Full height, no header offset
         const pageRatio = 1 / 1.37; // Width / Height
 
         let targetWidth;
@@ -853,39 +850,6 @@ export default function HistoryMap() {
         setCurrentYear(year);
     };
 
-    // Textbook Handlers
-    const handleTextbookPrev = () => {
-        if (textbookViewMode === 'single') {
-            setTextbookPage((prev) => Math.max(0, prev - 1));
-        } else {
-            setTextbookPage((prev) => Math.max(0, prev - 2));
-        }
-    };
-
-    const handleTextbookNext = () => {
-        const totalPages = 220;
-        if (textbookViewMode === 'single') {
-            setTextbookPage((prev) => Math.min(totalPages - 1, prev + 1));
-        } else {
-            setTextbookPage((prev) => Math.min(totalPages - 2, prev + 2));
-        }
-    };
-
-    const toggleTextbookViewMode = () => {
-        const newMode = textbookViewMode === 'single' ? 'double' : 'single';
-        setTextbookViewMode(newMode);
-        // Width update is handled by useEffect
-    };
-
-    const handlePageInputSubmit = () => {
-        const pageNum = parseInt(pageInput, 10);
-        if (!isNaN(pageNum) && pageNum >= 1 && pageNum <= 220) {
-            setTextbookPage(pageNum - 1);
-            setPageInput('');
-        } else {
-            alert('1에서 220 사이의 페이지를 입력해주세요.');
-        }
-    };
 
     const handleVoiceChat = () => {
         setTextbookViewMode('single');
@@ -899,154 +863,6 @@ export default function HistoryMap() {
     // Dynamic Theme Calculation
     const currentEra = getEraForYear(currentYear);
 
-    const renderTextbookControls = () => {
-        const totalPages = 220;
-        // 한면보기일 때 자간 조정
-        const isSinglePage = textbookViewMode === 'single';
-
-        return (
-            <div style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: isSinglePage ? '2px' : '8px',
-                letterSpacing: isSinglePage ? '-0.5px' : 'normal',
-                fontSize: '14px',
-                flexWrap: 'nowrap'
-            }}>
-                <button
-                    onClick={handleTextbookPrev}
-                    disabled={textbookPage === 0}
-                    style={{
-                        padding: isSinglePage ? '4px 4px' : '4px 8px',
-                        backgroundColor: 'transparent',
-                        color: 'black',
-                        border: 'none',
-                        borderRadius: '4px',
-                        cursor: 'pointer',
-                        opacity: textbookPage === 0 ? 0.5 : 1,
-                        letterSpacing: isSinglePage ? '-0.5px' : 'normal',
-                        whiteSpace: 'nowrap',
-                        fontSize: '14px'
-                    }}
-                >
-                    이전
-                </button>
-                <span style={{
-                    fontSize: '14px',
-                    fontWeight: 500,
-                    minWidth: isSinglePage ? 'auto' : '60px',
-                    padding: isSinglePage ? '0 4px' : '0',
-                    textAlign: 'center',
-                    color: 'var(--ui-text)',
-                    whiteSpace: 'nowrap'
-                }}>
-                    {textbookViewMode === 'single'
-                        ? `${textbookPage + 1}p`
-                        : `${textbookPage + 1}p - ${textbookPage + 2}p`}
-                </span>
-                <button
-                    onClick={handleTextbookNext}
-                    disabled={
-                        textbookViewMode === 'single'
-                            ? textbookPage === totalPages - 1
-                            : textbookPage >= totalPages - 2
-                    }
-                    style={{
-                        padding: isSinglePage ? '4px 4px' : '4px 8px',
-                        backgroundColor: 'transparent',
-                        color: 'black',
-                        border: 'none',
-                        borderRadius: '4px',
-                        cursor: 'pointer',
-                        opacity: (textbookViewMode === 'single' ? textbookPage === totalPages - 1 : textbookPage >= totalPages - 2) ? 0.5 : 1,
-                        letterSpacing: isSinglePage ? '-0.5px' : 'normal',
-                        whiteSpace: 'nowrap',
-                        fontSize: '14px'
-                    }}
-                >
-                    다음
-                </button>
-
-                <div style={{ display: 'flex', alignItems: 'center', gap: '2px', marginLeft: isSinglePage ? '2px' : '8px' }}>
-                    <input
-                        type="text"
-                        value={pageInput}
-                        onChange={(e) => setPageInput(e.target.value)}
-                        onKeyDown={(e) => e.key === 'Enter' && handlePageInputSubmit()}
-                        placeholder={isSinglePage ? "" : "페이지"}
-                        style={{
-                            width: isSinglePage ? '30px' : '50px',
-                            padding: '4px',
-                            borderRadius: '4px',
-                            border: '1px solid var(--ui-border)',
-                            backgroundColor: 'white',
-                            color: 'var(--ui-text)',
-                            textAlign: 'center',
-                            fontSize: isSinglePage ? '13px' : '13px'
-                        }}
-                    />
-                    <button
-                        onClick={handlePageInputSubmit}
-                        style={{
-                            padding: isSinglePage ? '4px 4px' : '4px 8px',
-                            backgroundColor: 'transparent',
-                            color: 'black',
-                            border: 'none',
-                            borderRadius: '4px',
-                            cursor: 'pointer',
-                            letterSpacing: isSinglePage ? '-0.3px' : 'normal',
-                            whiteSpace: 'nowrap',
-                            fontSize: '14px'
-                        }}
-                    >
-                        이동
-                    </button>
-                </div>
-
-                <div className={`disabled-button-wrapper ${isConversationMode ? 'is-disabled' : ''}`}>
-                    <button
-                        onClick={handleVoiceChat}
-                        disabled={isConversationMode}
-                        style={{
-                            padding: isSinglePage ? '4px 4px' : '4px 8px',
-                            backgroundColor: 'transparent',
-                            border: `1px solid ${isConversationMode ? '#ccc' : 'var(--ui-primary)'}`,
-                            color: isConversationMode ? '#ccc' : 'var(--ui-primary)',
-                            borderRadius: '4px',
-                            cursor: isConversationMode ? 'not-allowed' : 'pointer',
-                            marginLeft: isSinglePage ? '2px' : '8px',
-                            letterSpacing: isSinglePage ? '-0.5px' : 'normal',
-                            fontSize: '14px',
-                            whiteSpace: 'nowrap'
-                        }}
-                    >
-                        인물대화
-                    </button>
-                </div>
-
-                <div className={`disabled-button-wrapper ${isConversationMode ? 'is-disabled' : ''}`}>
-                    <button
-                        onClick={toggleTextbookViewMode}
-                        disabled={isConversationMode}
-                        style={{
-                            padding: isSinglePage ? '4px 4px' : '4px 8px',
-                            backgroundColor: 'transparent',
-                            border: `1px solid ${isConversationMode ? '#ccc' : 'var(--ui-primary)'}`,
-                            color: isConversationMode ? '#ccc' : 'var(--ui-primary)',
-                            borderRadius: '4px',
-                            cursor: isConversationMode ? 'not-allowed' : 'pointer',
-                            marginLeft: isSinglePage ? '2px' : '8px',
-                            letterSpacing: isSinglePage ? '-0.5px' : 'normal',
-                            fontSize: '14px',
-                            whiteSpace: 'nowrap'
-                        }}
-                    >
-                        {textbookViewMode === 'single' ? '양면보기' : '한면보기'}
-                    </button>
-                </div>
-            </div>
-        );
-    };
 
 
 
@@ -1148,18 +964,21 @@ export default function HistoryMap() {
                 width={dockingPanelWidth}
                 minWidth={activePanel === 'textbook' ? 300 : 180}
                 maxWidth={1600}
+                hideHeader={activePanel === 'textbook'}
                 headerRightContent={
-                    activePanel === 'textbook'
-                        ? renderTextbookControls()
-                        : activePanel === 'people'
-                            ? (chatCharacter ? null : characterPanelToggle)
-                            : null
+                    activePanel === 'people'
+                        ? (chatCharacter ? null : characterPanelToggle)
+                        : null
                 }
             >
                 {activePanel === 'textbook' ? (
                     <TextbookPanel
                         currentPage={textbookPage}
                         viewMode={textbookViewMode}
+                        onPageChange={setTextbookPage}
+                        onViewModeChange={setTextbookViewMode}
+                        onVoiceChat={handleVoiceChat}
+                        isConversationMode={isConversationMode}
                     />
                 ) : activePanel === 'search' ? (
                     <MajorEventsPanel

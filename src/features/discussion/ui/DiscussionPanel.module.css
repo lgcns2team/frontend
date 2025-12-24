@@ -66,10 +66,7 @@
   padding: 32px;
   border-radius: 8px;
   border: 1px solid var(--color-border, #d4d1ca);
-  background-color: var(--color-bg-secondary, #f4f1ea);
-  background-image: url('/assets/images/background1.png');
-  background-size: 100% 100%;
-  background-repeat: no-repeat;
+  background-color: var(--color-bg-white, #ffffff);
   transition: transform 0.2s, box-shadow 0.2s, border-color 0.2s;
 }
 

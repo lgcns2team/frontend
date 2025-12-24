@@ -32,9 +32,10 @@ export const Timeline = ({ currentYear, onYearChange, onEventClick, isVisible, o
         });
     }, []);
 
-    // Base window size is 500 years
+    // Base window size is 500 years, but smaller when showing events for better readability
     const BASE_WINDOW_SIZE = 500;
-    const displayWindowSize = BASE_WINDOW_SIZE;
+    const EVENTS_WINDOW_SIZE = 200; // Narrower view when showing events
+    const displayWindowSize = showEvents ? EVENTS_WINDOW_SIZE : BASE_WINDOW_SIZE;
 
     // Initialize view window centered on current year
     const [viewStart, setViewStart] = useState(() => {
