@@ -1,6 +1,8 @@
 import { getEraForYear, normalizeEraName } from '../config/era-theme';
 import { getAuthHeaders } from './api-utils';
 
+const API_BASE_URL = import.meta.env.VITE_API_URL || '/api';
+
 export interface Character {
     characterId: string;
     characterName: string;
@@ -20,7 +22,7 @@ export type ParsedCharacter = Character;
 
 export const fetchCharacters = async (): Promise<Character[]> => {
     try {
-        const response = await fetch(`/api/ai-person`, {
+        const response = await fetch(`${API_BASE_URL}/ai-person`, {
             headers: getAuthHeaders()
         });
 
@@ -114,7 +116,7 @@ export const fetchCharacters = async (): Promise<Character[]> => {
 
 export const fetchCharacterDetail = async (promptId: string): Promise<{ summary?: string, greetingMessage?: string }> => {
     try {
-        const response = await fetch(`/api/ai-person/${promptId}`, {
+        const response = await fetch(`${API_BASE_URL}/ai-person/${promptId}`, {
             headers: getAuthHeaders()
         });
 

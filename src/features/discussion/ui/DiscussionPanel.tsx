@@ -99,6 +99,41 @@ const DiscussionPanel: React.FC = () => {
     }
   };
 
+  const handleRoomClick = (discussion: DiscussionRoom) => {
+    const userRole = localStorage.getItem('userRole');
+
+    // Teachers can access all rooms
+    if (userRole === 'TEACHER') {
+      navigate(`/discussion/${discussion.id}`);
+      return;
+    }
+
+    // Students must match grade AND classroom
+    const userGrade = localStorage.getItem('userGrade');
+    const userClassroom = localStorage.getItem('userClassroom');
+
+    const roomGrade = discussion.grade;
+    const roomClassroom = discussion.classroom;
+
+    // Check for mismatches
+    const gradeMismatch = userGrade && roomGrade && parseInt(userGrade) !== roomGrade;
+    const classroomMismatch = userClassroom && roomClassroom && parseInt(userClassroom) !== roomClassroom;
+
+    if (gradeMismatch && classroomMismatch) {
+      alert('학년과 반이 다릅니다');
+      return;
+    } else if (gradeMismatch) {
+      alert('학년이 다릅니다');
+      return;
+    } else if (classroomMismatch) {
+      alert('반이 다릅니다');
+      return;
+    }
+
+    // Validation passed
+    navigate(`/discussion/${discussion.id}`);
+  };
+
   const handleConfirmCreate = async () => {
     if (!topic) {
       alert('주제가 입력되지 않았습니다.');
@@ -144,15 +179,17 @@ const DiscussionPanel: React.FC = () => {
           <div
             key={discussion.id || index}
             className={styles.characterItem}
-            onClick={() => navigate(`/discussion/${discussion.id}`)}
+            onClick={() => handleRoomClick(discussion)}
             style={{ cursor: 'pointer' }}
           >
-            <button
-              className={styles.deleteButton}
-              onClick={(e) => handleDelete(e, discussion.id)}
-            >
-              ×
-            </button>
+            {localStorage.getItem('userRole') === 'TEACHER' && (
+              <button
+                className={styles.deleteButton}
+                onClick={(e) => handleDelete(e, discussion.id)}
+              >
+                ×
+              </button>
+            )}
             <div className={styles.roomNumber}>No. {index + 1}</div>
             <h3 className={styles.characterName}>{discussion.title || discussion.topicTitle}</h3>
             <p className={styles.characterSummary}>{discussion.description || discussion.topicDescription || '설명 없음'}</p>

@@ -13,7 +13,7 @@ export interface MainEvent {
 
 export type ParsedMainEvent = MainEvent;
 
-const API_BASE_URL = '/api';
+const API_BASE_URL = import.meta.env.VITE_API_URL || '/api';
 
 export const fetchMainEvents = async (): Promise<MainEvent[]> => {
     try {

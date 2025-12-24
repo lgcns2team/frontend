@@ -1,3 +1,5 @@
+const API_BASE_URL = import.meta.env.VITE_API_URL || '/api';
+
 export interface CountryData {
     countryId: string;
     countryName: string;
@@ -22,7 +24,7 @@ export interface TradeData {
 
 export const fetchAllTrades = async (): Promise<TradeData[]> => {
     try {
-        const response = await fetch(`/api/trades`);
+        const response = await fetch(`${API_BASE_URL}/trades`);
         if (!response.ok) {
             throw new Error(`Failed to fetch trade data: ${response.statusText}`);
         }
@@ -35,7 +37,7 @@ export const fetchAllTrades = async (): Promise<TradeData[]> => {
 
 export const fetchTradesByCountryAndYear = async (countryId: string, year: number): Promise<TradeData[]> => {
     try {
-        const response = await fetch(`/api/trades/${countryId}/${year}`);
+        const response = await fetch(`${API_BASE_URL}/trades/${countryId}/${year}`);
         if (!response.ok) {
             throw new Error(`Failed to fetch trade data: ${response.statusText}`);
         }

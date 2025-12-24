@@ -40,7 +40,8 @@ const DiscussionRoomPage: React.FC = () => {
         sendChat,
         confirmStart,
         sendModeChange,
-        sendVoteStatus
+        sendVoteStatus,
+        sendEndSession
     } = useDiscussion(id);
 
     // Debug: Log messages changes
@@ -127,8 +128,24 @@ const DiscussionRoomPage: React.FC = () => {
 
     const handleEnd = () => {
         if (!window.confirm("정말 종료하시겠습니까?")) return;
-        localStorage.setItem('openPanel', 'discussion');
-        navigate('/map');
+
+        const userRole = localStorage.getItem('userRole');
+
+        // If teacher, send END_SESSION signal to all students
+        if (userRole === 'TEACHER') {
+            console.log('👨‍🏫 Teacher ending session, sending END_SESSION signal');
+            sendEndSession();
+
+            // Wait a bit for message to be sent before navigating
+            setTimeout(() => {
+                localStorage.setItem('openPanel', 'discussion');
+                navigate('/map');
+            }, 300);
+        } else {
+            // Students navigate immediately
+            localStorage.setItem('openPanel', 'discussion');
+            navigate('/map');
+        }
     };
 
 

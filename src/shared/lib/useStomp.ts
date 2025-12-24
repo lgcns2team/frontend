@@ -2,6 +2,8 @@ import { useRef, useState, useEffect, useCallback } from 'react';
 import SockJS from 'sockjs-client';
 import { Stomp, CompatClient, type Message } from '@stomp/stompjs';
 
+const API_BASE_URL = import.meta.env.VITE_API_URL || '/api';
+
 // --- Types ---
 export interface ChatMessage {
     id?: string;
@@ -9,7 +11,7 @@ export interface ChatMessage {
     // userId?: string;
     sender: string;
     content: string;
-    type: 'CHAT' | 'JOIN' | 'LEAVE' | 'STATUS';
+    type: 'CHAT' | 'JOIN' | 'LEAVE' | 'STATUS' | 'END_SESSION';
     side?: 'agree' | 'disagree';
     status?: 'PRO' | 'CON';
 }
@@ -49,7 +51,7 @@ export const createShortDiscussionRoom = async (payload: CreateRoomPayload) => {
         console.log("📤 Creating room with payload:", payload);
         console.log("📤 Grade:", payload.grade, "Classroom:", payload.classroom);
 
-        const response = await fetch('/api/ai/debate/room', {
+        const response = await fetch(`${API_BASE_URL}/ai/debate/room`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -80,7 +82,7 @@ export const getDiscussionRooms = async (): Promise<DiscussionRoom[]> => {
         const headers: any = { 'Content-Type': 'application/json' };
         if (token) headers['Authorization'] = `Bearer ${token}`;
 
-        let url = '/api/ai/debate/roomList';
+        let url = `${API_BASE_URL}/ai/debate/roomList`;
         // if (userId) {
         //     url += `?userId=${userId}`;
         // }
@@ -131,7 +133,7 @@ export const deleteDiscussionRoom = async (roomId: string): Promise<{ success: b
         const headers: any = { 'Content-Type': 'application/json' };
         if (token) headers['Authorization'] = `Bearer ${token}`;
 
-        const response = await fetch(`/api/ai/debate/room/${roomId}`, {
+        const response = await fetch(`${API_BASE_URL}/ai/debate/room/${roomId}`, {
             method: 'DELETE',
             headers: headers
         });
@@ -266,6 +268,7 @@ export const useDiscussion = (roomId: string | undefined) => {
     const [vote, setVote] = useState<'agree' | 'disagree' | null>(null);
     const [viewMode, setViewMode] = useState<'vote' | 'chat' | 'verify' | 'result' | 'final'>('vote');
 
+
     // 3. Helpers
     const handleIncomingMessage = useCallback((message: any) => {
         console.log('🔍 handleIncomingMessage called with type:', message.type, 'full message:', message);
@@ -275,22 +278,14 @@ export const useDiscussion = (roomId: string | undefined) => {
             return;
         }
 
-        // Handle MODE_CHANGE messages for state synchronization
-        if (message.type === 'MODE_CHANGE') {
-            const nextMode = message.content;
-            console.log('📢 MODE_CHANGE received:', nextMode);
-            setViewMode(nextMode);
-
-            // Auto-vote logic for students when moving past 'vote' stage
-            if (nextMode !== 'vote') {
-                setVote(prevVote => {
-                    if (prevVote === null) {
-                        const defaultVote = 'agree';
-                        console.log("🔄 Auto-voting as 'agree' for user who hadn't voted yet.");
-                        return defaultVote;
-                    }
-                    return prevVote;
-                });
+        // Handle END_SESSION messages - navigate students to map page
+        if (message.type === 'END_SESSION') {
+            console.log('🚪 END_SESSION received');
+            const userRole = localStorage.getItem('userRole');
+            if (userRole !== 'TEACHER') {
+                console.log('👨‍🎓 Student: navigating to map page');
+                localStorage.setItem('openPanel', 'discussion');
+                window.location.href = '/map';
             }
             return;
         }
@@ -313,26 +308,6 @@ export const useDiscussion = (roomId: string | undefined) => {
                 });
             }
             return; // Don't display this as a chat message
-        }
-
-        // Check if message contains viewMode field (alternative mode change detection)
-        if (message.viewMode) {
-            const nextMode = message.viewMode;
-            console.log('📢 ViewMode detected in message:', nextMode);
-            setViewMode(nextMode);
-
-            // Auto-vote logic for students when moving past 'vote' stage
-            if (nextMode !== 'vote') {
-                setVote(prevVote => {
-                    if (prevVote === null) {
-                        const randomVote = Math.random() < 0.5 ? 'agree' : 'disagree';
-                        console.log(`🔄 Auto-voting as '${randomVote}' for user who hadn't voted yet.`);
-                        return randomVote;
-                    }
-                    return prevVote;
-                });
-            }
-            return;
         }
 
         // Skip STATUS messages (they're for internal state management)
@@ -363,11 +338,11 @@ export const useDiscussion = (roomId: string | undefined) => {
         //     // alert("✅ 채팅 전송 성공! (Backend를 거쳐 Redis에 저장되었습니다)");
         //     // Alert removed as per typical UX, or kept if requested. User removed it in recent edit.
         // }
-    }, []);
+    }, [userId, setViewMode, setVote]);
 
     // 4. WebSocket Integration
     const { connect, disconnect, subscribe, sendMessage, isConnected, lastError } = useStomp({
-        url: '/api/ai/ws-stomp',
+        url: `${API_BASE_URL}/ai/ws-stomp`,
         onConnect: () => {
             console.log('🔗 onConnect callback triggered, roomId:', roomId);
             if (!roomId) return;
@@ -376,6 +351,7 @@ export const useDiscussion = (roomId: string | undefined) => {
                 console.log('📨 Raw WebSocket message received:', chatMessage);
                 const parsed = JSON.parse(chatMessage.body);
                 console.log('📨 Parsed message:', parsed);
+
                 handleIncomingMessage(parsed);
             });
 
@@ -400,6 +376,7 @@ export const useDiscussion = (roomId: string | undefined) => {
         if (roomId) connect();
         return () => disconnect();
     }, [roomId, connect, disconnect]);
+
 
     // Track previous viewMode to detect transitions
     const prevViewModeRef = useRef(viewMode);
@@ -499,6 +476,27 @@ export const useDiscussion = (roomId: string | undefined) => {
         console.log('✅ Mode change message sent via chat:', nextMode);
     };
 
+    const sendEndSession = () => {
+        console.log('🚪 sendEndSession called:', { roomId, isConnected });
+        if (!roomId || !isConnected) {
+            console.warn('⚠️ Cannot send end session: roomId or connection missing');
+            return;
+        }
+
+        console.log('📤 Sending END_SESSION message');
+        sendMessage(
+            "/app/room/" + roomId + "/chat",
+            {
+                type: 'END_SESSION',
+                content: '__END_SESSION__',
+                status: 'PRO',
+                userId: userId,
+                sender: username,
+            }
+        );
+        console.log('✅ End session message sent');
+    };
+
     const setVoteLocal = (v: 'agree' | 'disagree' | null) => {
         console.log('🗳️ Vote changed:', { from: vote, to: v });
         if (v === null) {
@@ -524,6 +522,7 @@ export const useDiscussion = (roomId: string | undefined) => {
         sendChat,
         sendVoteStatus, // This combines setting vote (if needed) and sending status
         sendModeChange,
+        sendEndSession,
         confirmStart: () => { // Replacement for handleStart logic
             console.log('🚀 confirmStart called:', { roomId, vote, isConnected });
             if (!roomId) {

@@ -269,7 +269,8 @@ export default function HistoryMap() {
         tradeLayer.current = L.layerGroup().addTo(map.current);
 
         // Load capital data from API
-        fetch('/api/capitals')
+        const API_BASE_URL = import.meta.env.VITE_API_URL || '/api';
+        fetch(`${API_BASE_URL}/capitals`)
             .then(res => res.json())
             .then(data => {
                 console.log('Capital data loaded:', data);
