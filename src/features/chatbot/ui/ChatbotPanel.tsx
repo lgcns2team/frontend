@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { sendGeneralMessage } from '../../../shared/api/aichat-api';
+import { sendGeneralMessage, fetchChatbotHistory } from '../../../shared/api/aichat-api';
 import './ChatbotPanel.css';
 
 type Sender = 'bot' | 'user';
@@ -43,6 +43,34 @@ export const ChatbotPanel = ({ onClose, initialPosition, initialSize, onStateCha
     useEffect(() => {
         latestState.current = { position, size };
     }, [position, size]);
+
+    const mapHistoryToChatMessage = (m: { role: string; content: string }): ChatMessage => {
+    const sender: Sender = m.role === 'user' ? 'user' : 'bot';
+    return {
+        id: Date.now() + Math.floor(Math.random() * 1000000),
+        text: m.content ?? '',
+        sender,
+    };
+    };
+
+    useEffect(() => {
+    (async () => {
+        try {
+        const history = await fetchChatbotHistory();
+
+        const filtered = history.filter(h => h.role !== 'system');
+
+        const historyMessages = filtered.map(mapHistoryToChatMessage);
+
+        setMessages(prev => {
+            return [...prev, ...historyMessages];
+        });
+        } catch (e) {
+        console.error('Failed to load chatbot history:', e);
+        }
+    })();
+    }, []);
+
 
     useEffect(() => {
         const handleMouseMove = (e: MouseEvent) => {

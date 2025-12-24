@@ -175,3 +175,22 @@ export const sendGeneralMessage = async (
         }
     }
 };
+
+export interface MessageDTO {
+  role: 'user' | 'assistant' | 'system' | string;
+  content: string;
+}
+
+export const fetchChatbotHistory = async (): Promise<MessageDTO[]> => {
+  const response = await fetch('/ai/chat/history', {
+    method: 'GET',
+    headers: getStreamingHeaders(),
+  });
+
+  if (!response.ok) {
+    const errorText = await response.text().catch(() => 'Unable to read error');
+    throw new Error(`History request failed: ${response.status} ${response.statusText} - ${errorText}`);
+  }
+
+  return response.json();
+};
