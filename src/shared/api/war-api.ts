@@ -1,3 +1,5 @@
+const API_BASE_URL = import.meta.env.VITE_API_URL || '/api';
+
 export interface MarkerRoute {
     type: string;
     coordinates: number[][];
@@ -35,7 +37,7 @@ export interface WarData {
 
 export const fetchWarData = async (year: number): Promise<WarData[]> => {
     try {
-        const response = await fetch(`/api/wars/${year}`);
+        const response = await fetch(`${API_BASE_URL}/wars/${year}`);
         if (!response.ok) {
             throw new Error(`Failed to fetch war data: ${response.statusText}`);
         }

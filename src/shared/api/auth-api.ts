@@ -25,11 +25,11 @@ export interface SignupRequest {
     teacherCode?: number;
 }
 
-const API_BASE_URL = '/api/user';
+const API_BASE_URL = import.meta.env.VITE_API_URL || '/api';
 
 export const authApi = {
     login: async (data: LoginRequest): Promise<LoginResponse> => {
-        const response = await fetch(`${API_BASE_URL}/login`, {
+        const response = await fetch(`${API_BASE_URL}/user/login`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -45,9 +45,16 @@ export const authApi = {
         const accessToken = response.headers.get('Authorization');
         const refreshToken = response.headers.get('Refresh-Token');
 
+        console.log('🔍 Login Response Headers:');
+        console.log('Authorization:', accessToken);
+        console.log('Refresh-Token:', refreshToken);
+
         if (accessToken) {
             const pureToken = accessToken.replace('Bearer ', '');
             localStorage.setItem('accessToken', pureToken);
+            console.log('✅ Token saved to localStorage');
+        } else {
+            console.warn('⚠️ No Authorization header in response!');
         }
         if (refreshToken) {
             localStorage.setItem('refreshToken', refreshToken);
@@ -74,7 +81,7 @@ export const authApi = {
     },
 
     signup: async (data: SignupRequest): Promise<void> => {
-        const response = await fetch(`${API_BASE_URL}/signup`, {
+        const response = await fetch(`${API_BASE_URL}/user/signup`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',

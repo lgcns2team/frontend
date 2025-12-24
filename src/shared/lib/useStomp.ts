@@ -2,6 +2,8 @@ import { useRef, useState, useEffect, useCallback } from 'react';
 import SockJS from 'sockjs-client';
 import { Stomp, CompatClient, type Message } from '@stomp/stompjs';
 
+const API_BASE_URL = import.meta.env.VITE_API_URL || '/api';
+
 // --- Types ---
 export interface ChatMessage {
     id?: string;
@@ -49,7 +51,7 @@ export const createShortDiscussionRoom = async (payload: CreateRoomPayload) => {
         console.log("📤 Creating room with payload:", payload);
         console.log("📤 Grade:", payload.grade, "Classroom:", payload.classroom);
 
-        const response = await fetch('/api/ai/debate/room', {
+        const response = await fetch(`${API_BASE_URL}/ai/debate/room`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -80,7 +82,7 @@ export const getDiscussionRooms = async (): Promise<DiscussionRoom[]> => {
         const headers: any = { 'Content-Type': 'application/json' };
         if (token) headers['Authorization'] = `Bearer ${token}`;
 
-        let url = '/api/ai/debate/roomList';
+        let url = `${API_BASE_URL}/ai/debate/roomList`;
         // if (userId) {
         //     url += `?userId=${userId}`;
         // }
@@ -131,7 +133,7 @@ export const deleteDiscussionRoom = async (roomId: string): Promise<{ success: b
         const headers: any = { 'Content-Type': 'application/json' };
         if (token) headers['Authorization'] = `Bearer ${token}`;
 
-        const response = await fetch(`/api/ai/debate/room/${roomId}`, {
+        const response = await fetch(`${API_BASE_URL}/ai/debate/room/${roomId}`, {
             method: 'DELETE',
             headers: headers
         });
@@ -340,7 +342,7 @@ export const useDiscussion = (roomId: string | undefined) => {
 
     // 4. WebSocket Integration
     const { connect, disconnect, subscribe, sendMessage, isConnected, lastError } = useStomp({
-        url: '/api/ai/ws-stomp',
+        url: `${API_BASE_URL}/ai/ws-stomp`,
         onConnect: () => {
             console.log('🔗 onConnect callback triggered, roomId:', roomId);
             if (!roomId) return;
