@@ -11,7 +11,7 @@ export default defineConfig(({ mode }) => {
     server: {
       proxy: {
         '/api': {
-          target: env.VITE_API_URL || 'http://localhost:8080',  // Gateway 포트
+          target: env.VITE_API_URL || 'http://localhost:8080/api',
           changeOrigin: true,
           secure: false,
           ws: true,
