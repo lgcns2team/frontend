@@ -182,12 +182,14 @@ const DiscussionPanel: React.FC = () => {
             onClick={() => handleRoomClick(discussion)}
             style={{ cursor: 'pointer' }}
           >
-            <button
-              className={styles.deleteButton}
-              onClick={(e) => handleDelete(e, discussion.id)}
-            >
-              ×
-            </button>
+            {localStorage.getItem('userRole') === 'TEACHER' && (
+              <button
+                className={styles.deleteButton}
+                onClick={(e) => handleDelete(e, discussion.id)}
+              >
+                ×
+              </button>
+            )}
             <div className={styles.roomNumber}>No. {index + 1}</div>
             <h3 className={styles.characterName}>{discussion.title || discussion.topicTitle}</h3>
             <p className={styles.characterSummary}>{discussion.description || discussion.topicDescription || '설명 없음'}</p>

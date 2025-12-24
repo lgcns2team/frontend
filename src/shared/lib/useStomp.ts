@@ -9,11 +9,9 @@ export interface ChatMessage {
     // userId?: string;
     sender: string;
     content: string;
-    type: 'CHAT' | 'JOIN' | 'LEAVE' | 'STATUS' | 'END_SESSION' | 'STATE_REQUEST' | 'STATE_RESPONSE';
+    type: 'CHAT' | 'JOIN' | 'LEAVE' | 'STATUS' | 'END_SESSION';
     side?: 'agree' | 'disagree';
     status?: 'PRO' | 'CON';
-    viewMode?: string;
-    targetUserId?: string;
 }
 
 export interface DisplayMessage extends ChatMessage {
@@ -268,23 +266,6 @@ export const useDiscussion = (roomId: string | undefined) => {
     const [vote, setVote] = useState<'agree' | 'disagree' | null>(null);
     const [viewMode, setViewMode] = useState<'vote' | 'chat' | 'verify' | 'result' | 'final'>('vote');
 
-    // Refs to hold latest values for use in callbacks
-    const viewModeRef = useRef(viewMode);
-    const roomIdRef = useRef(roomId);
-    const usernameRef = useRef(username);
-
-    // Update refs when values change
-    useEffect(() => {
-        viewModeRef.current = viewMode;
-    }, [viewMode]);
-
-    useEffect(() => {
-        roomIdRef.current = roomId;
-    }, [roomId]);
-
-    useEffect(() => {
-        usernameRef.current = username;
-    }, [username]);
 
     // 3. Helpers
     const handleIncomingMessage = useCallback((message: any) => {
@@ -292,59 +273,6 @@ export const useDiscussion = (roomId: string | undefined) => {
 
         if (message.type === 'JOIN' || message.type === 'LEAVE') {
             console.log('⏭️ Skipping JOIN/LEAVE message');
-            return;
-        }
-
-        // Handle STATE_REQUEST - Teacher responds with current state
-        if (message.type === 'STATE_REQUEST') {
-            const userRole = localStorage.getItem('userRole');
-            if (userRole === 'TEACHER') {
-                console.log('👨‍🏫 Teacher received STATE_REQUEST from:', message.userId);
-                // Send current viewMode to requesting student
-                // Note: sendMessage will be available from WebSocket context
-                const currentViewMode = viewModeRef.current;
-                const currentUsername = usernameRef.current;
-
-                // We'll send this via a callback passed to onConnect
-                (window as any).__pendingStateResponse = {
-                    type: 'STATE_RESPONSE',
-                    viewMode: currentViewMode,
-                    targetUserId: message.userId,
-                    sender: currentUsername,
-                    status: 'PRO'
-                };
-                console.log('✅ Prepared STATE_RESPONSE:', currentViewMode);
-            }
-            return;
-        }
-
-        // Handle STATE_RESPONSE - Student syncs to teacher's state
-        if (message.type === 'STATE_RESPONSE') {
-            const userRole = localStorage.getItem('userRole');
-            // Only process if this response is for me
-            if (userRole === 'STUDENT' && message.targetUserId === userId) {
-                console.log('👨‍🎓 Student received STATE_RESPONSE:', message.viewMode);
-
-                // Clear timeout since we got a response
-                if ((window as any).__stateRequestTimeout) {
-                    clearTimeout((window as any).__stateRequestTimeout);
-                    (window as any).__stateRequestTimeout = null;
-                }
-
-                setViewMode(message.viewMode);
-
-                // Auto-vote if needed
-                if (message.viewMode !== 'vote') {
-                    setVote(prevVote => {
-                        if (prevVote === null) {
-                            const defaultVote = 'agree';
-                            console.log("🔄 Auto-voting as 'agree' after state sync");
-                            return defaultVote;
-                        }
-                        return prevVote;
-                    });
-                }
-            }
             return;
         }
 
@@ -356,26 +284,6 @@ export const useDiscussion = (roomId: string | undefined) => {
                 console.log('👨‍🎓 Student: navigating to map page');
                 localStorage.setItem('openPanel', 'discussion');
                 window.location.href = '/map';
-            }
-            return;
-        }
-
-        // Handle MODE_CHANGE messages for state synchronization
-        if (message.type === 'MODE_CHANGE') {
-            const nextMode = message.content;
-            console.log('📢 MODE_CHANGE received:', nextMode);
-            setViewMode(nextMode);
-
-            // Auto-vote logic for students when moving past 'vote' stage
-            if (nextMode !== 'vote') {
-                setVote(prevVote => {
-                    if (prevVote === null) {
-                        const defaultVote = 'agree';
-                        console.log("🔄 Auto-voting as 'agree' for user who hadn't voted yet.");
-                        return defaultVote;
-                    }
-                    return prevVote;
-                });
             }
             return;
         }
@@ -398,26 +306,6 @@ export const useDiscussion = (roomId: string | undefined) => {
                 });
             }
             return; // Don't display this as a chat message
-        }
-
-        // Check if message contains viewMode field (alternative mode change detection)
-        if (message.viewMode) {
-            const nextMode = message.viewMode;
-            console.log('📢 ViewMode detected in message:', nextMode);
-            setViewMode(nextMode);
-
-            // Auto-vote logic for students when moving past 'vote' stage
-            if (nextMode !== 'vote') {
-                setVote(prevVote => {
-                    if (prevVote === null) {
-                        const randomVote = Math.random() < 0.5 ? 'agree' : 'disagree';
-                        console.log(`🔄 Auto-voting as '${randomVote}' for user who hadn't voted yet.`);
-                        return randomVote;
-                    }
-                    return prevVote;
-                });
-            }
-            return;
         }
 
         // Skip STATUS messages (they're for internal state management)
@@ -462,29 +350,6 @@ export const useDiscussion = (roomId: string | undefined) => {
                 const parsed = JSON.parse(chatMessage.body);
                 console.log('📨 Parsed message:', parsed);
 
-                // Handle STATE_REQUEST immediately here where sendMessage is available
-                if (parsed.type === 'STATE_REQUEST') {
-                    console.log('🔔 STATE_REQUEST detected!');
-                    const userRole = localStorage.getItem('userRole');
-                    console.log('👤 Current user role:', userRole);
-                    if (userRole === 'TEACHER') {
-                        console.log('👨‍🏫 Teacher responding to STATE_REQUEST from:', parsed.userId);
-                        const responseMessage = {
-                            type: 'STATE_RESPONSE',
-                            viewMode: viewModeRef.current,
-                            targetUserId: parsed.userId,
-                            sender: username,
-                            status: 'PRO'
-                        };
-                        console.log('📤 Sending STATE_RESPONSE:', responseMessage);
-                        sendMessage('/app/room/' + roomId + '/chat', responseMessage);
-                        console.log('✅ Sent STATE_RESPONSE:', viewModeRef.current);
-                        return; // Don't pass to handleIncomingMessage
-                    } else {
-                        console.log('⚠️ Not a teacher, ignoring STATE_REQUEST');
-                    }
-                }
-
                 handleIncomingMessage(parsed);
             });
 
@@ -510,31 +375,6 @@ export const useDiscussion = (roomId: string | undefined) => {
         return () => disconnect();
     }, [roomId, connect, disconnect]);
 
-    // Send STATE_REQUEST when student connects
-    useEffect(() => {
-        const userRole = localStorage.getItem('userRole');
-        if (roomId && isConnected && userRole === 'STUDENT') {
-            console.log('👨‍🎓 Student connected, requesting current state from teacher');
-
-            // Set timeout to fallback to 'vote' if no response
-            const stateTimeout = setTimeout(() => {
-                console.warn('⏱️ No STATE_RESPONSE received, defaulting to vote mode');
-                setViewMode('vote');
-            }, 3000);
-
-            (window as any).__stateRequestTimeout = stateTimeout;
-
-            const stateRequestMessage = {
-                type: 'STATE_REQUEST',
-                userId: userId,
-                sender: username,
-                status: 'PRO'
-            };
-
-            console.log('📤 Sending STATE_REQUEST message:', stateRequestMessage);
-            sendMessage('/app/room/' + roomId + '/chat', stateRequestMessage);
-        }
-    }, [roomId, isConnected, sendMessage, userId, username]);
 
     // Track previous viewMode to detect transitions
     const prevViewModeRef = useRef(viewMode);
