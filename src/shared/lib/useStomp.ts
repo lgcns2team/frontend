@@ -268,6 +268,24 @@ export const useDiscussion = (roomId: string | undefined) => {
     const [vote, setVote] = useState<'agree' | 'disagree' | null>(null);
     const [viewMode, setViewMode] = useState<'vote' | 'chat' | 'verify' | 'result' | 'final'>('vote');
 
+    // Refs to hold latest values for use in callbacks
+    const viewModeRef = useRef(viewMode);
+    const roomIdRef = useRef(roomId);
+    const usernameRef = useRef(username);
+
+    // Update refs when values change
+    useEffect(() => {
+        viewModeRef.current = viewMode;
+    }, [viewMode]);
+
+    useEffect(() => {
+        roomIdRef.current = roomId;
+    }, [roomId]);
+
+    useEffect(() => {
+        usernameRef.current = username;
+    }, [username]);
+
     // 3. Helpers
     const handleIncomingMessage = useCallback((message: any) => {
         console.log('🔍 handleIncomingMessage called with type:', message.type, 'full message:', message);
@@ -283,14 +301,20 @@ export const useDiscussion = (roomId: string | undefined) => {
             if (userRole === 'TEACHER') {
                 console.log('👨‍🏫 Teacher received STATE_REQUEST from:', message.userId);
                 // Send current viewMode to requesting student
-                sendMessage('/app/room/' + roomId + '/chat', {
+                // Note: sendMessage will be available from WebSocket context
+                const currentViewMode = viewModeRef.current;
+                const currentRoomId = roomIdRef.current;
+                const currentUsername = usernameRef.current;
+
+                // We'll send this via a callback passed to onConnect
+                (window as any).__pendingStateResponse = {
                     type: 'STATE_RESPONSE',
-                    viewMode: viewMode,
+                    viewMode: currentViewMode,
                     targetUserId: message.userId,
-                    sender: username,
+                    sender: currentUsername,
                     status: 'PRO'
-                });
-                console.log('✅ Sent STATE_RESPONSE:', viewMode);
+                };
+                console.log('✅ Prepared STATE_RESPONSE:', currentViewMode);
             }
             return;
         }
@@ -425,7 +449,7 @@ export const useDiscussion = (roomId: string | undefined) => {
         //     // alert("✅ 채팅 전송 성공! (Backend를 거쳐 Redis에 저장되었습니다)");
         //     // Alert removed as per typical UX, or kept if requested. User removed it in recent edit.
         // }
-    }, []);
+    }, [userId, setViewMode, setVote]);
 
     // 4. WebSocket Integration
     const { connect, disconnect, subscribe, sendMessage, isConnected, lastError } = useStomp({
@@ -438,6 +462,24 @@ export const useDiscussion = (roomId: string | undefined) => {
                 console.log('📨 Raw WebSocket message received:', chatMessage);
                 const parsed = JSON.parse(chatMessage.body);
                 console.log('📨 Parsed message:', parsed);
+
+                // Handle STATE_REQUEST immediately here where sendMessage is available
+                if (parsed.type === 'STATE_REQUEST') {
+                    const userRole = localStorage.getItem('userRole');
+                    if (userRole === 'TEACHER') {
+                        console.log('👨‍🏫 Teacher responding to STATE_REQUEST from:', parsed.userId);
+                        sendMessage('/app/room/' + roomId + '/chat', {
+                            type: 'STATE_RESPONSE',
+                            viewMode: viewModeRef.current,
+                            targetUserId: parsed.userId,
+                            sender: username,
+                            status: 'PRO'
+                        });
+                        console.log('✅ Sent STATE_RESPONSE:', viewModeRef.current);
+                        return; // Don't pass to handleIncomingMessage
+                    }
+                }
+
                 handleIncomingMessage(parsed);
             });
 
