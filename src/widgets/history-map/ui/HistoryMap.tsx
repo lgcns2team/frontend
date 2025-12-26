@@ -681,8 +681,43 @@ export default function HistoryMap() {
 
         // In people mode, show person markers instead of capital markers
         if (layerType === 'people') {
+            // Group persons by proximity to detect overlapping markers
+            const PROXIMITY_THRESHOLD = 0.5; // degrees (roughly 50km)
+            const ICON_OFFSET_AMOUNT = 40; // pixels offset for visual separation
+
+            // Create a map to track positions and count overlaps
+            const positionMap = new Map<string, { persons: typeof personData, index: number }>();
+
             personData.forEach(person => {
-                if (person.latitude && person.longitude) {
+                if (!person.latitude || !person.longitude) return;
+
+                // Round coordinates to detect nearby markers
+                const key = `${Math.round(person.latitude / PROXIMITY_THRESHOLD)}_${Math.round(person.longitude / PROXIMITY_THRESHOLD)}`;
+
+                if (!positionMap.has(key)) {
+                    positionMap.set(key, { persons: [], index: 0 });
+                }
+                positionMap.get(key)!.persons.push(person);
+            });
+
+            // Now render with visual offsets for overlapping markers
+            positionMap.forEach(group => {
+                const count = group.persons.length;
+
+                group.persons.forEach((person, idx) => {
+                    if (!person.latitude || !person.longitude) return;
+
+                    // Calculate icon anchor offset for visual separation (keeps original coordinates)
+                    let anchorOffsetX = 75; // default anchor X
+                    let anchorOffsetY = 50; // default anchor Y
+
+                    if (count > 1) {
+                        // Offset icon anchor in a circle pattern for visual separation
+                        const angle = (2 * Math.PI * idx) / count;
+                        anchorOffsetX = 75 + Math.cos(angle) * ICON_OFFSET_AMOUNT;
+                        anchorOffsetY = 50 + Math.sin(angle) * ICON_OFFSET_AMOUNT;
+                    }
+
                     // Use character image based on person name
                     const characterImagePath = `/assets/images/character/${encodeURIComponent(person.name)}.png`;
 
@@ -695,7 +730,7 @@ export default function HistoryMap() {
                         </div>
                     `,
                         iconSize: [60, 75],
-                        iconAnchor: [75, 50]
+                        iconAnchor: [anchorOffsetX, anchorOffsetY] // Visual offset only
                     });
 
                     const birthYear = person.year < 0 ? `기원전 ${Math.abs(person.year)}년` : `${person.year}년`;
@@ -715,10 +750,11 @@ export default function HistoryMap() {
                     // Only show marker if zoom level > 5 (same as battle markers)
                     const markerOpacity = currentMapZoom > 5 ? 1 : 0;
 
+                    // Use ORIGINAL coordinates - visual offset is only via iconAnchor
                     L.marker([person.latitude, person.longitude], { icon, opacity: markerOpacity })
                         .addTo(markersLayer.current!)
                         .bindPopup(popupContent);
-                }
+                });
             });
             return;
         }
