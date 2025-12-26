@@ -39,7 +39,7 @@ export const sendCharacterMessage = async (
     onChunk: StreamCallback
 ): Promise<void> => {
     const userId = getUserId();
-    const url = `/api/ai-person/${promptId}/chat?userId=${userId}`;
+    const url = `/api/ai/ai-person/${promptId}/chat?userId=${userId}`;
 
     console.log('🚀 [sendCharacterMessage] Starting request:', { url, promptId, userId });
 
