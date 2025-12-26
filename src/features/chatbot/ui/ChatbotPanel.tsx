@@ -16,9 +16,10 @@ interface ChatbotPanelProps {
     initialSize?: { width: number; height: number };
     onStateChange?: (state: { x: number; y: number; width: number; height: number }) => void;
     onNavigateToCharacter?: (promptId: string, characterName: string) => void;
+    onNavigateToWar?: (year: number, warName: string) => void;
 }
 
-export const ChatbotPanel = ({ onClose, initialPosition, initialSize, onStateChange, onNavigateToCharacter }: ChatbotPanelProps) => {
+export const ChatbotPanel = ({ onClose, initialPosition, initialSize, onStateChange, onNavigateToCharacter, onNavigateToWar }: ChatbotPanelProps) => {
     // State
     const [input, setInput] = useState('');
     const [messages, setMessages] = useState<ChatMessage[]>([
@@ -261,6 +262,12 @@ export const ChatbotPanel = ({ onClose, initialPosition, initialSize, onStateCha
                     if (promptId && onNavigateToCharacter) {
                         console.log('🚀 [DEBUG] Navigating to character chat:', characterName, promptId);
                         onNavigateToCharacter(promptId, characterName || '인물');
+                    }
+                } else if (toolCall.tool_name === 'navigate_to_war') {
+                    const { year, war_name } = toolCall.parameters;
+                    if (year && onNavigateToWar) {
+                        console.log('⚔️ [DEBUG] Navigating to war:', war_name, year);
+                        onNavigateToWar(year, war_name || '전쟁');
                     }
                 }
             });

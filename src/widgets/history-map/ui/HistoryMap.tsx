@@ -866,6 +866,7 @@ export default function HistoryMap() {
         console.log('🚀 [HistoryMap] Navigating to character chat:', characterName, promptId);
 
         // Create a minimal character object for the chat panel
+        // imagePath는 캐릭터 이름 기반으로 설정 (예: /assets/images/character/이순신.png)
         const character: ParsedCharacter = {
             characterId: promptId,
             characterName: characterName,
@@ -873,12 +874,26 @@ export default function HistoryMap() {
             era: null,
             summary: '',
             promptId: promptId,
+            imagePath: `/assets/images/character/${characterName}.png`,
         };
 
         // Open the people panel and set the character
         setActivePanel('people');
         setDockingPanelWidth(window.innerWidth * 0.5);
         setChatCharacter(character);
+    };
+
+    // Handle navigation to war from AI chatbot tool call
+    const handleNavigateToWar = (year: number, warName: string) => {
+        console.log('⚔️ [HistoryMap] Navigating to war:', warName, year);
+
+        // 해당 년도로 이동
+        setCurrentYear(year);
+
+        // 전쟁 레이어 활성화
+        setLayerType('battles');
+
+        console.log('✅ [HistoryMap] Year set to', year, '/ Layer set to battles');
     };
 
     // Dynamic Theme Calculation
@@ -1070,6 +1085,7 @@ export default function HistoryMap() {
                     initialSize={chatbotState ? { width: chatbotState.width, height: chatbotState.height } : undefined}
                     onStateChange={(newState) => setChatbotState(newState)}
                     onNavigateToCharacter={handleNavigateToCharacter}
+                    onNavigateToWar={handleNavigateToWar}
                 />
             )}
 
