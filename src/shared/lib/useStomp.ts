@@ -375,7 +375,7 @@ export const useDiscussion = (roomId: string | undefined) => {
         },
         onError: (error) => {
             const errorMsg = typeof error === 'string' ? error : (error?.headers?.message || "WebSocket Error");
-            alert(`🚨 채팅 오류 발생: ${errorMsg}`);
+            console.error(`🚨 WebSocket 오류 발생: ${errorMsg}`, error);
         }
     });
 
