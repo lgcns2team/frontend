@@ -6,9 +6,10 @@ import { interpolateCatmullRom } from './math-utils';
 import { useWarAnimation } from './useWarAnimation';
 import { getEraForYear } from '../../../shared/config/era-theme';
 
-export const useWarLayer = (map: L.Map | null, currentYear: number, isVisible: boolean, historicalLayer: L.Layer | null = null) => {
+export const useWarLayer = (map: L.Map | null, currentYear: number, isVisible: boolean, historicalLayer: L.Layer | null = null, currentZoom: number = 6) => {
     const warLayer = useRef<L.LayerGroup | null>(null);
     const [warData, setWarData] = useState<WarData[]>([]);
+    const fortressMarkers = useRef<L.Marker[]>([]); // Track fortress markers separately
 
     // Initialize layer and pane
     useEffect(() => {
@@ -50,6 +51,21 @@ export const useWarLayer = (map: L.Map | null, currentYear: number, isVisible: b
         return () => clearTimeout(timer);
     }, [currentYear]);
 
+    // Control fortress marker visibility based on zoom level (without re-rendering)
+    useEffect(() => {
+        if (!map) return;
+
+        // Show/hide fortress markers based on zoom level
+        const shouldShowMarkers = currentZoom > 5;
+        fortressMarkers.current.forEach(marker => {
+            if (shouldShowMarkers) {
+                marker.setOpacity(1);
+            } else {
+                marker.setOpacity(0);
+            }
+        });
+    }, [map, currentZoom]);
+
     // Draw static layer when warData changes or visibility changes
     useEffect(() => {
         if (!map || !warLayer.current) return;
@@ -58,6 +74,7 @@ export const useWarLayer = (map: L.Map | null, currentYear: number, isVisible: b
         const timeoutIds: ReturnType<typeof setTimeout>[] = [];
 
         warLayer.current.clearLayers();
+        fortressMarkers.current = []; // Clear fortress marker references
 
         if (!isVisible) return;
 
@@ -259,9 +276,10 @@ export const useWarLayer = (map: L.Map | null, currentYear: number, isVisible: b
                                 iconAnchor: [24, 24]
                             });
 
-                            L.marker(endPoint, {
+                            const fortressMarker = L.marker(endPoint, {
                                 icon: arrowIcon,
-                                pane: 'warPane' // Use custom pane
+                                pane: 'warPane', // Use custom pane
+                                opacity: currentZoom > 5 ? 1 : 0 // Initial opacity based on zoom
                             }).addTo(warLayer.current!)
                                 .bindPopup(`
                                     <div style="min-width: 200px;">
@@ -275,6 +293,9 @@ export const useWarLayer = (map: L.Map | null, currentYear: number, isVisible: b
                                         <p style="margin-top: 8px; font-size: 13px; color: #666;">${battle.details}</p>
                                     </div>
                                 `);
+
+                            // Track this marker for zoom-based visibility control
+                            fortressMarkers.current.push(fortressMarker);
                         }
                     }, staggerDelay);
                     timeoutIds.push(timerId);
@@ -288,9 +309,10 @@ export const useWarLayer = (map: L.Map | null, currentYear: number, isVisible: b
                             iconAnchor: [12, 12]
                         });
 
-                        L.marker([battle.latitude, battle.longitude], {
+                        const fortressMarker = L.marker([battle.latitude, battle.longitude], {
                             icon: fortressIcon,
-                            pane: 'warPane'
+                            pane: 'warPane',
+                            opacity: currentZoom > 5 ? 1 : 0 // Initial opacity based on zoom
                         }).addTo(warLayer.current!)
                             .bindPopup(`
                                 <div style="min-width: 200px;">
@@ -304,6 +326,9 @@ export const useWarLayer = (map: L.Map | null, currentYear: number, isVisible: b
                                     <p style="margin-top: 8px; font-size: 13px; color: #666;">${battle.details}</p>
                                 </div>
                             `);
+
+                        // Track this marker for zoom-based visibility control
+                        fortressMarkers.current.push(fortressMarker);
                     }
                 }
             });
@@ -321,7 +346,8 @@ export const useWarLayer = (map: L.Map | null, currentYear: number, isVisible: b
         warData,
         isActive: isVisible,
         currentYear,
-        historicalLayer
+        historicalLayer,
+        currentZoom
     });
 
     return warLayer;

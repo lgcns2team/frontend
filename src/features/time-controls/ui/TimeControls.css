@@ -29,38 +29,76 @@
 /* Year Display Group */
 .year-display-group {
     display: flex;
-    flex-direction: column;
+    flex-direction: row;
     align-items: center;
+    gap: 4px;
     height: auto;
     /* Auto height to match content */
     justify-content: center;
 }
 
-.year-text {
+.year-input {
     font-size: 25px;
     font-weight: 900;
     line-height: 20px;
-    /* Fixed line-height matching font-size */
     height: auto;
-    /* Fixed height */
     font-family: 'Nanum Myeongjo', serif;
     letter-spacing: -1px;
     color: var(--ui-text, #333);
-    /* Use theme text color or black as requested? User said black. */
     font-variant-numeric: tabular-nums;
     white-space: nowrap;
-    /* Prevent line breaks */
     overflow: visible;
+
+    /* Input specific styles */
+    background: white;
+    border: 2px solid rgba(0, 0, 0, 0.1);
+    border-radius: 8px;
+    padding: 4px 6px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    outline: none;
+    width: 90px;
+    /* Fixed width for 4-digit year */
 }
 
-/* Tablet adjustments for Year Text */
+.year-suffix {
+    font-size: 25px;
+    font-weight: 900;
+    font-family: 'Nanum Myeongjo', serif;
+    color: var(--ui-text, #333);
+    letter-spacing: -1px;
+}
+
+.year-input:hover {
+    border-color: rgba(0, 0, 0, 0.2);
+    background: rgba(255, 255, 255, 1);
+}
+
+.year-input:focus {
+    border-color: #4A90E2;
+    box-shadow: 0 0 0 3px rgba(74, 144, 226, 0.1);
+    cursor: text;
+}
+
+.year-input:disabled {
+    cursor: not-allowed;
+    opacity: 0.7;
+}
+
+/* Tablet adjustments for Year Input */
 @media (max-width: 1024px) {
-    .year-text {
+    .year-input {
         font-size: 15px;
-        /* Smaller font for tablets */
         letter-spacing: -2px;
-        /* Tighter letter spacing */
         line-height: 30px;
+        width: 60px;
+        /* Smaller fixed width for tablets */
+    }
+
+    .year-suffix {
+        font-size: 15px;
+        letter-spacing: -2px;
     }
 }
 

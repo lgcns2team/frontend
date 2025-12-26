@@ -12,6 +12,7 @@ interface UseWarAnimationProps {
     isActive: boolean;
     currentYear: number;
     historicalLayer: L.Layer | null;
+    currentZoom?: number; // Added zoom parameter
 }
 
 export const useWarAnimation = ({
@@ -20,7 +21,8 @@ export const useWarAnimation = ({
     // speed = 1,
     isActive,
     currentYear,
-    historicalLayer
+    historicalLayer,
+    currentZoom = 6 // Default zoom
 }: UseWarAnimationProps) => {
     const animationLayer = useRef<L.LayerGroup | null>(null);
     const animationFrameId = useRef<number | null>(null);
@@ -53,6 +55,24 @@ export const useWarAnimation = ({
             }
         };
     }, [map]);
+
+    // Control animation layer visibility based on zoom level (separate from animation)
+    useEffect(() => {
+        if (!map || !animationLayer.current) return;
+
+        // Show/hide animation layer based on zoom without restarting animation
+        const shouldShow = isActive && currentZoom > 4;
+
+        if (shouldShow) {
+            if (!map.hasLayer(animationLayer.current)) {
+                map.addLayer(animationLayer.current);
+            }
+        } else {
+            if (map.hasLayer(animationLayer.current)) {
+                map.removeLayer(animationLayer.current);
+            }
+        }
+    }, [map, isActive, currentZoom]);
 
     useEffect(() => {
         // console.log('[useWarAnimation] Effect triggered:', { isActive, hasMap: !!map, hasLayer: !!animationLayer.current, warDataCount: warData.length });
@@ -155,13 +175,6 @@ export const useWarAnimation = ({
         const ROUTE_STAGGER_DELAY = 1500; // Same as useWarLayer
         // const UNIT_TRAVEL_DURATION = 3500; // Same as route drawing animation (3.5s)
 
-        // 고정 속도 설정 (km/ms) - 값을 조절하여 속도 변경 가능
-        // 예: 0.1 = 10ms당 1km 이동 (빠름), 0.05 = 20ms당 1km (느림)
-        // 적절한 값: 약 300km를 3초에 간다고 가정하면 100km/s = 0.1km/ms
-        const ANIMATION_SPEED = 0.15;
-
-        const PAUSE_BEFORE_REPLAY = 10000; // 10 seconds pause
-
         // Process each battle route - sort by date first (same logic as useWarLayer)
         warData.forEach(war => {
             // Check if this is a "기타/미분류" (miscellaneous/unclassified) war
@@ -224,10 +237,8 @@ export const useWarAnimation = ({
                     const line = turf.lineString(smoothedCoords);
                     const length = turf.length(line, { units: 'kilometers' });
 
-                    // Calculate constant speed duration
-                    // duration = distance / speed
-                    const calculatedDuration = length / ANIMATION_SPEED;
-                    // 너무 짧으면 최소 1초, 너무 길면 최대 10초 등으로 제한할 수도 있지만 일단 원시값 사용
+                    // Match the line drawing animation duration (3500ms from useWarLayer)
+                    const calculatedDuration = 3500;
 
                     // Calculate start delay synced with route drawing
                     const startDelay = battleIndex * ROUTE_STAGGER_DELAY;
@@ -263,18 +274,6 @@ export const useWarAnimation = ({
             });
         });
 
-        // Calculate total cycle duration
-        // Find the unit that finishes last
-        let maxEndTime = 0;
-        activeUnits.forEach(unit => {
-            const endTime = unit.startDelay + unit.duration;
-            if (endTime > maxEndTime) maxEndTime = endTime;
-        });
-
-        const TOTAL_CYCLE_DURATION = maxEndTime + PAUSE_BEFORE_REPLAY;
-        // const lastUnitDelay = activeUnits.length > 0 ? activeUnits[activeUnits.length - 1].startDelay : 0;
-        // const TOTAL_CYCLE_DURATION = lastUnitDelay + UNIT_TRAVEL_DURATION + PAUSE_BEFORE_REPLAY;
-
         const animate = (timestamp: number) => {
             if (!startTime.current) {
                 startTime.current = timestamp;
@@ -284,17 +283,23 @@ export const useWarAnimation = ({
             // Time elapsed since animation cycle started
             const cycleTime = timestamp - startTime.current;
 
-            // Check if we need to restart the cycle (after pause)
-            if (cycleTime > TOTAL_CYCLE_DURATION) {
-                // Reset for new cycle
-                startTime.current = timestamp;
-                // Hide all markers for fresh start
+            // Check if all units have finished
+            let allUnitsFinished = true;
+            activeUnits.forEach(unit => {
+                const unitTime = cycleTime - unit.startDelay;
+                if (unitTime <= unit.duration) {
+                    allUnitsFinished = false;
+                }
+            });
+
+            // Stop animation if all units have finished
+            if (allUnitsFinished && cycleTime > 0) {
+                // Hide all markers before stopping
                 activeUnits.forEach(unit => {
-                    unit.isVisible = false;
-                    unit.tooltipShown = false;
                     unit.marker.setOpacity(0);
+                    unit.isVisible = false;
                 });
-                // console.log('[useWarAnimation] Restarting animation cycle after 10s pause');
+                return; // Stop the animation loop
             }
 
             activeUnits.forEach(unit => {
@@ -368,7 +373,10 @@ export const useWarAnimation = ({
                 }
 
                 // Calculate progress (0 to 1) for this unit
-                const progress = unitTime / unit.duration;
+                const linearProgress = unitTime / unit.duration;
+
+                // Apply easeOutCubic easing (same as line drawing animation)
+                const progress = 1 - Math.pow(1 - linearProgress, 3);
 
                 // Get position along the line
                 const distance = progress * unit.length;

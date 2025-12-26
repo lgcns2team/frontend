@@ -195,7 +195,7 @@ export default function HistoryMap() {
     const isAllUIHidden = timelineVisibility === 'full-hidden';
     // War Layer Hook
     // War Layer Hook
-    useWarLayer(map.current, currentYear, layerType === 'battles', historicalLayer.current);
+    useWarLayer(map.current, currentYear, layerType === 'battles', historicalLayer.current, currentMapZoom);
 
     const playInterval = useRef<ReturnType<typeof setInterval> | null>(null);
 
@@ -1076,7 +1076,7 @@ export default function HistoryMap() {
                         zIndex: 901,
                         transition: 'bottom 0.4s cubic-bezier(0.4, 0, 0.2, 1)'
                     }}>
-                        <TimeControls currentYear={currentYear}>
+                        <TimeControls currentYear={currentYear} onYearChange={handleYearChange}>
                             <PlayControls
                                 isPlaying={isPlaying}
                                 speed={speed}

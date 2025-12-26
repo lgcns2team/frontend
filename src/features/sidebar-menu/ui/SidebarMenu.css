@@ -143,7 +143,65 @@
 .menu-icon {
     width: 80px;
     height: 80px;
-    object-fit: cover;
+    object-fit: contain;
     object-position: center;
     flex-shrink: 0;
+}
+
+/* Centered menu item styles (all items) */
+.menu-item-zone.centered-item {
+    justify-content: center;
+    padding-left: 0;
+}
+
+.menu-image-wrapper {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-left: -20px;
+}
+
+.menu-image-wrapper .menu-icon {
+    width: 110px;
+    /* 80% of 120px (reduced by 20%) */
+    height: 110px;
+}
+
+.menu-overlay-text {
+    position: absolute;
+    bottom: 2px;
+    left: 50%;
+    transform: translateX(-50%);
+    color: #496b6e;
+    font-size: 25px;
+    font-weight: 700;
+    font-family: 'CustomFont', sans-serif;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+    pointer-events: none;
+    white-space: nowrap;
+}
+
+/* People item specific styles */
+.menu-item-zone.people-item .menu-image-wrapper {
+    position: relative;
+}
+
+.menu-item-zone.people-item .menu-icon {
+    width: 110px;
+    height: 110px;
+}
+
+.menu-item-zone.people-item .menu-overlay-text {
+    position: absolute;
+    bottom: -2px;
+    left: 50%;
+    transform: translateX(-50%);
+    color: #496b6e;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+}
+
+/* Discussion item specific styles */
+.menu-item-zone.discussion-item .menu-overlay-text {
+    bottom: -5px;
 }

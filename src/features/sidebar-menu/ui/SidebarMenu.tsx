@@ -62,12 +62,14 @@ export const SidebarMenu = ({ onItemClick, currentYear, isDockingPanelOpen = fal
                             {menuItems.map((item) => (
                                 <div
                                     key={item.id}
-                                    className="menu-item-zone"
+                                    className={`menu-item-zone centered-item ${item.id === 'people' ? 'people-item' : ''} ${item.id === 'discussion' ? 'discussion-item' : ''}`}
                                     title={item.label}
                                     onClick={() => onItemClick?.(item.id)}
                                 >
-                                    <img src={item.icon} alt={item.label} className="menu-icon" />
-                                    <span>{item.label}</span>
+                                    <div className="menu-image-wrapper">
+                                        <img src={item.icon} alt={item.label} className="menu-icon" />
+                                        <span className="menu-overlay-text">{item.label}</span>
+                                    </div>
                                 </div>
                             ))}
                         </div>
