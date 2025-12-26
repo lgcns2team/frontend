@@ -17,7 +17,17 @@ const API_BASE_URL = import.meta.env.VITE_API_URL || '/api';
 
 export const fetchMainEvents = async (): Promise<MainEvent[]> => {
     try {
-        const response = await fetch(`${API_BASE_URL}/main-event`);
+        const token = localStorage.getItem('accessToken');
+        const headers: HeadersInit = {
+            'Content-Type': 'application/json'
+        };
+        if (token) {
+            headers['Authorization'] = `Bearer ${token}`;
+        }
+
+        const response = await fetch(`${API_BASE_URL}/main-event`, {
+            headers
+        });
         if (!response.ok) {
             throw new Error('Failed to fetch main events');
         }
