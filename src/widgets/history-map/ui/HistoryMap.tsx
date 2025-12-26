@@ -749,7 +749,7 @@ export default function HistoryMap() {
                 `;
 
                     // Only show marker if zoom level > 5 (same as battle markers)
-                    const markerOpacity = currentMapZoom > 5 ? 1 : 0;
+                    const markerOpacity = currentMapZoom > 4 ? 1 : 0;
 
                     // Use ORIGINAL coordinates - visual offset is only via iconAnchor
                     L.marker([person.latitude, person.longitude], { icon, opacity: markerOpacity })
