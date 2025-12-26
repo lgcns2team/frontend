@@ -354,7 +354,7 @@ export default function HistoryMap() {
     // Update Markers when layer type changes or capital data loads
     useEffect(() => {
         updateMarkers(currentYear);
-    }, [layerType, capitalData, personData]);
+    }, [layerType, capitalData, personData, currentMapZoom]);
 
     // Update Trade Routes
     useEffect(() => {
@@ -712,7 +712,10 @@ export default function HistoryMap() {
                     </div>
                 `;
 
-                    L.marker([person.latitude, person.longitude], { icon })
+                    // Only show marker if zoom level > 5 (same as battle markers)
+                    const markerOpacity = currentMapZoom > 5 ? 1 : 0;
+
+                    L.marker([person.latitude, person.longitude], { icon, opacity: markerOpacity })
                         .addTo(markersLayer.current!)
                         .bindPopup(popupContent);
                 }
