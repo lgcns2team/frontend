@@ -20,6 +20,50 @@ export interface ToolCallEvent {
     tool_name: string;
     parameters: Record<string, any>;
 }
+/**
+ * AI 대화 히스토리 아이템 구조
+ */
+export interface ChatHistoryItem {
+    role: 'user' | 'assistant' | 'ai';
+    content: string,
+    createdAt?: string;
+}
+
+/**
+ * AI 인물과의 대화 히스토리 불러오기
+ * @param promptId - 인물의 prompt ID
+ */
+export const getCharacterChatHistory = async (
+    promptId: string
+) : Promise<ChatHistoryItem[]> => {
+    const userId = getUserId();
+    // 백엔드 엔드포인트에 맞춰 URL 생성
+    const url = `/api/ai-person/${promptId}/history?userId=${userId}`;
+
+    console.log('📜 [getCharacterChatHistory] Fetching history:', { url, promptId });
+
+    try {
+        const response = await fetch(url, {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json',
+                // 인증 토큰이 필요하다면 기존 유틸리티 활용
+                ...getStreamingHeaders(), 
+            },
+        });
+
+        if (!response.ok) {
+            throw new Error(`Failed to fetch history: ${response.status}`);
+        }
+
+        const data = await response.json();
+        console.log('✅ [getCharacterChatHistory] Success:', data.length, 'messages found');
+        return data;
+    } catch (error) {
+        console.error('❌ [getCharacterChatHistory] Error:', error);
+        return []; 
+    }
+}
 
 /**
  * Callback function for handling streaming chunks

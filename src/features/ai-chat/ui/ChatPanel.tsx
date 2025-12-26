@@ -55,7 +55,7 @@ export const ChatPanel = ({ character }: ChatPanelProps) => {
         };
 
         initChat();
-
+        
         return () => { isMounted = false; };
     }, [character.characterId, character.characterName, character.promptId]);
 
