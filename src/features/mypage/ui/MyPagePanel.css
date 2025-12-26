@@ -4,7 +4,7 @@
     /* Adjust based on header/button position */
     right: 50px;
     width: 300px;
-    background-color: rgba(255, 255, 255, 0.95);
+    background-color: var(--color-bg-primary, #f9f7f1);
     backdrop-filter: blur(10px);
     border-radius: 16px;
     box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
@@ -33,13 +33,13 @@
     align-items: center;
     gap: 12px;
     padding-bottom: 16px;
-    border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+    border-bottom: 1px solid var(--color-border, #d4d1ca);
 }
 
 .mypage-title {
     font-size: 1.2rem;
     font-weight: 700;
-    color: #333;
+    color: var(--color-text-primary, #040316);
 }
 
 .mypage-content {
@@ -56,13 +56,13 @@
 
 .info-label {
     font-size: 0.9rem;
-    color: #666;
+    color: var(--color-text-muted, #6b6b7a);
     font-weight: 500;
 }
 
 .info-value {
     font-size: 1rem;
-    color: #333;
+    color: var(--color-text-primary, #040316);
     font-weight: 600;
 }
 
@@ -74,27 +74,29 @@
 }
 
 .role-teacher {
-    background-color: #e3f2fd;
-    color: #1976d2;
+    background-color: #e8eeec;
+    /* Light secondary */
+    color: var(--color-main, #496b6e);
 }
 
 .role-student {
-    background-color: #e8f5e9;
-    color: #2e7d32;
+    background-color: #f5efe5;
+    /* Light accent */
+    color: var(--color-accent-dark, #b08d54);
 }
 
 .role-guest {
-    background-color: #e3f2fd;
-    color: #1976d2;
+    background-color: #e8eeec;
+    color: var(--color-main, #496b6e);
 }
 
 .logout-button {
     width: 100%;
     padding: 12px;
-    background-color: #f5f5f5;
+    background-color: var(--color-bg-secondary, #f4f1ea);
     border: none;
     border-radius: 8px;
-    color: #d32f2f;
+    color: var(--color-accent, #c49f64);
     font-weight: 600;
     cursor: pointer;
     transition: all 0.2s;
@@ -102,5 +104,6 @@
 }
 
 .logout-button:hover {
-    background-color: #ffebee;
+    background-color: #f5efe5;
+    color: var(--color-accent-dark, #b08d54);
 }

@@ -14,14 +14,14 @@
     gap: 20px;
     padding: 40px 60px;
     text-align: center;
-    background-color: #ffffff;
+    background-color: var(--color-bg-primary, #f9f7f1);
     border-radius: 16px;
     box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
 }
 
 .guest-login-message {
     font-size: 1.1rem;
-    color: #666;
+    color: var(--color-text-secondary, #3d3d4a);
     margin: 0;
 }
 
@@ -29,15 +29,15 @@
     padding: 12px 32px;
     font-size: 1rem;
     font-weight: 600;
-    border: 2px solid #90CAF9;
+    border: 2px solid var(--color-secondary, #88a09b);
     border-radius: 8px;
     background-color: transparent;
-    color: #1976d2;
+    color: var(--color-main, #496b6e);
     cursor: pointer;
     transition: all 0.2s ease;
 }
 
 .guest-login-button:hover {
-    border-color: #42A5F5;
-    background-color: rgba(33, 150, 243, 0.08);
+    border-color: var(--color-main, #496b6e);
+    background-color: rgba(73, 107, 110, 0.08);
 }

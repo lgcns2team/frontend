@@ -179,9 +179,6 @@ export const CharactersPanel = ({ onYearChange, onCharacterClick, currentYear = 
                                     />
                                 )}
                                 <h3 className="character-name">{character.characterName}</h3>
-                                {character.summary && (
-                                    <p className="character-summary">{character.summary}</p>
-                                )}
                             </div>
                         );
                     })}

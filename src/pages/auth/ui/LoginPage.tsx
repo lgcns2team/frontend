@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Link as RouterLink, useNavigate } from 'react-router-dom';
 import { authApi } from '../../../shared/api/auth-api';
+import { colors } from '../../../shared/config/colors';
 import {
     Container,
     Paper,
@@ -16,26 +17,27 @@ import {
     ThemeProvider
 } from '@mui/material';
 
-const claudeTheme = createTheme({
+const appTheme = createTheme({
     palette: {
         mode: 'light',
         primary: {
-            main: '#DA7756', // Terracotta accent
+            main: colors.main, // Deep Teal
+            dark: colors.mainDark,
         },
         background: {
-            default: '#F9F9F7', // Warm off-white/beige from image
-            paper: '#FFFFFF',
+            default: colors.bgPrimary, // Warm cream
+            paper: colors.bgWhite,
         },
         text: {
-            primary: '#333333', // Dark charcoal
-            secondary: '#666666',
+            primary: colors.textPrimary, // Near black
+            secondary: colors.textSecondary,
         },
     },
     typography: {
         fontFamily: '"Inter", "Helvetica", "Arial", sans-serif',
         h4: {
-            fontFamily: '"Source Serif 4", "Merriweather", "Georgia", serif', // Serif headers
-            color: '#333333',
+            fontFamily: '"Source Serif 4", "Merriweather", "Georgia", serif',
+            color: colors.textPrimary,
             fontWeight: 500,
         },
     },
@@ -49,7 +51,7 @@ const claudeTheme = createTheme({
                     boxShadow: 'none',
                     '&:hover': {
                         boxShadow: 'none',
-                        backgroundColor: '#C86545',
+                        backgroundColor: colors.mainDark,
                     },
                 },
             },
@@ -57,9 +59,9 @@ const claudeTheme = createTheme({
         MuiPaper: {
             styleOverrides: {
                 root: {
-                    borderRadius: 24, // Rounded corners for card
+                    borderRadius: 24,
                     boxShadow: '0px 2px 12px rgba(0, 0, 0, 0.03)',
-                    border: '1px solid #E5E5E5',
+                    border: `1px solid ${colors.borderLight}`,
                 },
             },
         },
@@ -68,15 +70,15 @@ const claudeTheme = createTheme({
                 root: {
                     '& .MuiOutlinedInput-root': {
                         borderRadius: 12,
-                        backgroundColor: '#FFFFFF',
+                        backgroundColor: colors.bgWhite,
                         '& fieldset': {
-                            borderColor: '#E0E0E0',
+                            borderColor: colors.border,
                         },
                         '&:hover fieldset': {
-                            borderColor: '#DA7756',
+                            borderColor: colors.secondary,
                         },
                         '&.Mui-focused fieldset': {
-                            borderColor: '#DA7756',
+                            borderColor: colors.main,
                         },
                     },
                 },
@@ -105,7 +107,7 @@ const LoginPage = () => {
     };
 
     return (
-        <ThemeProvider theme={claudeTheme}>
+        <ThemeProvider theme={appTheme}>
             <CssBaseline />
             <Box
                 sx={{
@@ -171,16 +173,16 @@ const LoginPage = () => {
                                         <Checkbox
                                             value="remember"
                                             sx={{
-                                                color: '#D1D1D1',
+                                                color: colors.border,
                                                 '&.Mui-checked': {
-                                                    color: '#DA7756',
+                                                    color: colors.accent,
                                                 },
                                             }}
                                         />
                                     }
                                     label={<Typography variant="body2" color="text.secondary">로그인 상태 유지</Typography>}
                                 />
-                                <Link href="#" variant="body2" underline="hover" sx={{ color: '#DA7756' }}>
+                                <Link href="#" variant="body2" underline="hover" sx={{ color: colors.accent }}>
                                     비밀번호 찾기
                                 </Link>
                             </Box>
@@ -198,7 +200,7 @@ const LoginPage = () => {
                             <Box sx={{ textAlign: 'center' }}>
                                 <Typography variant="body2" color="text.secondary">
                                     계정이 없으신가요?{' '}
-                                    <Link component={RouterLink} to="/signup" variant="body2" underline="hover" fontWeight="600" sx={{ color: '#DA7756' }}>
+                                    <Link component={RouterLink} to="/signup" variant="body2" underline="hover" fontWeight="600" sx={{ color: colors.accent }}>
                                         회원가입
                                     </Link>
                                 </Typography>
@@ -212,11 +214,11 @@ const LoginPage = () => {
                                     mt: 2,
                                     py: 1.5,
                                     fontSize: '1rem',
-                                    borderColor: '#90CAF9',
-                                    color: '#1976d2',
+                                    borderColor: colors.secondary,
+                                    color: colors.main,
                                     '&:hover': {
-                                        borderColor: '#42A5F5',
-                                        backgroundColor: 'rgba(33, 150, 243, 0.04)',
+                                        borderColor: colors.main,
+                                        backgroundColor: `${colors.secondary}10`,
                                     },
                                 }}
                                 onClick={() => {

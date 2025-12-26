@@ -1,5 +1,5 @@
 .characters-panel {
-    color: var(--ui-text);
+    color: var(--color-text-primary, #040316);
 }
 
 /* Toggle Switch Container */
@@ -10,13 +10,13 @@
     gap: 12px;
     margin-bottom: 20px;
     padding: 12px;
-    background-color: var(--ui-bg-secondary);
+    background-color: var(--color-bg-secondary, #f4f1ea);
     border-radius: 8px;
 }
 
 .toggle-label {
     font-size: 0.9rem;
-    color: var(--ui-text);
+    color: var(--color-text-primary, #040316);
     font-weight: 500;
 }
 
@@ -41,10 +41,10 @@
     left: 0;
     right: 0;
     bottom: 0;
-    background-color: #ccc;
+    background-color: var(--color-border, #d4d1ca);
     border-radius: 24px;
     transition: 0.3s;
-    border: 1px solid black;
+    border: 1px solid var(--color-text-muted, #6b6b7a);
     box-sizing: border-box;
 }
 
@@ -61,7 +61,7 @@
 }
 
 .toggle-switch input:checked+.toggle-slider {
-    background-color: var(--ui-primary);
+    background-color: var(--color-main, #496b6e);
 }
 
 .toggle-switch input:checked+.toggle-slider:before {
@@ -85,7 +85,7 @@
     align-items: center;
     height: 100%;
     font-size: 1.2rem;
-    color: var(--ui-text-muted);
+    color: var(--color-text-muted, #6b6b7a);
 }
 
 .characters-list {
@@ -95,11 +95,8 @@
 }
 
 .character-item {
-    background-image: url('/assets/images/background1.png');
-    background-size: cover;
-    background-repeat: no-repeat;
-    background-position: center;
-    border: 1px solid var(--ui-border);
+    background-color: var(--color-bg-white, #ffffff);
+    border: 1px solid var(--color-border, #d4d1ca);
     border-radius: 8px;
     padding: 16px;
     transition: transform 0.2s, box-shadow 0.2s;
@@ -137,7 +134,7 @@
 .character-item:hover {
     transform: translateY(-2px);
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-    border-color: var(--ui-primary);
+    border-color: var(--color-main, #496b6e);
 }
 
 .character-image {
@@ -152,14 +149,14 @@
 .character-name {
     margin: 0 0 8px 0;
     font-size: 1rem;
-    color: var(--ui-text-highlight);
+    color: var(--color-text-primary, #040316);
     font-weight: 600;
 }
 
 .character-summary {
     font-size: 0.85rem;
     line-height: 1.4;
-    color: var(--ui-text);
+    color: var(--color-text-secondary, #3d3d4a);
     margin: 0;
     text-align: left;
 }
