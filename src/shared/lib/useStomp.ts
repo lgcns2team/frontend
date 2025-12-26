@@ -342,7 +342,7 @@ export const useDiscussion = (roomId: string | undefined) => {
 
     // 4. WebSocket Integration
     const { connect, disconnect, subscribe, sendMessage, isConnected, lastError } = useStomp({
-        url: `${API_BASE_URL}/ws-stomp`,
+        url: '/api/ws-stomp',  // Vite 프록시를 통해 8080으로 라우팅됨
         onConnect: () => {
             console.log('🔗 onConnect callback triggered, roomId:', roomId);
             if (!roomId) return;
