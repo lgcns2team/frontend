@@ -18,31 +18,10 @@ let personCache: PersonData[] | null = null;
 let cachePromise: Promise<PersonData[]> | null = null;
 
 export async function fetchAllPersons(): Promise<PersonData[]> {
-
-    try {
-        const token = localStorage.getItem('accessToken');
-        const headers: HeadersInit = {
-            'Content-Type': 'application/json'
-        };
-        if (token) {
-            headers['Authorization'] = `Bearer ${token}`;
-        }
-
-        const response = await fetch(`${API_BASE_URL}/ai-person`, { headers });
-        if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
-        }
-        const data = await response.json();
-        return data;
-    } catch (error) {
-        console.error('Failed to fetch persons:', error);
-        return [];
-
     // Return cached data if available
     if (personCache !== null) {
         console.log('[Person API] Using cached data');
         return personCache;
-
     }
 
     // If a fetch is already in progress, wait for it
@@ -55,7 +34,16 @@ export async function fetchAllPersons(): Promise<PersonData[]> {
     console.log('[Person API] Fetching from server (first time)');
     cachePromise = (async () => {
         try {
-            const response = await fetch(`${API_BASE_URL}/ai-person`);
+            const token = localStorage.getItem('accessToken');
+            const headers: HeadersInit = {
+                'Content-Type': 'application/json'
+            };
+            if (token) {
+                headers['Authorization'] = `Bearer ${token}`;
+            }
+
+            const response = await fetch(`${API_BASE_URL}/ai-person`, { headers });
+
             if (!response.ok) {
                 throw new Error(`HTTP error! status: ${response.status}`);
             }
