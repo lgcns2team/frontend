@@ -861,6 +861,26 @@ export default function HistoryMap() {
         setChatCharacter(character);
     };
 
+    // Handle navigation to character chat from AI chatbot tool call
+    const handleNavigateToCharacter = (promptId: string, characterName: string) => {
+        console.log('🚀 [HistoryMap] Navigating to character chat:', characterName, promptId);
+
+        // Create a minimal character object for the chat panel
+        const character: ParsedCharacter = {
+            characterId: promptId,
+            characterName: characterName,
+            birthYear: null,
+            era: null,
+            summary: '',
+            promptId: promptId,
+        };
+
+        // Open the people panel and set the character
+        setActivePanel('people');
+        setDockingPanelWidth(window.innerWidth * 0.5);
+        setChatCharacter(character);
+    };
+
     // Dynamic Theme Calculation
     const currentEra = getEraForYear(currentYear);
 
@@ -1049,6 +1069,7 @@ export default function HistoryMap() {
                     initialPosition={chatbotState ? { x: chatbotState.x, y: chatbotState.y } : undefined}
                     initialSize={chatbotState ? { width: chatbotState.width, height: chatbotState.height } : undefined}
                     onStateChange={(newState) => setChatbotState(newState)}
+                    onNavigateToCharacter={handleNavigateToCharacter}
                 />
             )}
 

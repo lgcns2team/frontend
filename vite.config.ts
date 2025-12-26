@@ -10,11 +10,20 @@ export default defineConfig(({ mode }) => {
     plugins: [react()],
     server: {
       proxy: {
+        // AI 관련 요청 → Python 백엔드 (8000)
+        '/api/ai': {
+          target: 'http://localhost:8000',
+          changeOrigin: true,
+          secure: false,
+          rewrite: (path) => path.replace(/^\/api\/ai/, '/api')  // /api/ai → /api
+        },
+        // 나머지 API → Java 백엔드 (8080)
         '/api': {
           target: env.VITE_API_URL || 'http://localhost:8080/api',
           changeOrigin: true,
           secure: false,
           ws: true,
+          rewrite: (path) => path.replace(/^\/api/, '')
         },
       },
     },

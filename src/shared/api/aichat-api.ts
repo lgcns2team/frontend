@@ -4,17 +4,28 @@ import { getStreamingHeaders, getUserId } from './api-utils';
  * Stream event types from AI chat API
  */
 export interface AIChatStreamEvent {
-    type: 'content' | 'citations' | 'done' | 'error';
+    type: 'content' | 'citations' | 'done' | 'error' | 'tool_call';
     text?: string;
     count?: number;
     total_length?: number;
     message?: string;
+    tool_name?: string;
+    parameters?: Record<string, any>;
+}
+
+/**
+ * Tool call event from AI chat
+ */
+export interface ToolCallEvent {
+    tool_name: string;
+    parameters: Record<string, any>;
 }
 
 /**
  * Callback function for handling streaming chunks
  */
 export type StreamCallback = (text: string) => void;
+export type ToolCallCallback = (toolCall: ToolCallEvent) => void;
 
 /**
  * Send a message to AI character chat and receive streaming response
@@ -102,12 +113,14 @@ export const sendCharacterMessage = async (
  * Send a message to general AI chat and receive streaming response
  * @param message - User's message
  * @param onChunk - Callback function called for each text chunk
+ * @param onToolCall - Optional callback function called when a tool call is received
  */
 export const sendGeneralMessage = async (
     message: string,
-    onChunk: StreamCallback
+    onChunk: StreamCallback,
+    onToolCall?: ToolCallCallback
 ): Promise<void> => {
-    const url = '/api/ai/chat';
+    const url = '/api/ai/agent-chat';
     console.log('🚀 [sendGeneralMessage] Starting request:', { url, message: message.substring(0, 50) });
 
     const response = await fetch(url, {
@@ -140,20 +153,29 @@ export const sendGeneralMessage = async (
     const reader = response.body.getReader();
     const decoder = new TextDecoder();
     let buffer = '';
+    let fullResponse = ''; // Collect full response for non-SSE handling
 
     while (true) {
         const { done, value } = await reader.read();
-        if (done) break;
+        if (done) {
+            console.log('📨 [sendGeneralMessage] Stream done. Full response length:', fullResponse.length);
+            break;
+        }
 
         const chunk = decoder.decode(value, { stream: true });
+        console.log('📨 [sendGeneralMessage] Received chunk:', chunk.substring(0, 200));
         buffer += chunk;
+        fullResponse += chunk;
 
         const lines = buffer.split('\n');
         buffer = lines.pop() || '';
 
         for (const line of lines) {
+            console.log('📨 [sendGeneralMessage] Raw line:', line);
+
             if (line.startsWith('data:')) {
                 const dataStr = line.substring(5).trim();
+                console.log('📨 [sendGeneralMessage] Parsed dataStr:', dataStr);
                 if (!dataStr || dataStr === '[DONE]') continue;
 
                 try {
@@ -161,6 +183,14 @@ export const sendGeneralMessage = async (
 
                     if (event.type === 'content' && event.text) {
                         onChunk(event.text);
+                    } else if (event.type === 'tool_call' && event.tool_name && event.parameters) {
+                        console.log('🔧 Tool call received:', event.tool_name, event.parameters);
+                        if (onToolCall) {
+                            onToolCall({
+                                tool_name: event.tool_name,
+                                parameters: event.parameters
+                            });
+                        }
                     } else if (event.type === 'citations') {
                         console.log('📚 Received citations:', event.count);
                     } else if (event.type === 'done') {
@@ -171,6 +201,37 @@ export const sendGeneralMessage = async (
                 } catch (e) {
                     console.error('Error parsing SSE JSON:', e, 'Data:', dataStr);
                 }
+            }
+        }
+    }
+
+    // Handle non-SSE response (plain JSON)
+    if (fullResponse && !fullResponse.includes('data:')) {
+        console.log('📨 [sendGeneralMessage] Trying to parse as plain JSON');
+        try {
+            const jsonResponse = JSON.parse(fullResponse.trim());
+            console.log('📨 [sendGeneralMessage] Parsed JSON response:', jsonResponse);
+
+            // Check if it's a tool_call response
+            if (jsonResponse.type === 'tool_call' && jsonResponse.tool_name && jsonResponse.parameters) {
+                console.log('🔧 Tool call received (non-SSE):', jsonResponse.tool_name, jsonResponse.parameters);
+                if (onToolCall) {
+                    onToolCall({
+                        tool_name: jsonResponse.tool_name,
+                        parameters: jsonResponse.parameters
+                    });
+                }
+            }
+
+            // Check if response contains text content
+            if (jsonResponse.text || jsonResponse.content || jsonResponse.message) {
+                const text = jsonResponse.text || jsonResponse.content || jsonResponse.message;
+                onChunk(text);
+            }
+        } catch (e) {
+            console.log('📨 [sendGeneralMessage] Not valid JSON, treating as plain text');
+            if (fullResponse.trim()) {
+                onChunk(fullResponse.trim());
             }
         }
     }
