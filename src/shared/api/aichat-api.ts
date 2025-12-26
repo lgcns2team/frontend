@@ -35,7 +35,7 @@ export interface ChatHistoryItem {
  */
 export const getCharacterChatHistory = async (
     promptId: string
-) : Promise<ChatHistoryItem[]> => {
+): Promise<ChatHistoryItem[]> => {
     const userId = getUserId();
     // 백엔드 엔드포인트에 맞춰 URL 생성
     const url = `/api/ai-person/${promptId}/history?userId=${userId}`;
@@ -48,7 +48,7 @@ export const getCharacterChatHistory = async (
             headers: {
                 'Content-Type': 'application/json',
                 // 인증 토큰이 필요하다면 기존 유틸리티 활용
-                ...getStreamingHeaders(), 
+                ...getStreamingHeaders(),
             },
         });
 
@@ -61,7 +61,7 @@ export const getCharacterChatHistory = async (
         return data;
     } catch (error) {
         console.error('❌ [getCharacterChatHistory] Error:', error);
-        return []; 
+        return [];
     }
 }
 

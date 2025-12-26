@@ -9,6 +9,8 @@ import { loadTradeRoutes } from '../lib/trade-route';
 import type { TradeRouteWithColor } from '../lib/trade-route';
 import { useTradeAnimation } from '../lib/useTradeAnimation';
 import { useWarLayer } from '../lib/useWarLayer';
+import { fetchPersonsByYear, type PersonData } from '../../../shared/api/person-api';
+import { fetchCharacterDetail } from '../../../shared/api/characters-api';
 
 // Features
 import { TimeControls } from '../../../features/time-controls';
@@ -70,6 +72,7 @@ export default function HistoryMap() {
     const abortController = useRef<AbortController | null>(null);
     const [capitalData, setCapitalData] = useState<CapitalData[]>([]);
     const [activeTradeRoutes, setActiveTradeRoutes] = useState<TradeRouteWithColor[]>([]);
+    const [personData, setPersonData] = useState<PersonData[]>([]);
 
     // Helper to normalize country names to ID
     const getCountryId = (name: string): string => {
@@ -338,10 +341,21 @@ export default function HistoryMap() {
         localStorage.setItem('historyMapLayer', layerType);
     }, [layerType]);
 
+    // Fetch person data when layer is 'people' and year changes
+    useEffect(() => {
+        if (layerType === 'people') {
+            fetchPersonsByYear(currentYear).then(data => {
+                setPersonData(data);
+            });
+        } else {
+            setPersonData([]);
+        }
+    }, [layerType, currentYear]);
+
     // Update Markers when layer type changes or capital data loads
     useEffect(() => {
         updateMarkers(currentYear);
-    }, [layerType, capitalData]);
+    }, [layerType, capitalData, personData, currentMapZoom]);
 
     // Update Trade Routes
     useEffect(() => {
@@ -661,64 +675,101 @@ export default function HistoryMap() {
 
         markersLayer.current.clearLayers();
 
-        // Always show capitals from capital data, EXCEPT when in war mode
+        // In battles mode, don't show any markers (handled by useWarLayer)
         if (layerType === 'battles') {
             return;
         }
 
-        if (capitalData.length > 0) {
-            // console.log(`[Markers] Updating for year ${year}. Total capitals: ${capitalData.length}`);
+        // In people mode, show person markers instead of capital markers
+        if (layerType === 'people') {
+            // Group persons by proximity to detect overlapping markers
+            const PROXIMITY_THRESHOLD = 0.5; // degrees (roughly 50km)
+            const ICON_OFFSET_AMOUNT = 40; // pixels offset for visual separation
 
-            // 1. Identify visible countries from the map layer
-            const visibleCountryIds = new Set<string>();
+            // Create a map to track positions and count overlaps
+            const positionMap = new Map<string, { persons: typeof personData, index: number }>();
 
-            if (historicalLayer.current) {
-                // If it's a GeoJSON layer (which it should be)
-                (historicalLayer.current as any).eachLayer((layer: any) => {
-                    if (layer.feature && layer.feature.properties) {
-                        const props = layer.feature.properties;
-                        const name = props.NAME || props.name;
-                        if (name) {
-                            visibleCountryIds.add(getCountryId(name));
-                        }
+            personData.forEach(person => {
+                if (!person.latitude || !person.longitude) return;
+
+                // Round coordinates to detect nearby markers
+                const key = `${Math.round(person.latitude / PROXIMITY_THRESHOLD)}_${Math.round(person.longitude / PROXIMITY_THRESHOLD)}`;
+
+                if (!positionMap.has(key)) {
+                    positionMap.set(key, { persons: [], index: 0 });
+                }
+                positionMap.get(key)!.persons.push(person);
+            });
+
+            // Now render with visual offsets for overlapping markers
+            positionMap.forEach(group => {
+                const count = group.persons.length;
+
+                group.persons.forEach((person, idx) => {
+                    if (!person.latitude || !person.longitude) return;
+
+                    // Calculate icon anchor offset for visual separation (keeps original coordinates)
+                    let anchorOffsetX = 75; // default anchor X
+                    let anchorOffsetY = 50; // default anchor Y
+
+                    if (count > 1) {
+                        // Offset icon anchor in a circle pattern for visual separation
+                        const angle = (2 * Math.PI * idx) / count;
+                        anchorOffsetX = 75 + Math.cos(angle) * ICON_OFFSET_AMOUNT;
+                        anchorOffsetY = 50 + Math.sin(angle) * ICON_OFFSET_AMOUNT;
                     }
-                });
-            }
-            // console.log('[Markers] Visible Countries:', Array.from(visibleCountryIds));
 
-            // Filter capitals that are active in the current year
+                    // Use character image based on person name
+                    const characterImagePath = `/assets/images/character/${encodeURIComponent(person.name)}.png`;
+
+                    const icon = L.divIcon({
+                        className: 'person-marker',
+                        html: `
+                        <div style="display: flex; flex-direction: column; align-items: center; width: 150px;">
+                            <img src="${characterImagePath}" style="width: 60px; height: 60px; object-fit: contain; border-radius: 50%; border: 2px solid #fff; box-shadow: 0 2px 8px rgba(0,0,0,0.3);" onerror="this.src='/assets/images/country-summary/sudo.png'" />
+                            <div style="font-size: 14px; font-weight: bold; color: white; margin-top: 2px; text-align: center; width: 100%; white-space: nowrap; text-shadow: 1px 1px 2px black;">${person.name}</div>
+                        </div>
+                    `,
+                        iconSize: [60, 75],
+                        iconAnchor: [anchorOffsetX, anchorOffsetY] // Visual offset only
+                    });
+
+                    const birthYear = person.year < 0 ? `기원전 ${Math.abs(person.year)}년` : `${person.year}년`;
+                    const deathYear = person.deathYear
+                        ? (person.deathYear < 0 ? `기원전 ${Math.abs(person.deathYear)}년` : `${person.deathYear}년`)
+                        : '미상';
+
+                    const popupContent = `
+                    <div style="text-align: center; max-width: 250px;">
+                        <h3 style="margin: 0 0 5px 0;">${person.name}</h3>
+                        <p style="margin: 0; font-size: 12px; color: #666;">${person.era}</p>
+                        <p style="margin: 5px 0; font-size: 11px; color: #888;">${birthYear} ~ ${deathYear}</p>
+                        <p style="margin: 5px 0 0 0; font-size: 12px;">${person.summary || ''}</p>
+                    </div>
+                `;
+
+                    // Only show marker if zoom level > 5 (same as battle markers)
+                    const markerOpacity = currentMapZoom > 4 ? 1 : 0;
+
+                    // Use ORIGINAL coordinates - visual offset is only via iconAnchor
+                    L.marker([person.latitude, person.longitude], { icon, opacity: markerOpacity })
+                        .addTo(markersLayer.current!)
+                        .bindPopup(popupContent);
+                });
+            });
+            return;
+        }
+
+        // Default mode and trade mode: show capital markers
+        if (capitalData.length > 0) {
             const activeCapitals = capitalData.filter(capital => {
                 const startYear = parseInt(capital.startedDate.substring(0, 4));
                 const endYear = parseInt(capital.endedDate.substring(0, 4));
                 return year >= startYear && year <= endYear;
             });
-            // console.log(`[Markers] Active capitals for year ${year}: ${activeCapitals.length}`);
 
             activeCapitals.forEach(capital => {
-                // Check if this country is visible on the map
-                // const timelineCountryId = capital.countryId || getCountryId(capital.countryName);
-
-                // If the country is NOT visible on the map, skip it
-                /* TEMPORARILY DISABLED FOR DEBUGGING
-                if (!visibleCountryIds.has(timelineCountryId)) {
-                    // Try loose matching if strict match fails
-                    let matchFound = false;
-                    for (const visibleId of visibleCountryIds) {
-                        if (visibleId.includes(timelineCountryId) || timelineCountryId.includes(visibleId)) {
-                            matchFound = true;
-                            break;
-                        }
-                    }
-                    if (!matchFound) {
-                        // console.log(`[Markers] Skipping ${capital.capitalName} - Country ${timelineCountryId} not visible`);
-                        return;
-                    }
-                }
-                */
-
-                // Render marker
                 if (capital.latitude && capital.longitude) {
-                    // console.log(`[Markers] Creating marker for ${capital.capitalName} at ${capital.latitude}, ${capital.longitude}`);
                     const icon = L.divIcon({
                         className: 'capital-marker',
                         html: `
@@ -728,7 +779,7 @@ export default function HistoryMap() {
                         </div>
                     `,
                         iconSize: [60, 45],
-                        iconAnchor: [75, 40] // Anchor at center of image (approx)
+                        iconAnchor: [75, 40]
                     });
 
                     const popupContent = `
@@ -744,14 +795,6 @@ export default function HistoryMap() {
                         .bindPopup(popupContent);
                 }
             });
-        }
-
-        // Legacy data layers (battles, trade points, people) have been removed.
-        // Logic for these layers is temporarily disabled until new data sources are integrated.
-        if (layerType === 'trade') {
-            // Trade routes are handled separately by tradeLayer and useTradeAnimation
-        } else if (layerType === 'people') {
-            // TODO: Integrate new people data source
         }
     };
 
@@ -862,7 +905,7 @@ export default function HistoryMap() {
     };
 
     // Handle navigation to character chat from AI chatbot tool call
-    const handleNavigateToCharacter = (promptId: string, characterName: string) => {
+    const handleNavigateToCharacter = async (promptId: string, characterName: string) => {
         console.log('🚀 [HistoryMap] Navigating to character chat:', characterName, promptId);
 
         // Create a minimal character object for the chat panel

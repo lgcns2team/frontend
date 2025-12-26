@@ -11,11 +11,11 @@ export default defineConfig(({ mode }) => {
     server: {
       proxy: {
         // AI 관련 요청 → Python 백엔드 (8000)
-        '/api/ai': {
+        '/api/ai/': {
           target: 'http://localhost:8000',
           changeOrigin: true,
           secure: false,
-          rewrite: (path) => path.replace(/^\/api\/ai/, '/api')  // /api/ai → /api
+          rewrite: (path) => path.replace(/^\/api\/ai\//, '/api/')  // /api/ai/ → /api/
         },
         // WebSocket → Java 백엔드 (8080)
         '/api/ws-stomp': {

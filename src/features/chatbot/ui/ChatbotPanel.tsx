@@ -25,8 +25,8 @@ export const ChatbotPanel = ({ onClose, initialPosition, initialSize, onStateCha
     const [messages, setMessages] = useState<ChatMessage[]>([
         { id: 1, text: '안녕하세요! 역사 챗봇 H.AI입니다. 무엇을 도와드릴까요?', sender: 'bot' }
     ]);
-    const [position, setPosition] = useState(initialPosition || { x: window.innerWidth / 2 - 145, y: window.innerHeight / 2 - 250 });
-    const [size, setSize] = useState(initialSize || { width: 350, height: 500 });
+    const [position, setPosition] = useState(initialPosition || { x: window.innerWidth / 4 - 200, y: window.innerHeight / 2 - 250 });
+    const [size, setSize] = useState(initialSize || { width: 506, height: 500 });
 
     const [isDragging, setIsDragging] = useState(false);
     const [isResizing, setIsResizing] = useState(false);
@@ -39,6 +39,7 @@ export const ChatbotPanel = ({ onClose, initialPosition, initialSize, onStateCha
     const typingBufferRef = useRef<string>('');           // 아직 안 찍힌 글자들
     const typingIntervalRef = useRef<number | null>(null); // setInterval id
     const currentBotMsgIdRef = useRef<number | null>(null);
+    const messagesEndRef = useRef<HTMLDivElement>(null);
 
     // Refs to track latest state for event handlers
     const latestState = useRef({ position, size });
@@ -176,6 +177,21 @@ export const ChatbotPanel = ({ onClose, initialPosition, initialSize, onStateCha
         };
     };
 
+    const handleResizeTouchStart = (e: React.TouchEvent, direction: string) => {
+        e.stopPropagation();
+        setIsResizing(true);
+        setResizeDirection(direction);
+        const touch = e.touches[0];
+        resizeStart.current = {
+            x: touch.clientX,
+            y: touch.clientY,
+            width: size.width,
+            height: size.height,
+            posX: position.x,
+            posY: position.y
+        };
+    };
+
     const [isLoading, setIsLoading] = useState(false);
 
     // ↘↘ 추가: 버퍼에서 한 글자씩 꺼내서 현재 봇 메시지에 붙이는 타이핑 루프
@@ -222,6 +238,11 @@ export const ChatbotPanel = ({ onClose, initialPosition, initialSize, onStateCha
         };
     }, []);
 
+    // Auto-scroll to bottom when messages change
+    useEffect(() => {
+        messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    }, [messages]);
+
     const handleSend = async () => {
         if (!input.trim() || isLoading) return;
 
@@ -231,23 +252,43 @@ export const ChatbotPanel = ({ onClose, initialPosition, initialSize, onStateCha
         setInput('');
         setIsLoading(true);
 
-        // 봇 메시지 placeholder 추가
-        const botMsgId = Date.now() + 1;
-        const initialBotMsg: ChatMessage = {
-            id: botMsgId,
-            text: '',
+        // Add loading indicator message
+        const loadingMsgId = Date.now() + 1;
+        const loadingMsg: ChatMessage = {
+            id: loadingMsgId,
+            text: 'loading',
             sender: 'bot'
         };
-        setMessages(prev => [...prev, initialBotMsg]);
+        setMessages(prev => [...prev, loadingMsg]);
 
-        // 현재 타이핑 대상 봇 메시지 id 기록 + 버퍼 초기화
-        currentBotMsgIdRef.current = botMsgId;
+        // Buffer initialization
         typingBufferRef.current = '';
+
+        // Flag to track if bot message has been created
+        let botMessageCreated = false;
 
         try {
             console.log('🚀 [DEBUG] Sending message to AI chat');
 
             await sendGeneralMessage(input, (text) => {
+                // Remove loading message and create bot message on first chunk
+                if (!botMessageCreated) {
+                    // Remove loading message
+                    setMessages(prev => prev.filter(msg => msg.id !== loadingMsgId));
+
+                    // Create new bot message
+                    const botMsgId = Date.now() + 2;
+                    currentBotMsgIdRef.current = botMsgId;
+
+                    const initialBotMsg: ChatMessage = {
+                        id: botMsgId,
+                        text: '',
+                        sender: 'bot'
+                    };
+                    setMessages(prev => [...prev, initialBotMsg]);
+                    botMessageCreated = true;
+                }
+
                 // Add text to typing buffer
                 typingBufferRef.current += text;
                 console.log('✍️ [DEBUG] Added to typing buffer. Buffer now:', typingBufferRef.current.length, 'chars');
@@ -262,6 +303,33 @@ export const ChatbotPanel = ({ onClose, initialPosition, initialSize, onStateCha
                     if (promptId && onNavigateToCharacter) {
                         console.log('🚀 [DEBUG] Navigating to character chat:', characterName, promptId);
                         onNavigateToCharacter(promptId, characterName || '인물');
+
+                        // Clear buffer to stop typing effect
+                        typingBufferRef.current = '';
+
+                        if (!botMessageCreated) {
+                            // Remove loading message
+                            setMessages(prev => prev.filter(msg => msg.id !== loadingMsgId));
+
+                            // Create new bot message
+                            const botMsgId = Date.now() + 2;
+                            currentBotMsgIdRef.current = botMsgId;
+
+                            const initialBotMsg: ChatMessage = {
+                                id: botMsgId,
+                                text: '예. 알겠습니다.',
+                                sender: 'bot'
+                            };
+                            setMessages(prev => [...prev, initialBotMsg]);
+                            botMessageCreated = true;
+                        } else {
+                            // Update existing message
+                            setMessages(prev => prev.map(msg =>
+                                msg.id === currentBotMsgIdRef.current
+                                    ? { ...msg, text: '예. 알겠습니다.' }
+                                    : msg
+                            ));
+                        }
                     }
                 } else if (toolCall.tool_name === 'navigate_to_war') {
                     const { year, war_name } = toolCall.parameters;
@@ -275,8 +343,15 @@ export const ChatbotPanel = ({ onClose, initialPosition, initialSize, onStateCha
             console.log('✅ [DEBUG] Message sent successfully');
         } catch (error) {
             console.error('Error sending message:', error);
+
+            // 3-second delay to show loading animation
+            await new Promise(resolve => setTimeout(resolve, 3000));
+
+            // Remove loading message if it still exists
+            setMessages(prev => prev.filter(msg => msg.id !== loadingMsgId));
+
             const errorMsg = {
-                id: Date.now() + 2,
+                id: Date.now() + 3,
                 text: '죄송합니다. 오류가 발생했습니다. 잠시 후 다시 시도해주세요.',
                 sender: 'bot' as const
             };
@@ -313,9 +388,18 @@ export const ChatbotPanel = ({ onClose, initialPosition, initialSize, onStateCha
             <div className="chatbot-body">
                 {messages.map(msg => (
                     <div key={msg.id} className={`chat-message ${msg.sender}`}>
-                        {msg.text}
+                        {(msg.text === 'loading' || (msg.sender === 'bot' && msg.text === '')) ? (
+                            <div className="chat-typing">
+                                <div className="dot"></div>
+                                <div className="dot"></div>
+                                <div className="dot"></div>
+                            </div>
+                        ) : (
+                            msg.text
+                        )}
                     </div>
                 ))}
+                <div ref={messagesEndRef} />
             </div>
 
             <div className="chatbot-footer">
@@ -326,16 +410,19 @@ export const ChatbotPanel = ({ onClose, initialPosition, initialSize, onStateCha
                     value={input}
                     onChange={(e) => setInput(e.target.value)}
                     onKeyDown={handleKeyDown}
+                    lang="ko"
                 />
                 <button className="send-btn" onClick={handleSend} disabled={isLoading}>
                     ➤
                 </button>
             </div>
 
-            <div className="resize-handle resize-handle-tl" onMouseDown={(e) => handleResizeMouseDown(e, 'tl')}></div>
-            <div className="resize-handle resize-handle-tr" onMouseDown={(e) => handleResizeMouseDown(e, 'tr')}></div>
-            <div className="resize-handle resize-handle-bl" onMouseDown={(e) => handleResizeMouseDown(e, 'bl')}></div>
-            <div className="resize-handle resize-handle-br" onMouseDown={(e) => handleResizeMouseDown(e, 'br')}></div>
+            {/* Only show bottom-right resize handle with visual indicator */}
+            <div
+                className="resize-handle resize-handle-br"
+                onMouseDown={(e) => handleResizeMouseDown(e, 'br')}
+                onTouchStart={(e) => handleResizeTouchStart(e, 'br')}
+            ></div>
         </div>
     );
 };

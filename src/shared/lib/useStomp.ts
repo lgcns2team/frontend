@@ -191,9 +191,17 @@ export const useStomp = ({ url, onConnect, onDisconnect, onError }: UseStompConf
         console.log('🔌 Connecting to WebSocket with token:', token ? 'Present' : 'Missing');
 
         const client = Stomp.over(() => new SockJS(socketUrl));
+        client.debug = (str) => {
+            console.log('🐛 [STOMP DEBUG]', str);
+        };
+
+        const connectHeaders: any = {};
+        if (token) {
+            connectHeaders['Authorization'] = `Bearer ${token}`;
+        }
 
         client.connect(
-            {}, // 헤더는 비워둠 (SockJS에서는 CONNECT 헤더 제어가 어려움)
+            connectHeaders, // STOMP CONNECT 프레임에 헤더 추가
             (frame: any) => {
                 console.log('✅ Stomp Connected: ' + frame);
                 setIsConnected(true);
@@ -342,7 +350,7 @@ export const useDiscussion = (roomId: string | undefined) => {
 
     // 4. WebSocket Integration
     const { connect, disconnect, subscribe, sendMessage, isConnected, lastError } = useStomp({
-        url: '/api/ws-stomp',  // Vite 프록시를 통해 8080으로 라우팅됨
+        url: `/api/ws-stomp`,
         onConnect: () => {
             console.log('🔗 onConnect callback triggered, roomId:', roomId);
             if (!roomId) return;
@@ -538,6 +546,12 @@ export const useDiscussion = (roomId: string | undefined) => {
             }
 
             const status = currentVote === 'agree' ? 'PRO' : 'CON';
+
+            if (!isConnected) {
+                console.warn('⚠️ Cannot start: Stomp client not connected');
+                alert('연결이 끊겼습니다. 잠시 후 다시 시도해주세요.');
+                return;
+            }
 
             console.log('📤 Sending status message:', { status, userId });
             sendMessage(
