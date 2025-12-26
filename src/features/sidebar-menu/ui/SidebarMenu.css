@@ -166,13 +166,17 @@
     bottom: 2px;
     left: 50%;
     transform: translateX(-50%);
-    color: #f9f7f1;
-    font-size: 30px;
+    color: #496b6e;
+    font-size: 20px;
     font-weight: 900;
-    font-family: 'NanumHaNaSonGeurSsi';
-    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+    /* text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5); */
+    /* 기존 검은 그림자 제거 */
+    text-shadow: 0 0 5px #ffffff, 0 0 10px #ffffff, 0 0 15px #ffffff;
+    /* 진한 흰색 그림자 (Glow 효과) */
     pointer-events: none;
     white-space: nowrap;
+    -webkit-text-stroke: 1px #ffffff;
+    paint-order: stroke fill;
 }
 
 /* People item specific styles */
@@ -182,16 +186,11 @@
 
 .menu-item-zone.people-item .menu-icon {
     width: 110px;
-    height: 110px;
+    height: 100px;
 }
 
 .menu-item-zone.people-item .menu-overlay-text {
-    position: absolute;
     bottom: -2px;
-    left: 50%;
-    transform: translateX(-50%);
-    color: #f9f7f1;
-    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
 }
 
 /* Discussion item specific styles */
