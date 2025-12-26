@@ -1,7 +1,7 @@
 import { getEraForYear, normalizeEraName } from '../config/era-theme';
 import { getAuthHeaders } from './api-utils';
 
-const API_BASE_URL = import.meta.env.VITE_API_URL || '/api';
+
 
 export interface Character {
     characterId: string;
@@ -22,9 +22,12 @@ export type ParsedCharacter = Character;
 
 export const fetchCharacters = async (): Promise<Character[]> => {
     try {
-        const response = await fetch(`${API_BASE_URL}/ai-person`, {
+        const response = await fetch(`/api/ai-person`, {
             headers: getAuthHeaders()
         });
+
+        // ... (lines 30-111 skipped, assuming replace_file_content can handle non-contiguous if logic allows, but better to do separate or full block if close. They are far apart. I'll do two chunks if needed, but start line 23 is fetchCharacters, start line 117 is fetchCharacterDetail. I will use multi_replace for safety or just two calls. Since I only have replace_file_content and multi_replace_file_content... I will use multi_replace_file_content.)
+
 
 
 
@@ -116,7 +119,7 @@ export const fetchCharacters = async (): Promise<Character[]> => {
 
 export const fetchCharacterDetail = async (promptId: string): Promise<{ summary?: string, greetingMessage?: string }> => {
     try {
-        const response = await fetch(`${API_BASE_URL}/ai-person/${promptId}`, {
+        const response = await fetch(`/api/ai-person/${promptId}`, {
             headers: getAuthHeaders()
         });
 
