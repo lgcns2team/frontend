@@ -10,6 +10,7 @@ import type { TradeRouteWithColor } from '../lib/trade-route';
 import { useTradeAnimation } from '../lib/useTradeAnimation';
 import { useWarLayer } from '../lib/useWarLayer';
 import { fetchPersonsByYear, type PersonData } from '../../../shared/api/person-api';
+import { fetchCharacterDetail } from '../../../shared/api/characters-api';
 
 // Features
 import { TimeControls } from '../../../features/time-controls';
@@ -904,23 +905,46 @@ export default function HistoryMap() {
     };
 
     // Handle navigation to character chat from AI chatbot tool call
-    const handleNavigateToCharacter = (promptId: string, characterName: string) => {
+    const handleNavigateToCharacter = async (promptId: string, characterName: string) => {
         console.log('🚀 [HistoryMap] Navigating to character chat:', characterName, promptId);
 
-        // Create a minimal character object for the chat panel
-        const character: ParsedCharacter = {
-            characterId: promptId,
-            characterName: characterName,
-            birthYear: null,
-            era: null,
-            summary: '',
-            promptId: promptId,
-        };
+        try {
+            // Fetch detailed information (summary, greeting)
+            const details = await fetchCharacterDetail(promptId);
 
-        // Open the people panel and set the character
-        setActivePanel('people');
-        setDockingPanelWidth(window.innerWidth * 0.5);
-        setChatCharacter(character);
+            // Create a complete character object for the chat panel
+            const character: ParsedCharacter = {
+                characterId: promptId,
+                characterName: characterName,
+                birthYear: null,
+                era: null,
+                summary: details.summary || '',
+                promptId: promptId,
+                // Construct image path consistent with fetchCharacters logic
+                imagePath: `/assets/images/character/${characterName}.png`,
+                greetingMessage: details.greetingMessage || undefined
+            };
+
+            // Open the people panel and set the character
+            setActivePanel('people');
+            setDockingPanelWidth(window.innerWidth * 0.5);
+            setChatCharacter(character);
+        } catch (error) {
+            console.error('❌ [HistoryMap] Failed to navigate to character:', error);
+            // Fallback to minimal info if fetch fails
+            const character: ParsedCharacter = {
+                characterId: promptId,
+                characterName: characterName,
+                birthYear: null,
+                era: null,
+                summary: '',
+                promptId: promptId,
+                imagePath: `/assets/images/character/${characterName}.png`,
+            };
+            setActivePanel('people');
+            setDockingPanelWidth(window.innerWidth * 0.5);
+            setChatCharacter(character);
+        }
     };
 
     // Dynamic Theme Calculation

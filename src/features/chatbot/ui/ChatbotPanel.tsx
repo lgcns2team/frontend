@@ -302,6 +302,33 @@ export const ChatbotPanel = ({ onClose, initialPosition, initialSize, onStateCha
                     if (promptId && onNavigateToCharacter) {
                         console.log('🚀 [DEBUG] Navigating to character chat:', characterName, promptId);
                         onNavigateToCharacter(promptId, characterName || '인물');
+
+                        // Clear buffer to stop typing effect
+                        typingBufferRef.current = '';
+
+                        if (!botMessageCreated) {
+                            // Remove loading message
+                            setMessages(prev => prev.filter(msg => msg.id !== loadingMsgId));
+
+                            // Create new bot message
+                            const botMsgId = Date.now() + 2;
+                            currentBotMsgIdRef.current = botMsgId;
+
+                            const initialBotMsg: ChatMessage = {
+                                id: botMsgId,
+                                text: '예. 알겠습니다.',
+                                sender: 'bot'
+                            };
+                            setMessages(prev => [...prev, initialBotMsg]);
+                            botMessageCreated = true;
+                        } else {
+                            // Update existing message
+                            setMessages(prev => prev.map(msg =>
+                                msg.id === currentBotMsgIdRef.current
+                                    ? { ...msg, text: '예. 알겠습니다.' }
+                                    : msg
+                            ));
+                        }
                     }
                 }
             });
