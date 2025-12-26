@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { sendGeneralMessage } from '../../../shared/api/aichat-api';
+import { sendGeneralMessage, type ToolCallEvent } from '../../../shared/api/aichat-api';
 import './ChatbotPanel.css';
 
 type Sender = 'bot' | 'user';
@@ -15,9 +15,10 @@ interface ChatbotPanelProps {
     initialPosition?: { x: number; y: number };
     initialSize?: { width: number; height: number };
     onStateChange?: (state: { x: number; y: number; width: number; height: number }) => void;
+    onNavigateToCharacter?: (promptId: string, characterName: string) => void;
 }
 
-export const ChatbotPanel = ({ onClose, initialPosition, initialSize, onStateChange }: ChatbotPanelProps) => {
+export const ChatbotPanel = ({ onClose, initialPosition, initialSize, onStateChange, onNavigateToCharacter }: ChatbotPanelProps) => {
     // State
     const [input, setInput] = useState('');
     const [messages, setMessages] = useState<ChatMessage[]>([
@@ -251,6 +252,17 @@ export const ChatbotPanel = ({ onClose, initialPosition, initialSize, onStateCha
                 console.log('✍️ [DEBUG] Added to typing buffer. Buffer now:', typingBufferRef.current.length, 'chars');
                 // Start typing loop (if not already running)
                 startTypingLoop();
+            }, (toolCall: ToolCallEvent) => {
+                // Handle tool calls from AI
+                console.log('🔧 [DEBUG] Tool call received:', toolCall);
+
+                if (toolCall.tool_name === 'navigate_to_character_chat') {
+                    const { promptId, characterName } = toolCall.parameters;
+                    if (promptId && onNavigateToCharacter) {
+                        console.log('🚀 [DEBUG] Navigating to character chat:', characterName, promptId);
+                        onNavigateToCharacter(promptId, characterName || '인물');
+                    }
+                }
             });
 
             console.log('✅ [DEBUG] Message sent successfully');
