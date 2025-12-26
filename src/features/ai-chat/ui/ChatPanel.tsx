@@ -209,6 +209,7 @@ export const ChatPanel = ({ character }: ChatPanelProps) => {
                     onChange={(e) => setInput(e.target.value)}
                     onKeyDown={handleKeyDown}
                     disabled={isLoading}
+                    lang="ko"
                 />
                 <button
                     className="chat-send-btn"

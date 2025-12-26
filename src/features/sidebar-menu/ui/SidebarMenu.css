@@ -1,10 +1,3 @@
-@font-face {
-    font-family: 'CustomFont';
-    src: url('/font/TTF/B.ttf') format('truetype');
-    font-weight: 700;
-    font-style: normal;
-}
-
 .sidebar-menu {
     display: flex;
     flex-direction: column;
@@ -173,10 +166,10 @@
     bottom: 2px;
     left: 50%;
     transform: translateX(-50%);
-    color: #496b6e;
-    font-size: 25px;
-    font-weight: 700;
-    font-family: 'CustomFont', sans-serif;
+    color: #f9f7f1;
+    font-size: 30px;
+    font-weight: 900;
+    font-family: 'NanumHaNaSonGeurSsi';
     text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
     pointer-events: none;
     white-space: nowrap;
@@ -197,7 +190,7 @@
     bottom: -2px;
     left: 50%;
     transform: translateX(-50%);
-    color: #496b6e;
+    color: #f9f7f1;
     text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
 }
 
