@@ -46,10 +46,10 @@ export const MapLayers = ({ activeLayer, onLayerChange, currentYear }: MapLayers
             <button
                 className={`tab-btn religion ${activeLayer === 'people' ? 'active' : ''}`}
                 onClick={() => toggleLayer('people')}
-                aria-label="종교/문화"
+                aria-label="인물"
                 style={{ backgroundImage: `url(${cultureImage})` }}
             >
-                <span className="tab-label">종교/문화</span>
+                <span className="tab-label">인물</span>
             </button>
         </div>
     );
