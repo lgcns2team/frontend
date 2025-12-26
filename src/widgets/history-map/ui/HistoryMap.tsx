@@ -683,16 +683,19 @@ export default function HistoryMap() {
         if (layerType === 'people') {
             personData.forEach(person => {
                 if (person.latitude && person.longitude) {
+                    // Use character image based on person name
+                    const characterImagePath = `/assets/images/character/${encodeURIComponent(person.name)}.png`;
+
                     const icon = L.divIcon({
                         className: 'person-marker',
                         html: `
                         <div style="display: flex; flex-direction: column; align-items: center; width: 150px;">
-                            <img src="/assets/images/country-summary/person.png" style="width: 45px; height: 45px; object-fit: contain;" onerror="this.src='/assets/images/country-summary/sudo.png'" />
+                            <img src="${characterImagePath}" style="width: 60px; height: 60px; object-fit: contain; border-radius: 50%; border: 2px solid #fff; box-shadow: 0 2px 8px rgba(0,0,0,0.3);" onerror="this.src='/assets/images/country-summary/sudo.png'" />
                             <div style="font-size: 14px; font-weight: bold; color: white; margin-top: 2px; text-align: center; width: 100%; white-space: nowrap; text-shadow: 1px 1px 2px black;">${person.name}</div>
                         </div>
                     `,
-                        iconSize: [60, 45],
-                        iconAnchor: [75, 40]
+                        iconSize: [60, 75],
+                        iconAnchor: [75, 50]
                     });
 
                     const birthYear = person.year < 0 ? `기원전 ${Math.abs(person.year)}년` : `${person.year}년`;
