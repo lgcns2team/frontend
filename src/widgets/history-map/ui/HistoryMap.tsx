@@ -9,6 +9,7 @@ import { loadTradeRoutes } from '../lib/trade-route';
 import type { TradeRouteWithColor } from '../lib/trade-route';
 import { useTradeAnimation } from '../lib/useTradeAnimation';
 import { useWarLayer } from '../lib/useWarLayer';
+import { fetchPersonsByYear, type PersonData } from '../../../shared/api/person-api';
 
 // Features
 import { TimeControls } from '../../../features/time-controls';
@@ -70,6 +71,7 @@ export default function HistoryMap() {
     const abortController = useRef<AbortController | null>(null);
     const [capitalData, setCapitalData] = useState<CapitalData[]>([]);
     const [activeTradeRoutes, setActiveTradeRoutes] = useState<TradeRouteWithColor[]>([]);
+    const [personData, setPersonData] = useState<PersonData[]>([]);
 
     // Helper to normalize country names to ID
     const getCountryId = (name: string): string => {
@@ -338,10 +340,21 @@ export default function HistoryMap() {
         localStorage.setItem('historyMapLayer', layerType);
     }, [layerType]);
 
+    // Fetch person data when layer is 'people' and year changes
+    useEffect(() => {
+        if (layerType === 'people') {
+            fetchPersonsByYear(currentYear).then(data => {
+                setPersonData(data);
+            });
+        } else {
+            setPersonData([]);
+        }
+    }, [layerType, currentYear]);
+
     // Update Markers when layer type changes or capital data loads
     useEffect(() => {
         updateMarkers(currentYear);
-    }, [layerType, capitalData]);
+    }, [layerType, capitalData, personData]);
 
     // Update Trade Routes
     useEffect(() => {
@@ -661,64 +674,59 @@ export default function HistoryMap() {
 
         markersLayer.current.clearLayers();
 
-        // Always show capitals from capital data, EXCEPT when in war mode
+        // In battles mode, don't show any markers (handled by useWarLayer)
         if (layerType === 'battles') {
             return;
         }
 
+        // In people mode, show person markers instead of capital markers
+        if (layerType === 'people') {
+            personData.forEach(person => {
+                if (person.latitude && person.longitude) {
+                    const icon = L.divIcon({
+                        className: 'person-marker',
+                        html: `
+                        <div style="display: flex; flex-direction: column; align-items: center; width: 150px;">
+                            <img src="/assets/images/country-summary/person.png" style="width: 45px; height: 45px; object-fit: contain;" onerror="this.src='/assets/images/country-summary/sudo.png'" />
+                            <div style="font-size: 14px; font-weight: bold; color: white; margin-top: 2px; text-align: center; width: 100%; white-space: nowrap; text-shadow: 1px 1px 2px black;">${person.name}</div>
+                        </div>
+                    `,
+                        iconSize: [60, 45],
+                        iconAnchor: [75, 40]
+                    });
+
+                    const birthYear = person.year < 0 ? `기원전 ${Math.abs(person.year)}년` : `${person.year}년`;
+                    const deathYear = person.deathYear
+                        ? (person.deathYear < 0 ? `기원전 ${Math.abs(person.deathYear)}년` : `${person.deathYear}년`)
+                        : '미상';
+
+                    const popupContent = `
+                    <div style="text-align: center; max-width: 250px;">
+                        <h3 style="margin: 0 0 5px 0;">${person.name}</h3>
+                        <p style="margin: 0; font-size: 12px; color: #666;">${person.era}</p>
+                        <p style="margin: 5px 0; font-size: 11px; color: #888;">${birthYear} ~ ${deathYear}</p>
+                        <p style="margin: 5px 0 0 0; font-size: 12px;">${person.summary || ''}</p>
+                    </div>
+                `;
+
+                    L.marker([person.latitude, person.longitude], { icon })
+                        .addTo(markersLayer.current!)
+                        .bindPopup(popupContent);
+                }
+            });
+            return;
+        }
+
+        // Default mode and trade mode: show capital markers
         if (capitalData.length > 0) {
-            // console.log(`[Markers] Updating for year ${year}. Total capitals: ${capitalData.length}`);
-
-            // 1. Identify visible countries from the map layer
-            const visibleCountryIds = new Set<string>();
-
-            if (historicalLayer.current) {
-                // If it's a GeoJSON layer (which it should be)
-                (historicalLayer.current as any).eachLayer((layer: any) => {
-                    if (layer.feature && layer.feature.properties) {
-                        const props = layer.feature.properties;
-                        const name = props.NAME || props.name;
-                        if (name) {
-                            visibleCountryIds.add(getCountryId(name));
-                        }
-                    }
-                });
-            }
-            // console.log('[Markers] Visible Countries:', Array.from(visibleCountryIds));
-
-            // Filter capitals that are active in the current year
             const activeCapitals = capitalData.filter(capital => {
                 const startYear = parseInt(capital.startedDate.substring(0, 4));
                 const endYear = parseInt(capital.endedDate.substring(0, 4));
                 return year >= startYear && year <= endYear;
             });
-            // console.log(`[Markers] Active capitals for year ${year}: ${activeCapitals.length}`);
 
             activeCapitals.forEach(capital => {
-                // Check if this country is visible on the map
-                // const timelineCountryId = capital.countryId || getCountryId(capital.countryName);
-
-                // If the country is NOT visible on the map, skip it
-                /* TEMPORARILY DISABLED FOR DEBUGGING
-                if (!visibleCountryIds.has(timelineCountryId)) {
-                    // Try loose matching if strict match fails
-                    let matchFound = false;
-                    for (const visibleId of visibleCountryIds) {
-                        if (visibleId.includes(timelineCountryId) || timelineCountryId.includes(visibleId)) {
-                            matchFound = true;
-                            break;
-                        }
-                    }
-                    if (!matchFound) {
-                        // console.log(`[Markers] Skipping ${capital.capitalName} - Country ${timelineCountryId} not visible`);
-                        return;
-                    }
-                }
-                */
-
-                // Render marker
                 if (capital.latitude && capital.longitude) {
-                    // console.log(`[Markers] Creating marker for ${capital.capitalName} at ${capital.latitude}, ${capital.longitude}`);
                     const icon = L.divIcon({
                         className: 'capital-marker',
                         html: `
@@ -728,7 +736,7 @@ export default function HistoryMap() {
                         </div>
                     `,
                         iconSize: [60, 45],
-                        iconAnchor: [75, 40] // Anchor at center of image (approx)
+                        iconAnchor: [75, 40]
                     });
 
                     const popupContent = `
@@ -744,14 +752,6 @@ export default function HistoryMap() {
                         .bindPopup(popupContent);
                 }
             });
-        }
-
-        // Legacy data layers (battles, trade points, people) have been removed.
-        // Logic for these layers is temporarily disabled until new data sources are integrated.
-        if (layerType === 'trade') {
-            // Trade routes are handled separately by tradeLayer and useTradeAnimation
-        } else if (layerType === 'people') {
-            // TODO: Integrate new people data source
         }
     };
 
