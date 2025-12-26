@@ -2,7 +2,6 @@ import { useState, useRef, useEffect } from 'react';
 import { type ParsedCharacter, fetchCharacterDetail } from '../../../shared/api/characters-api';
 import { sendCharacterMessage } from '../../../shared/api/aichat-api';
 import { ERAS } from '../../../shared/config/era-theme';
-import { getCharacterChatHistory, type ChatHistoryItem } from '../../../shared/api/aichat-api';
 import './ChatPanel.css'; // ✅ 임시 주석 처리 - 실제 CSS 파일명 확인 후 수정
 
 interface ChatMessage {
@@ -25,68 +24,38 @@ export const ChatPanel = ({ character }: ChatPanelProps) => {
         let isMounted = true;
 
         const initChat = async () => {
-            // 1. 상태 초기화 및 로딩 시작
-            setIsLoading(true);
+            // 초기화
             setMessages([]);
             setInput('');
+            setIsLoading(false);
 
-            try {
-                let historyMessages: ChatMessage[] = [];
+            let greeting = character.greetingMessage;
 
-                // 2. 백엔드에서 히스토리 데이터 가져오기
-                if (character.promptId) {
-                    const historyData = await getCharacterChatHistory(character.promptId);
-                    
-                    // 가져온 데이터를 ChatMessage 형식으로 변환
-                    if (historyData && historyData.length > 0) {
-                        historyMessages = historyData.map((item, index) => ({
-                            id: index, // 또는 백엔드 id가 있다면 item.id
-                            text: item.content,
-                            // 백엔드의 role(user/assistant)을 프론트의 sender(user/bot)로 매핑
-                            sender: item.role === 'user' ? 'user' : 'bot'
-                        }));
+            // API에서 인사말 가져오기 시도
+            if (!greeting && character.promptId) {
+                try {
+                    const detail = await fetchCharacterDetail(character.promptId);
+                    if (detail.greetingMessage) {
+                        greeting = detail.greetingMessage;
                     }
+                } catch (e) {
+                    console.error("Failed to fetch greeting", e);
                 }
+            }
 
-                // 3. 히스토리가 없는 경우에만 인사말 처리
-                if (historyMessages.length === 0) {
-                    let greeting = character.greetingMessage;
-
-                    if (!greeting && character.promptId) {
-                        try {
-                            const detail = await fetchCharacterDetail(character.promptId);
-                            if (detail.greetingMessage) {
-                                greeting = detail.greetingMessage;
-                            }
-                        } catch (e) {
-                            console.error("Failed to fetch greeting", e);
-                        }
+            if (isMounted) {
+                setMessages([
+                    {
+                        id: 1,
+                        text: greeting || `안녕하세요. ${character.characterName}입니다. 무엇이 궁금하신가요?`,
+                        sender: 'bot'
                     }
-
-                    historyMessages = [
-                        {
-                            id: Date.now(),
-                            text: greeting || `안녕하세요. ${character.characterName}입니다. 무엇이 궁금하신가요?`,
-                            sender: 'bot'
-                        }
-                    ];
-                }
-
-                // 4. 컴포넌트가 여전히 마운트 상태일 때만 상태 업데이트
-                if (isMounted) {
-                    setMessages(historyMessages);
-                }
-            } catch (error) {
-                console.error("Failed to load chat history:", error);
-            } finally {
-                if (isMounted) {
-                    setIsLoading(false);
-                }
+                ]);
             }
         };
 
         initChat();
-
+        
         return () => { isMounted = false; };
     }, [character.characterId, character.characterName, character.promptId]);
 

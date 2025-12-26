@@ -10,6 +10,8 @@ interface TextbookPanelProps {
     isConversationMode?: boolean;
 }
 
+const S3_BUCKET_URL = "https://khistorybook.s3.ap-northeast-2.amazonaws.com";
+
 export const TextbookPanel = ({
     currentPage,
     viewMode,
@@ -19,7 +21,10 @@ export const TextbookPanel = ({
     isConversationMode = false
 }: TextbookPanelProps) => {
     const getImageUrl = (page: number) => {
-        return `/historybook/${page}.png`;
+        // return `/historybook/${page}.png`;
+
+        // S3 주소로 변경
+        return `${S3_BUCKET_URL}/${page}.png`
     };
 
     const totalPages = 220;
