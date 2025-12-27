@@ -95,7 +95,7 @@
 }
 
 .character-item {
-    background-color: var(--color-bg-white, #ffffff);
+    background-color: #f9f7f1;
     border: 1px solid var(--color-border, #d4d1ca);
     border-radius: 8px;
     padding: 16px;

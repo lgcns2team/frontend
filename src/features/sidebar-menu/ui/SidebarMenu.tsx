@@ -1,18 +1,14 @@
 import { useState, useEffect, useRef } from 'react';
 import './SidebarMenu.css';
 
-import { getEraForYear } from '../../../shared/config/era-theme';
-
 interface SidebarMenuProps {
     onItemClick?: (id: string) => void;
-    currentYear: number;
     isDockingPanelOpen?: boolean;
 }
 
-export const SidebarMenu = ({ onItemClick, currentYear, isDockingPanelOpen = false }: SidebarMenuProps) => {
+export const SidebarMenu = ({ onItemClick, isDockingPanelOpen = false }: SidebarMenuProps) => {
     const [isOpen, setIsOpen] = useState(false);
     const sidebarRef = useRef<HTMLDivElement>(null);
-    const era = getEraForYear(currentYear);
 
     // Close sidebar when clicking outside (but not when docking panel is open)
     useEffect(() => {
@@ -37,10 +33,10 @@ export const SidebarMenu = ({ onItemClick, currentYear, isDockingPanelOpen = fal
     }, [isOpen, isDockingPanelOpen]);
 
     const menuItems = [
-        { id: 'search', icon: `/assets/images/${era.id}/issue.png`, label: '주요사건' },
-        { id: 'textbook', icon: `/assets/images/${era.id}/book.png`, label: '교과서' },
-        { id: 'people', icon: `/assets/images/${era.id}/human.png`, label: '인물' },
-        { id: 'discussion', icon: `/assets/images/${era.id}/discussion.png`, label: '토론' },
+        { id: 'search', icon: '/assets/images/sidebar/issue.png', label: '주요사건' },
+        { id: 'textbook', icon: '/assets/images/sidebar/book.png', label: '교과서' },
+        { id: 'people', icon: '/assets/images/sidebar/human.png', label: '인물' },
+        { id: 'discussion', icon: '/assets/images/sidebar/discussion.png', label: '토론' },
 
     ];
 

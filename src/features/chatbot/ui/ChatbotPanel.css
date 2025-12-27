@@ -13,6 +13,7 @@
     border: 1px solid var(--color-border, #d4d1ca);
     animation: slideIn 0.3s cubic-bezier(0.16, 1, 0.3, 1);
     color: var(--color-text-primary, #040316);
+    overflow: visible;
 }
 
 @keyframes slideIn {
@@ -85,6 +86,7 @@
     border-radius: 12px;
     font-size: 14px;
     line-height: 1.5;
+    white-space: pre-line;
 }
 
 .chat-message.bot {
@@ -104,11 +106,18 @@
 
 .chatbot-footer {
     padding: 12px;
+    padding-bottom: 20px;
+    /* 리사이즈 핸들 공간 확보 */
+    padding-right: 20px;
+    /* 리사이즈 핸들 공간 확보 */
     background: var(--color-bg-white, #ffffff);
     border-top: 1px solid var(--color-border, #d4d1ca);
     display: flex;
     gap: 8px;
     align-items: center;
+    position: relative;
+    border-bottom-left-radius: 16px;
+    border-bottom-right-radius: 16px;
 }
 
 .chat-input {
@@ -176,11 +185,12 @@
     bottom: 0;
     right: 0;
     cursor: nwse-resize;
-    width: 20px;
-    height: 20px;
+    width: 10px;
+    height: 10px;
     /* Create black triangle using border */
-    border-right: 20px solid rgba(0, 0, 0, 0.3);
-    border-top: 20px solid transparent;
+    border-right: 10px solid #000000;
+    border-top: 10px solid transparent;
+    z-index: 9999;
 }
 
 /* Chat Typing Indicator (Three Dots) */

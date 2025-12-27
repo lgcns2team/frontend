@@ -16,9 +16,10 @@ interface ChatbotPanelProps {
     initialSize?: { width: number; height: number };
     onStateChange?: (state: { x: number; y: number; width: number; height: number }) => void;
     onNavigateToCharacter?: (promptId: string, characterName: string) => void;
+    onNavigateToWar?: (year: number, warName: string) => void;
 }
 
-export const ChatbotPanel = ({ onClose, initialPosition, initialSize, onStateChange, onNavigateToCharacter }: ChatbotPanelProps) => {
+export const ChatbotPanel = ({ onClose, initialPosition, initialSize, onStateChange, onNavigateToCharacter, onNavigateToWar }: ChatbotPanelProps) => {
     // State
     const [input, setInput] = useState('');
     const [messages, setMessages] = useState<ChatMessage[]>([
@@ -330,6 +331,12 @@ export const ChatbotPanel = ({ onClose, initialPosition, initialSize, onStateCha
                             ));
                         }
                     }
+                } else if (toolCall.tool_name === 'navigate_to_war') {
+                    const { year, war_name } = toolCall.parameters;
+                    if (year && onNavigateToWar) {
+                        console.log('⚔️ [DEBUG] Navigating to war:', war_name, year);
+                        onNavigateToWar(year, war_name || '전쟁');
+                    }
                 }
             });
 
@@ -345,7 +352,7 @@ export const ChatbotPanel = ({ onClose, initialPosition, initialSize, onStateCha
 
             const errorMsg = {
                 id: Date.now() + 3,
-                text: '죄송합니다. 오류가 발생했습니다. 잠시 후 다시 시도해주세요.',
+                text: '죄송합니다. 오류가 발생했습니다..\n잠시 후 다시 시도해주세요.',
                 sender: 'bot' as const
             };
             setMessages(prev => [...prev, errorMsg]);

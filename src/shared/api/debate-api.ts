@@ -1,6 +1,5 @@
 import { getAuthHeaders } from './api-utils';
 
-const API_BASE_URL = import.meta.env.VITE_API_URL || '/api';
 
 /**
  * Debate topic interface
@@ -25,7 +24,8 @@ export interface DebateTopicsResponse {
 export const recommendDebateTopics = async (keyword: string): Promise<DebateTopic[]> => {
     console.log('🚀 [recommendDebateTopics] Starting request with keyword:', keyword);
 
-    const response = await fetch(`${API_BASE_URL}/ai/debate/topics/recommend`, {
+    // AI API는 /api/ai 경로를 사용해야 Vite 프록시가 8000번 포트로 라우팅함
+    const response = await fetch('/api/ai/debate/topics/recommend', {
         method: 'POST',
         headers: getAuthHeaders(),
         body: JSON.stringify({ user_query: keyword }),
