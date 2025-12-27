@@ -117,6 +117,8 @@ export const sendCharacterMessage = async (
     const reader = response.body.getReader();
     const decoder = new TextDecoder();
     let buffer = '';
+    let fullResponse = ''; // 전체 응답 수집 (비 SSE 응답 처리용)
+    let hasReceivedContent = false; // 응답 내용이 있었는지 추적
 
     while (true) {
         const { done, value } = await reader.read();
@@ -124,6 +126,7 @@ export const sendCharacterMessage = async (
 
         const chunk = decoder.decode(value, { stream: true });
         buffer += chunk;
+        fullResponse += chunk;
         const lines = buffer.split('\n');
         buffer = lines.pop() || '';
 
@@ -133,23 +136,72 @@ export const sendCharacterMessage = async (
                 if (!dataStr || dataStr === '[DONE]') continue;
 
                 // Try JSON parsing, fallback to plain text
+                let parsed = false;
                 try {
                     const event: AIChatStreamEvent = JSON.parse(dataStr);
+                    parsed = true;
                     console.log('📦 [sendCharacterMessage] Parsed event:', event.type);
                     if (event.type === 'content' && event.text) {
                         onChunk(event.text);
+                        hasReceivedContent = true;
+                    } else if (event.type === 'error') {
+                        console.error('❌ [sendCharacterMessage] Error from backend:', event.message);
+                        throw new Error(event.message || 'Backend error');
                     } else if (typeof event === 'string') {
                         onChunk(event);
+                        hasReceivedContent = true;
                     }
                 } catch (e) {
+                    // JSON 파싱이 성공했는데 에러가 발생했으면 (의도적 throw) 다시 던진다
+                    if (parsed) {
+                        throw e;
+                    }
                     // Not JSON, treat as plain text
                     console.log('📝 [sendCharacterMessage] Plain text chunk:', dataStr.substring(0, 50));
                     if (dataStr) {
                         onChunk(dataStr);
+                        hasReceivedContent = true;
                     }
                 }
             }
         }
+    }
+
+    // 비 SSE JSON 응답 처리 (data: prefix 없이 바로 JSON이 온 경우)
+    if (!hasReceivedContent && fullResponse.trim()) {
+        console.log('📨 [sendCharacterMessage] Trying to parse as plain JSON:', fullResponse.trim());
+        try {
+            const jsonResponse = JSON.parse(fullResponse.trim());
+
+            // 에러 응답 처리
+            if (jsonResponse.type === 'error') {
+                console.error('❌ [sendCharacterMessage] Error from backend (non-SSE):', jsonResponse.message);
+                throw new Error(jsonResponse.message || 'Backend error');
+            }
+
+            // 일반 텍스트 응답 처리
+            if (jsonResponse.text || jsonResponse.content || jsonResponse.message) {
+                const text = jsonResponse.text || jsonResponse.content || jsonResponse.message;
+                onChunk(text);
+                hasReceivedContent = true;
+            }
+        } catch (e) {
+            // JSON 파싱 실패 - 에러로 rethrow (위에서 throw한 Error인 경우)
+            if (e instanceof Error && e.message !== 'Unexpected token' && !e.message.includes('JSON')) {
+                throw e;
+            }
+            console.log('📝 [sendCharacterMessage] Not valid JSON, treating as plain text');
+            if (fullResponse.trim()) {
+                onChunk(fullResponse.trim());
+                hasReceivedContent = true;
+            }
+        }
+    }
+
+    // 스트림이 끝났는데 아무 응답도 없으면 에러 throw
+    if (!hasReceivedContent) {
+        console.error('❌ [sendCharacterMessage] No content received from backend');
+        throw new Error('No response from server');
     }
 };
 

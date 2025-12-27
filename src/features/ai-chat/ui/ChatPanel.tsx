@@ -8,6 +8,7 @@ interface ChatMessage {
     id: number;
     text: string;
     sender: 'bot' | 'user';
+    isError?: boolean;
 }
 
 interface ChatPanelProps {
@@ -55,7 +56,7 @@ export const ChatPanel = ({ character }: ChatPanelProps) => {
         };
 
         initChat();
-        
+
         return () => { isMounted = false; };
     }, [character.characterId, character.characterName, character.promptId]);
 
@@ -140,7 +141,7 @@ export const ChatPanel = ({ character }: ChatPanelProps) => {
             console.error('Send error:', error);
             setMessages(prev => prev.map(msg =>
                 msg.id === botMsgId
-                    ? { ...msg, text: '오류가 발생했습니다. 다시 시도해주세요.' }
+                    ? { ...msg, text: '죄송합니다. 오류가 발생했습니다. 잠시 후 다시 시도해주세요.', isError: true }
                     : msg
             ));
         } finally {
@@ -182,20 +183,35 @@ export const ChatPanel = ({ character }: ChatPanelProps) => {
             {/* 대화 영역 */}
             <div className="chat-body-area" ref={chatBodyRef}>
                 {messages.map(msg => (
-                    <div
-                        key={msg.id}
-                        className={`chat-message ${msg.sender}`}
-                    >
-                        {msg.sender === 'bot' && msg.text === '' && isLoading ? (
-                            <div className="chat-typing">
-                                <span className="dot"></span>
-                                <span className="dot"></span>
-                                <span className="dot"></span>
+                    msg.isError ? (
+                        // 에러 메시지: HAI 이미지 + 말풍선
+                        <div key={msg.id} className="chat-error-wrapper">
+                            <img
+                                src="/assets/images/character/HAI.png"
+                                alt="HAI"
+                                className="chat-error-avatar"
+                            />
+                            <div className="chat-message bot error">
+                                {msg.text}
                             </div>
-                        ) : (
-                            msg.text
-                        )}
-                    </div>
+                        </div>
+                    ) : (
+                        // 일반 메시지
+                        <div
+                            key={msg.id}
+                            className={`chat-message ${msg.sender}`}
+                        >
+                            {msg.sender === 'bot' && msg.text === '' && isLoading ? (
+                                <div className="chat-typing">
+                                    <span className="dot"></span>
+                                    <span className="dot"></span>
+                                    <span className="dot"></span>
+                                </div>
+                            ) : (
+                                msg.text
+                            )}
+                        </div>
+                    )
                 ))}
             </div>
 

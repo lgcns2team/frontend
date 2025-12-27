@@ -254,3 +254,60 @@
         transform: scale(1.2);
     }
 }
+
+/* Error Message Styles */
+.chat-error-wrapper {
+    display: flex;
+    flex-direction: row;
+    align-items: flex-start;
+    gap: 12px;
+    align-self: flex-start;
+}
+
+.chat-error-avatar {
+    width: 48px;
+    height: 48px;
+    object-fit: contain;
+    flex-shrink: 0;
+    border-radius: 50%;
+    border: 2px solid #d4d1ca;
+}
+
+.chat-message.bot.error {
+    background-color: #f9f7f1;
+    border: 1px solid #d4d1ca;
+    padding: 12px 16px;
+    border-radius: 18px;
+    color: #333;
+    font-size: 0.95rem;
+    line-height: 1.5;
+    position: relative;
+    max-width: calc(80% - 60px);
+}
+
+/* 에러 메시지 말풍선 꼬리 (왼쪽, HAI 이미지 쪽으로) */
+.chat-message.bot.error::before {
+    content: '';
+    position: absolute;
+    left: -10px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 0;
+    height: 0;
+    border-style: solid;
+    border-width: 8px 10px 8px 0;
+    border-color: transparent #d4d1ca transparent transparent;
+}
+
+.chat-message.bot.error::after {
+    content: '';
+    position: absolute;
+    left: -8px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 0;
+    height: 0;
+    border-style: solid;
+    border-width: 7px 9px 7px 0;
+    border-color: transparent #f9f7f1 transparent transparent;
+}

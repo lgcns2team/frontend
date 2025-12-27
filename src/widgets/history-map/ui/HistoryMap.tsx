@@ -10,7 +10,6 @@ import type { TradeRouteWithColor } from '../lib/trade-route';
 import { useTradeAnimation } from '../lib/useTradeAnimation';
 import { useWarLayer } from '../lib/useWarLayer';
 import { fetchPersonsByYear, type PersonData } from '../../../shared/api/person-api';
-import { fetchCharacterDetail } from '../../../shared/api/characters-api';
 
 // Features
 import { TimeControls } from '../../../features/time-controls';
@@ -73,37 +72,6 @@ export default function HistoryMap() {
     const [capitalData, setCapitalData] = useState<CapitalData[]>([]);
     const [activeTradeRoutes, setActiveTradeRoutes] = useState<TradeRouteWithColor[]>([]);
     const [personData, setPersonData] = useState<PersonData[]>([]);
-
-    // Helper to normalize country names to ID
-    const getCountryId = (name: string): string => {
-        if (!name) return '';
-        const lower = name.toLowerCase();
-
-        // Map Korean names to IDs
-        if (lower.includes('고조선') || lower.includes('gojoseon')) return 'GOJOSEON';
-        if (lower.includes('고구려') || lower.includes('goguryeo') || lower.includes('koguryo')) return 'GOGURYEO';
-        if (lower.includes('백제') || lower.includes('baekje') || lower.includes('paekche')) return 'BAEKJE';
-        if (lower.includes('신라') || lower.includes('silla') || lower.includes('silia')) return 'SILLA';
-        if (lower.includes('가야') || lower.includes('gaya')) return 'GAYA';
-        if (lower.includes('발해') || lower.includes('balhae') || lower.includes('parhae')) return 'BALHAE';
-        if (lower.includes('고려') || lower.includes('goryeo')) return 'GORYEO';
-        if (lower.includes('조선') || lower.includes('joseon')) return 'JOSEON';
-
-        if (lower.includes('당') || lower.includes('tang')) return 'TANG';
-        if (lower.includes('송') || lower.includes('song')) return 'SONG';
-        if (lower.includes('원') || lower.includes('yuan') || lower.includes('mongol')) return 'YUAN';
-        if (lower.includes('명') || lower.includes('ming')) return 'MING';
-        if (lower.includes('청') || lower.includes('qing')) return 'QING';
-
-        if (lower.includes('거란') || lower.includes('요') || lower.includes('khitan') || lower.includes('liao')) return 'LIAO';
-        if (lower.includes('여진') || lower.includes('금') || lower.includes('jurchen') || lower.includes('jin')) return 'JIN';
-        if (lower.includes('서하') || lower.includes('western xia') || lower.includes('seoha')) return 'WESTERN_XIA';
-
-        if (lower.includes('일본') || lower.includes('japan') || lower.includes('yamato') || lower.includes('wa')) return 'JAPAN';
-
-        // Fallback for exact matches or other cases
-        return lower.trim();
-    };
 
     const [currentYear, setCurrentYear] = useState<number>(() => {
         const savedYear = localStorage.getItem('historyMapYear');

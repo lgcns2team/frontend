@@ -109,6 +109,12 @@
     display: flex;
     gap: 8px;
     align-items: center;
+    position: relative;
+    z-index: 1;
+    /* 낮은 z-index로 resize handle이 위에 보이도록 */
+    border-bottom-left-radius: 16px;
+    border-bottom-right-radius: 16px;
+    /* 부모 패널과 동일한 radius로 모서리에서 삼각형이 보이게 함 */
 }
 
 .chat-input {
@@ -176,11 +182,12 @@
     bottom: 0;
     right: 0;
     cursor: nwse-resize;
-    width: 20px;
-    height: 20px;
+    width: 10px;
+    height: 10px;
     /* Create black triangle using border */
-    border-right: 20px solid rgba(0, 0, 0, 0.3);
-    border-top: 20px solid transparent;
+    border-right: 10px solid #000000;
+    border-top: 10px solid transparent;
+    z-index: 9999;
 }
 
 /* Chat Typing Indicator (Three Dots) */
