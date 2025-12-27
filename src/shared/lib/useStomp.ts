@@ -1,6 +1,7 @@
 import { useRef, useState, useEffect, useCallback } from 'react';
 import SockJS from 'sockjs-client';
 import { Stomp, CompatClient, type Message } from '@stomp/stompjs';
+import { getAuthHeaders } from '../../shared/api/api-utils';
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || '/api';
 
@@ -54,8 +55,7 @@ export const createShortDiscussionRoom = async (payload: CreateRoomPayload) => {
         const response = await fetch(`${API_BASE_URL}/debate/room`, {
             method: 'POST',
             headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${localStorage.getItem('accessToken')}`
+                ...getAuthHeaders() as Record<string, string>
             },
             body: JSON.stringify(payload),
         });
@@ -79,8 +79,7 @@ export const getDiscussionRooms = async (): Promise<DiscussionRoom[]> => {
         // const userId = localStorage.getItem('userId');
         console.log("Fetching rooms with token:", token ? "Present" : "Missing");
 
-        const headers: any = { 'Content-Type': 'application/json' };
-        if (token) headers['Authorization'] = `Bearer ${token}`;
+        const headers = { ...getAuthHeaders() };
 
         let url = `${API_BASE_URL}/debate/roomList`;
         // if (userId) {
@@ -130,8 +129,7 @@ export const deleteDiscussionRoom = async (roomId: string): Promise<{ success: b
         const token = localStorage.getItem('accessToken');
         console.log("Deleting room:", roomId);
 
-        const headers: any = { 'Content-Type': 'application/json' };
-        if (token) headers['Authorization'] = `Bearer ${token}`;
+        const headers = { ...getAuthHeaders() };
 
         const response = await fetch(`${API_BASE_URL}/debate/room/${roomId}`, {
             method: 'DELETE',
