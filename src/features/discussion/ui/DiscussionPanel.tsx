@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import { useNavigate } from 'react-router-dom';
 import { recommendDebateTopics, type DebateTopic } from '../../../shared/api/debate-api';
@@ -22,6 +22,8 @@ const DiscussionPanel: React.FC = () => {
   const [recommendedTopics, setRecommendedTopics] = useState<DebateTopic[]>([]);
   const [isLoadingRecommendations, setIsLoadingRecommendations] = useState(false);
   const [recommendationError, setRecommendationError] = useState<string | null>(null);
+  const [loadingDots, setLoadingDots] = useState(1); // 1, 2, or 3 dots
+  const loadingIntervalRef = useRef<number | null>(null);
 
   // Fetch rooms on mount
   const fetchRooms = async () => {
@@ -32,6 +34,26 @@ const DiscussionPanel: React.FC = () => {
   useEffect(() => {
     fetchRooms();
   }, []);
+
+  // Animate loading dots (로딩중., 로딩중.., 로딩중...)
+  useEffect(() => {
+    if (isLoadingRecommendations) {
+      loadingIntervalRef.current = window.setInterval(() => {
+        setLoadingDots(prev => (prev % 3) + 1);
+      }, 400);
+    } else {
+      if (loadingIntervalRef.current) {
+        clearInterval(loadingIntervalRef.current);
+        loadingIntervalRef.current = null;
+      }
+      setLoadingDots(1);
+    }
+    return () => {
+      if (loadingIntervalRef.current) {
+        clearInterval(loadingIntervalRef.current);
+      }
+    };
+  }, [isLoadingRecommendations]);
 
   const addDiscussion = () => {
     // Reset fields when opening
@@ -224,7 +246,7 @@ const DiscussionPanel: React.FC = () => {
                       onClick={handleRecommend}
                       disabled={isLoadingRecommendations}
                     >
-                      {isLoadingRecommendations ? '로딩 중...' : '추천받기'}
+                      {isLoadingRecommendations ? `로딩중${'.'.repeat(loadingDots)}` : '추천받기'}
                     </button>
                   </div>
                   {/* Fill Box */}

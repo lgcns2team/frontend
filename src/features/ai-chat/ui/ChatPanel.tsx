@@ -8,6 +8,7 @@ interface ChatMessage {
     id: number;
     text: string;
     sender: 'bot' | 'user';
+    isError?: boolean;
 }
 
 interface ChatPanelProps {
@@ -52,6 +53,7 @@ export const ChatPanel = ({ character }: ChatPanelProps) => {
             }
         };
         initChat();
+
         return () => { isMounted = false; };
     }, [character.characterId, character.characterName, character.promptId]);
 
@@ -176,11 +178,15 @@ export const ChatPanel = ({ character }: ChatPanelProps) => {
 
     return (
         <div className="chat-panel">
+            {/* 상단 프로필 영역 */}
             <div className="chat-profile-area">
                 <div className="chat-profile-image-container">
                     <img src={character.imagePath} alt={character.characterName} className="chat-profile-image" />
                     {frameImage && (
-                        <div className="chat-profile-frame" style={{ backgroundImage: `url(${frameImage})` }} />
+                        <div
+                            className="chat-profile-frame"
+                            style={{ backgroundImage: `url(${frameImage})` }}
+                        />
                     )}
                 </div>
                 <div className="chat-profile-info">
@@ -189,20 +195,42 @@ export const ChatPanel = ({ character }: ChatPanelProps) => {
                 </div>
             </div>
 
+            {/* 대화 영역 */}
             <div className="chat-body-area" ref={chatBodyRef}>
                 {messages.map(msg => (
-                    <div key={msg.id} className={`chat-message ${msg.sender}`}>
-                        {msg.sender === 'bot' && msg.text === '' && isLoading ? (
-                            <div className="chat-typing">
-                                <span className="dot"></span><span className="dot"></span><span className="dot"></span>
+                    msg.isError ? (
+                        // 에러 메시지: HAI 이미지 + 말풍선
+                        <div key={msg.id} className="chat-error-wrapper">
+                            <img
+                                src="/assets/images/character/HAI.png"
+                                alt="HAI"
+                                className="chat-error-avatar"
+                            />
+                            <div className="chat-message bot error">
+                                {msg.text}
                             </div>
-                        ) : (
-                            msg.text
-                        )}
-                    </div>
+                        </div>
+                    ) : (
+                        // 일반 메시지
+                        <div
+                            key={msg.id}
+                            className={`chat-message ${msg.sender}`}
+                        >
+                            {msg.sender === 'bot' && msg.text === '' && isLoading ? (
+                                <div className="chat-typing">
+                                    <span className="dot"></span>
+                                    <span className="dot"></span>
+                                    <span className="dot"></span>
+                                </div>
+                            ) : (
+                                msg.text
+                            )}
+                        </div>
+                    )
                 ))}
             </div>
 
+            {/* 입력 영역 */}
             <div className="chat-input-area">
                 <input
                     type="text"
