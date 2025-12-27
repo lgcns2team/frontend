@@ -342,7 +342,7 @@
     height: 140px;
 
     /* Pattern Sprite */
-    background-image: url('/assets/images/logo1.jpg');
+    background-image: url('/assets/images/etc/logo1.jpg');
     background-size: 106% 106%;
     /* User requested 100% for correct scale */
     background-position: 70% 58%;

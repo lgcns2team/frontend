@@ -327,8 +327,8 @@ export const Timeline = ({ currentYear, onYearChange, onEventClick, isVisible, o
                 className={`timeline-panel ${!isVisible ? 'panel-hidden' : ''}`}
                 style={{
                     backgroundImage: showEvents
-                        ? "url('/assets/images/paper_timeline2.png')"
-                        : "url('/assets/images/paper_timeline.png')",
+                        ? "url('/assets/images/etc/paper_timeline2.png')"
+                        : "url('/assets/images/etc/paper_timeline.png')",
                     height: showEvents ? '250px' : '125px',
                     backgroundSize: '100% 100%',
                     backgroundPosition: showEvents ? 'center' : 'bottom'

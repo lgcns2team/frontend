@@ -13,6 +13,7 @@
     border: 1px solid var(--color-border, #d4d1ca);
     animation: slideIn 0.3s cubic-bezier(0.16, 1, 0.3, 1);
     color: var(--color-text-primary, #040316);
+    overflow: visible;
 }
 
 @keyframes slideIn {
@@ -85,6 +86,7 @@
     border-radius: 12px;
     font-size: 14px;
     line-height: 1.5;
+    white-space: pre-line;
 }
 
 .chat-message.bot {
@@ -104,17 +106,18 @@
 
 .chatbot-footer {
     padding: 12px;
+    padding-bottom: 20px;
+    /* 리사이즈 핸들 공간 확보 */
+    padding-right: 20px;
+    /* 리사이즈 핸들 공간 확보 */
     background: var(--color-bg-white, #ffffff);
     border-top: 1px solid var(--color-border, #d4d1ca);
     display: flex;
     gap: 8px;
     align-items: center;
     position: relative;
-    z-index: 1;
-    /* 낮은 z-index로 resize handle이 위에 보이도록 */
     border-bottom-left-radius: 16px;
     border-bottom-right-radius: 16px;
-    /* 부모 패널과 동일한 radius로 모서리에서 삼각형이 보이게 함 */
 }
 
 .chat-input {

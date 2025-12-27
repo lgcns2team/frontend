@@ -141,7 +141,7 @@ export const ChatPanel = ({ character }: ChatPanelProps) => {
             console.error('Send error:', error);
             setMessages(prev => prev.map(msg =>
                 msg.id === botMsgId
-                    ? { ...msg, text: '죄송합니다. 오류가 발생했습니다. 잠시 후 다시 시도해주세요.', isError: true }
+                    ? { ...msg, text: '죄송합니다. 오류가 발생했습니다..\n잠시 후 다시 시도해주세요.', isError: true }
                     : msg
             ));
         } finally {
