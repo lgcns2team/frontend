@@ -2,7 +2,7 @@ import { useState, useRef, useEffect } from 'react';
 import { type ParsedCharacter, fetchCharacterDetail } from '../../../shared/api/characters-api';
 import { sendCharacterMessage } from '../../../shared/api/aichat-api';
 import { ERAS } from '../../../shared/config/era-theme';
-import './ChatPanel.css'; // ✅ 임시 주석 처리 - 실제 CSS 파일명 확인 후 수정
+import './ChatPanel.css';
 
 interface ChatMessage {
     id: number;
@@ -20,65 +20,76 @@ export const ChatPanel = ({ character }: ChatPanelProps) => {
     const [messages, setMessages] = useState<ChatMessage[]>([]);
     const [isLoading, setIsLoading] = useState(false);
 
+    // 타이핑 효과 관련 Ref
+    const typingBufferRef = useRef<string>('');
+    const typingIntervalRef = useRef<number | null>(null);
+    const currentBotMsgIdRef = useRef<number | null>(null);
+    const chatBodyRef = useRef<HTMLDivElement>(null);
+
     // 캐릭터 변경 시 초기화
     useEffect(() => {
         let isMounted = true;
-
         const initChat = async () => {
-            // 초기화
             setMessages([]);
             setInput('');
             setIsLoading(false);
 
             let greeting = character.greetingMessage;
-
-            // API에서 인사말 가져오기 시도
             if (!greeting && character.promptId) {
                 try {
                     const detail = await fetchCharacterDetail(character.promptId);
-                    if (detail.greetingMessage) {
-                        greeting = detail.greetingMessage;
-                    }
+                    if (detail.greetingMessage) greeting = detail.greetingMessage;
                 } catch (e) {
                     console.error("Failed to fetch greeting", e);
                 }
             }
 
             if (isMounted) {
-                setMessages([
-                    {
-                        id: 1,
-                        text: greeting || `안녕하세요. ${character.characterName}입니다. 무엇이 궁금하신가요?`,
-                        sender: 'bot'
-                    }
-                ]);
+                setMessages([{
+                    id: Date.now(),
+                    text: greeting || `안녕하세요. ${character.characterName}입니다. 무엇이 궁금하신가요?`,
+                    sender: 'bot'
+                }]);
             }
         };
-
         initChat();
 
         return () => { isMounted = false; };
     }, [character.characterId, character.characterName, character.promptId]);
 
-    // 타이핑 효과 관련 Ref
-    const typingBufferRef = useRef<string>('');
-    const typingIntervalRef = useRef<number | null>(null);
-    const currentBotMsgIdRef = useRef<number | null>(null);
-
-    // 스크롤 처리를 위한 Ref
-    const chatBodyRef = useRef<HTMLDivElement>(null);
-
-    // 메시지 추가될 때마다 스크롤 하단으로
+    // 메시지 추가 시 스크롤 하단 이동
     useEffect(() => {
         if (chatBodyRef.current) {
             chatBodyRef.current.scrollTop = chatBodyRef.current.scrollHeight;
         }
     }, [messages]);
 
+    // 🆕 음성 재생 함수 (handleSend보다 위에 있어야 함)
+    const playVoice = async (text: string) => {
+        try {
+            const response = await fetch('http://127.0.0.1:8000/api/prompt/speak/', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    text: text,
+                    promptId: character.promptId
+                })
+            });
+
+            if (response.ok) {
+                const blob = await response.blob();
+                const url = window.URL.createObjectURL(blob);
+                const audio = new Audio(url);
+                audio.play();
+            }
+        } catch (error) {
+            console.error("TTS 재생 실패:", error);
+        }
+    };
+
     // 타이핑 루프
     const startTypingLoop = () => {
         if (typingIntervalRef.current !== null) return;
-
         typingIntervalRef.current = window.setInterval(() => {
             const buffer = typingBufferRef.current;
             if (!buffer || buffer.length === 0) {
@@ -88,62 +99,62 @@ export const ChatPanel = ({ character }: ChatPanelProps) => {
                 }
                 return;
             }
-
             const chars = [...buffer];
             const firstChar = chars[0];
             const rest = chars.slice(1).join('');
             typingBufferRef.current = rest;
-
             const botId = currentBotMsgIdRef.current;
             if (botId == null) return;
 
-            setMessages(prev =>
-                prev.map(msg =>
-                    msg.id === botId
-                        ? { ...msg, text: msg.text + firstChar }
-                        : msg
-                )
-            );
-        }, 10); // 10ms
+            setMessages(prev => prev.map(msg =>
+                msg.id === botId ? { ...msg, text: msg.text + firstChar } : msg
+            ));
+        }, 10);
     };
 
-    useEffect(() => {
-        return () => {
-            if (typingIntervalRef.current !== null) {
-                window.clearInterval(typingIntervalRef.current);
-            }
-        };
-    }, []);
-
+    // 메시지 전송 로직
     const handleSend = async () => {
         if (!input.trim() || isLoading) return;
 
         const userMsg: ChatMessage = { id: Date.now(), text: input, sender: 'user' };
         setMessages(prev => [...prev, userMsg]);
-        const msgToSend = input; // 캡처
+        const msgToSend = input;
         setInput('');
         setIsLoading(true);
 
-        // 봇 응답 placeholder
         const botMsgId = Date.now() + 1;
         const initialBotMsg: ChatMessage = { id: botMsgId, text: '', sender: 'bot' };
         setMessages(prev => [...prev, initialBotMsg]);
 
         currentBotMsgIdRef.current = botMsgId;
         typingBufferRef.current = '';
+        let fullResponse = ''; 
 
         try {
             await sendCharacterMessage(character.promptId!, msgToSend, (text) => {
+                fullResponse += text;
                 typingBufferRef.current += text;
                 startTypingLoop();
             });
+            setIsLoading(false);
+
+            // ✅ 정상 답변 완료 후 음성 재생
+            if (fullResponse) {
+                setTimeout(() => playVoice(fullResponse), 500);
+            }
         } catch (error) {
             console.error('Send error:', error);
+            const errorMsg = '오류가 발생했습니다. 다시 시도해주세요.';
             setMessages(prev => prev.map(msg =>
                 msg.id === botMsgId
                     ? { ...msg, text: '죄송합니다. 오류가 발생했습니다..\n잠시 후 다시 시도해주세요.', isError: true }
                     : msg
             ));
+
+            setIsLoading(false);
+            
+            // ✅ 에러 메시지 음성 재생
+            playVoice(errorMsg);
         } finally {
             setIsLoading(false);
         }
@@ -156,10 +167,15 @@ export const ChatPanel = ({ character }: ChatPanelProps) => {
         }
     };
 
-    // Frame Image Logic
+    useEffect(() => {
+        return () => {
+            if (typingIntervalRef.current !== null) window.clearInterval(typingIntervalRef.current);
+        };
+    }, []);
+
     const currEra = ERAS.find(e => e.id === character.era);
     const frameImage = currEra?.frameImage;
-    const eraColor = currEra?.color || '#3B82F6'; // Default to republic color
+    const eraColor = currEra?.color || '#3B82F6';
 
     return (
         <div className="chat-panel">
