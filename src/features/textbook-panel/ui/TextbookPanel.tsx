@@ -1,6 +1,36 @@
 import { useState, useRef, useEffect } from 'react';
 import './TextbookPanel.css';
 
+// 인물 핫스팟 데이터 구조
+interface PersonHotspot {
+    name: string;         // 인물 이름
+    x: number;           // 왼쪽에서의 위치 (%)
+    y: number;           // 위에서의 위치 (%)
+    width: number;       // 너비 (%)
+    height: number;      // 높이 (%)
+}
+
+// 페이지별 인물 핫스팟 매핑 데이터
+// 좌표는 이미지 기준 상대 위치 (%)
+// 키는 0-indexed (currentPage 값과 일치), 주석은 실제 표시 페이지 번호
+const PERSON_HOTSPOTS: Record<number, PersonHotspot[]> = {
+    45: [{ name: '을지문덕', x: 10, y: 15, width: 25, height: 30 }],   // 46페이지
+    48: [{ name: '신채호', x: 10, y: 15, width: 25, height: 30 }],     // 49페이지
+    50: [{ name: '대조영', x: 10, y: 15, width: 25, height: 30 }],     // 51페이지
+    81: [{ name: '서희', x: 10, y: 15, width: 25, height: 30 }],       // 82페이지
+    121: [                                                              // 122페이지
+        { name: '이황', x: 5, y: 15, width: 20, height: 28 },
+        { name: '이이', x: 30, y: 15, width: 20, height: 28 }
+    ],
+    125: [{ name: '이순신', x: 10, y: 15, width: 25, height: 30 }],    // 126페이지
+    143: [{ name: '영조', x: 10, y: 15, width: 25, height: 30 }],      // 144페이지
+    148: [{ name: '정약용', x: 10, y: 15, width: 25, height: 30 }],    // 149페이지
+    171: [{ name: '고종', x: 10, y: 15, width: 25, height: 30 }],      // 172페이지
+    172: [{ name: '안중근', x: 10, y: 15, width: 25, height: 30 }],    // 173페이지
+    178: [{ name: '윤봉길', x: 10, y: 15, width: 25, height: 30 }],    // 179페이지
+    180: [{ name: '김구', x: 10, y: 15, width: 25, height: 30 }]       // 181페이지
+};
+
 interface TextbookPanelProps {
     currentPage: number;
     viewMode: 'single' | 'double';
@@ -8,6 +38,7 @@ interface TextbookPanelProps {
     onViewModeChange: (mode: 'single' | 'double') => void;
     onVoiceChat?: () => void;
     isConversationMode?: boolean;
+    onPersonClick?: (personName: string) => void;
 }
 
 const S3_BUCKET_URL = "https://khistorybook.s3.ap-northeast-2.amazonaws.com";
@@ -18,8 +49,34 @@ export const TextbookPanel = ({
     onPageChange,
     onViewModeChange,
     onVoiceChat,
-    isConversationMode = false
+    isConversationMode = false,
+    onPersonClick
 }: TextbookPanelProps) => {
+    // 인물 핫스팟 렌더링 함수
+    const renderHotspots = (page: number) => {
+        const hotspots = PERSON_HOTSPOTS[page];
+        if (!hotspots || !onPersonClick) return null;
+
+        return hotspots.map((hotspot, index) => (
+            <div
+                key={`${page}-${hotspot.name}-${index}`}
+                className="person-hotspot"
+                style={{
+                    left: `${hotspot.x}%`,
+                    top: `${hotspot.y}%`,
+                    width: `${hotspot.width}%`,
+                    height: `${hotspot.height}%`
+                }}
+                onClick={(e) => {
+                    e.stopPropagation();
+                    onPersonClick(hotspot.name);
+                }}
+                title={`${hotspot.name} - 클릭하여 대화하기`}
+            >
+                <span className="hotspot-label">{hotspot.name}</span>
+            </div>
+        ));
+    };
     const getImageUrl = (page: number) => {
         // return `/historybook/${page}.png`;
 
@@ -237,11 +294,14 @@ export const TextbookPanel = ({
             <div className={`textbook-content ${viewMode}`}>
                 {viewMode === 'single' ? (
                     <div className="page-container single">
-                        <img
-                            src={getImageUrl(currentPage)}
-                            alt={`Page ${currentPage}`}
-                            className="textbook-page"
-                        />
+                        <div className="image-wrapper">
+                            <img
+                                src={getImageUrl(currentPage)}
+                                alt={`Page ${currentPage}`}
+                                className="textbook-page"
+                            />
+                            {renderHotspots(currentPage)}
+                        </div>
                     </div>
                 ) : (
                     <div className="page-container double">
@@ -251,14 +311,18 @@ export const TextbookPanel = ({
                                 alt={`Page ${currentPage}`}
                                 className="textbook-page"
                             />
+                            {renderHotspots(currentPage)}
                         </div>
                         <div className="page-wrapper">
                             {currentPage + 1 < totalPages && (
-                                <img
-                                    src={getImageUrl(currentPage + 1)}
-                                    alt={`Page ${currentPage + 1}`}
-                                    className="textbook-page"
-                                />
+                                <>
+                                    <img
+                                        src={getImageUrl(currentPage + 1)}
+                                        alt={`Page ${currentPage + 1}`}
+                                        className="textbook-page"
+                                    />
+                                    {renderHotspots(currentPage + 1)}
+                                </>
                             )}
                         </div>
                     </div>

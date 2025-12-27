@@ -9,7 +9,7 @@ import { loadTradeRoutes } from '../lib/trade-route';
 import type { TradeRouteWithColor } from '../lib/trade-route';
 import { useTradeAnimation } from '../lib/useTradeAnimation';
 import { useWarLayer } from '../lib/useWarLayer';
-import { fetchPersonsByYear, type PersonData } from '../../../shared/api/person-api';
+import { fetchPersonsByYear, fetchAllPersons, type PersonData } from '../../../shared/api/person-api';
 
 // Features
 import { TimeControls } from '../../../features/time-controls';
@@ -907,6 +907,51 @@ export default function HistoryMap() {
         console.log('✅ [HistoryMap] Year set to', year, '/ Layer set to battles');
     };
 
+    // Handle person click from textbook panel
+    const handlePersonClickFromTextbook = async (personName: string) => {
+        console.log('📖 [HistoryMap] Person clicked from textbook:', personName);
+
+        try {
+            // 인물 데이터에서 해당 인물의 promptId 찾기
+            const allPersons = await fetchAllPersons();
+            const person = allPersons.find(p => p.name === personName);
+
+            // 교과서 대화 모드 활성화 (handleVoiceChat과 동일한 동작)
+            setTextbookViewMode('single');
+            setIsConversationMode(true);
+
+            // 인물 캐릭터 설정
+            if (person) {
+                const character: ParsedCharacter = {
+                    characterId: person.promptId,
+                    characterName: person.name,
+                    birthYear: null,
+                    era: null,
+                    summary: '',
+                    promptId: person.promptId,
+                    imagePath: `/assets/images/character/${person.name}.png`,
+                };
+                setChatCharacter(character);
+                console.log('✅ [HistoryMap] Character set for textbook conversation:', person.name);
+            } else {
+                console.warn('⚠️ [HistoryMap] Person not found:', personName);
+                // 인물 정보가 없어도 기본 값으로 설정
+                const character: ParsedCharacter = {
+                    characterId: personName,
+                    characterName: personName,
+                    birthYear: null,
+                    era: null,
+                    summary: '',
+                    promptId: personName,
+                    imagePath: `/assets/images/character/${personName}.png`,
+                };
+                setChatCharacter(character);
+            }
+        } catch (error) {
+            console.error('❌ [HistoryMap] Failed to fetch person data:', error);
+        }
+    };
+
     // Dynamic Theme Calculation
     const currentEra = getEraForYear(currentYear);
 
@@ -1025,6 +1070,7 @@ export default function HistoryMap() {
                         onViewModeChange={setTextbookViewMode}
                         onVoiceChat={handleVoiceChat}
                         isConversationMode={isConversationMode}
+                        onPersonClick={handlePersonClickFromTextbook}
                     />
                 ) : activePanel === 'search' ? (
                     <MajorEventsPanel

@@ -231,3 +231,20 @@
     border: none !important;
     box-shadow: none !important;
 }
+
+/* Clickable elements cursor styles */
+.leaflet-interactive {
+    cursor: pointer !important;
+}
+
+/* Capital and person markers */
+.capital-marker,
+.person-marker {
+    cursor: pointer !important;
+}
+
+/* Trade route hover effect */
+.leaflet-overlay-pane svg path.leaflet-interactive:hover {
+    cursor: pointer !important;
+    stroke-width: 5px;
+}
