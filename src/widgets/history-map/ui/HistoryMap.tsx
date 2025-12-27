@@ -980,7 +980,6 @@ export default function HistoryMap() {
                 {!isAllUIHidden && (
                     <SidebarMenu
                         onItemClick={handleSidebarClick}
-                        currentYear={currentYear}
                         isDockingPanelOpen={!!activePanel}
                     />
                 )}
