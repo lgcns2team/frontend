@@ -126,7 +126,6 @@ export const getDiscussionRooms = async (): Promise<DiscussionRoom[]> => {
 
 export const deleteDiscussionRoom = async (roomId: string): Promise<{ success: boolean; error?: string }> => {
     try {
-        const token = localStorage.getItem('accessToken');
         console.log("Deleting room:", roomId);
 
         const headers = { ...getAuthHeaders() };
