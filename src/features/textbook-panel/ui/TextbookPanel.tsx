@@ -14,21 +14,21 @@ interface PersonHotspot {
 // 좌표는 이미지 기준 상대 위치 (%)
 // 키는 0-indexed (currentPage 값과 일치), 주석은 실제 표시 페이지 번호
 const PERSON_HOTSPOTS: Record<number, PersonHotspot[]> = {
-    45: [{ name: '을지문덕', x: 10, y: 15, width: 25, height: 30 }],   // 46페이지
-    48: [{ name: '신채호', x: 10, y: 15, width: 25, height: 30 }],     // 49페이지
-    50: [{ name: '대조영', x: 10, y: 15, width: 25, height: 30 }],     // 51페이지
-    81: [{ name: '서희', x: 10, y: 15, width: 25, height: 30 }],       // 82페이지
-    121: [                                                              // 122페이지
-        { name: '이황', x: 5, y: 15, width: 20, height: 28 },
-        { name: '이이', x: 30, y: 15, width: 20, height: 28 }
+    45: [{ name: '을지문덕', x: 5, y: 72, width: 25, height: 20 }],   // 46페이지 - 왼쪽 하단
+    48: [{ name: '신채호', x: 32, y: 4, width: 16, height: 20 }],     // 49페이지 - 중앙 하단
+    50: [{ name: '대조영', x: 70, y: 66, width: 22, height: 24 }],      // 51페이지 - 왼쪽 상단
+    81: [{ name: '서희', x: 60, y: 70, width: 20, height: 18 }],       // 82페이지 - 왼쪽 하단
+    121: [                                                              // 122페이지 - 중앙 두 원형 초상화
+        { name: '이황', x: 34, y: 65, width: 12, height: 15 },
+        { name: '이이', x: 74, y: 65, width: 12, height: 15 }
     ],
-    125: [{ name: '이순신', x: 10, y: 15, width: 25, height: 30 }],    // 126페이지
-    143: [{ name: '영조', x: 10, y: 15, width: 25, height: 30 }],      // 144페이지
-    148: [{ name: '정약용', x: 10, y: 15, width: 25, height: 30 }],    // 149페이지
-    171: [{ name: '고종', x: 10, y: 15, width: 25, height: 30 }],      // 172페이지
-    172: [{ name: '안중근', x: 10, y: 15, width: 25, height: 30 }],    // 173페이지
-    178: [{ name: '윤봉길', x: 10, y: 15, width: 25, height: 30 }],    // 179페이지
-    180: [{ name: '김구', x: 10, y: 15, width: 25, height: 30 }]       // 181페이지
+    125: [{ name: '이순신', x: 72, y: 67, width: 22, height: 24 }],     // 126페이지 - 왼쪽 하단
+    143: [{ name: '영조', x: 9, y: 60, width: 18, height: 18 }],      // 144페이지 - 탐구 박스 내
+    148: [{ name: '정약용', x: 37, y: 48, width: 15, height: 18 }],    // 149페이지 - 두번째 원형 초상화
+    171: [{ name: '고종', x: 9, y: 72, width: 16, height: 20 }],       // 172페이지 - 왼쪽 하단
+    172: [{ name: '안중근', x: 72, y: 40, width: 18, height: 18 }],    // 173페이지 - 오른쪽 의열 투쟁 박스
+    178: [{ name: '윤봉길', x: 72, y: 28, width: 19, height: 20 }],    // 179페이지 - 오른쪽 상단
+    180: [{ name: '김구', x: 77, y: 14, width: 13, height: 14 }]       // 181페이지 - 오른쪽 상단
 };
 
 interface TextbookPanelProps {
