@@ -19,7 +19,7 @@
     padding: 0;
 
     /* Scroll Background */
-    background-image: url('/assets/images/paper_timeline2.png');
+    background-image: url('/assets/images/etc/paper_timeline2.png');
     background-size: 100% 100%;
     background-repeat: no-repeat;
     background-position: center;
@@ -194,7 +194,7 @@
     /* Extend further out */
     height: 41px;
     /* Slightly thicker */
-    background-image: url('/assets/images/brush_line.png');
+    background-image: url('/assets/images/etc/brush_line.png');
     background-size: 100% 100%;
     background-repeat: no-repeat;
     opacity: 0.9;

@@ -352,7 +352,7 @@ export const ChatbotPanel = ({ onClose, initialPosition, initialSize, onStateCha
 
             const errorMsg = {
                 id: Date.now() + 3,
-                text: '죄송합니다. 오류가 발생했습니다. 잠시 후 다시 시도해주세요.',
+                text: '죄송합니다. 오류가 발생했습니다..\n잠시 후 다시 시도해주세요.',
                 sender: 'bot' as const
             };
             setMessages(prev => [...prev, errorMsg]);
