@@ -154,7 +154,6 @@ export const ChatPanel = ({ character }: ChatPanelProps) => {
             // ✅ 에러 메시지 음성 재생
             playVoice(errorMsg);
         } finally {
-            setIsLoading(true); // 에러 상황 방지를 위해 명시적 처리
             setIsLoading(false);
         }
     };
