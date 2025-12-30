@@ -148,6 +148,12 @@ export const useFrontlineAnimation = ({
         iconAnchor: [24, 24]
     });
 
+    // --- Configuration Constants ---
+    const JET_SIZE: L.PointTuple = [38, 38];
+    const BOMBER_SIZE: L.PointTuple = [50, 50];
+    const DOGFIGHT_SIZE: L.PointTuple = [50, 50];
+    const BATTLESHIP_SIZE: L.PointTuple = [120, 120];
+
 
     // Load Korean War data and peninsula polygon
     useEffect(() => {
@@ -680,14 +686,14 @@ export const useFrontlineAnimation = ({
 
                     let baseDuration = (1500 + (totalDist / 100) * 1500);
                     // Apply 3x speed factor
-                    baseDuration = baseDuration / 3;
+                    baseDuration = baseDuration / 6;
 
                     if (type === 'bomber') {
                         // User asked for fast bombers. We'll keep them fast.
                         // Optional: slightly slower multiplier if desired, but user said "3x".
                         // We will leave it as is (same as jet).
                         // Or maybe 1.2x of jet duration to give sense of weight but still FAST.
-                        baseDuration = baseDuration * 1.2;
+                        baseDuration = baseDuration * 0.7;
                     }
 
 
@@ -713,9 +719,12 @@ export const useFrontlineAnimation = ({
 
             const INCHEON_POS = [126.35, 37.45];
             const BATTLESHIP_START_DATE = "1950-09-15";
+            const BATTLESHIP_END_DATE = "1950-09-28"; // Seoul Retaken
 
             // Check if we should have a battleship
-            if (currentDate >= BATTLESHIP_START_DATE && !battleshipRef.current) {
+            const shouldHaveBattleship = currentDate >= BATTLESHIP_START_DATE && currentDate <= BATTLESHIP_END_DATE;
+
+            if (shouldHaveBattleship && !battleshipRef.current) {
                 // Create Battleship
                 const battleship: AirRaid = {
                     id: 99999, // Special ID
@@ -728,8 +737,8 @@ export const useFrontlineAnimation = ({
                 };
                 battleshipRef.current = battleship;
                 airRaidsRef.current.push(battleship);
-            } else if (currentDate < BATTLESHIP_START_DATE && battleshipRef.current) {
-                // Remove Battleship if we went back in time
+            } else if (!shouldHaveBattleship && battleshipRef.current) {
+                // Remove Battleship if out of date range
                 // We need to remove it from airRaidsRef and also remove its marker
                 if (battleshipRef.current.marker) {
                     battleshipRef.current.marker.remove();
@@ -769,20 +778,20 @@ export const useFrontlineAnimation = ({
 
                         // Create Marker if not exists
                         if (!raid.marker && airRaidLayer.current) {
-                            let className = 'usaf-jet-icon';
-                            let size = [64, 64];
+                            // Initial class - Start static
+                            let className = 'usaf-jet-static';
+                            let size = JET_SIZE;
 
                             if (raid.type === 'bomber') {
-                                className = 'usaf-bomber-icon';
-                                size = [96, 96];
+                                className = 'usaf-bomber-static';
+                                size = BOMBER_SIZE;
                             } else if (raid.type === 'dogfight') {
                                 className = 'dogfight-icon';
-                                size = [120, 120];
+                                size = DOGFIGHT_SIZE;
                             } else if (raid.type === 'battleship') {
                                 className = 'battleship-icon';
-                                size = [140, 140];
+                                size = BATTLESHIP_SIZE;
                             }
-
 
                             const icon = L.divIcon({
                                 className: className,
@@ -797,10 +806,33 @@ export const useFrontlineAnimation = ({
                             }).addTo(airRaidLayer.current);
                         }
 
-                        // Update Marker
+                        // Update Marker Position & Animation State
                         if (raid.marker) {
                             raid.marker.setLatLng([lat, lng]);
                             raid.marker.setOpacity(opacity);
+
+                            // Handle Animation State (Static -> Flying -> Static)
+                            if (raid.type === 'jet' || raid.type === 'bomber') {
+                                const el = raid.marker.getElement();
+                                if (el) {
+                                    const isFlying = progress > 0.1 && progress < 0.9;
+                                    const baseClass = raid.type === 'jet' ? 'usaf-jet' : 'usaf-bomber';
+                                    const staticClass = `${baseClass}-static`;
+                                    const flyingClass = `${baseClass}-flying`;
+
+                                    if (isFlying) {
+                                        if (!el.classList.contains(flyingClass)) {
+                                            el.classList.remove(staticClass);
+                                            el.classList.add(flyingClass);
+                                        }
+                                    } else {
+                                        if (!el.classList.contains(staticClass)) {
+                                            el.classList.remove(flyingClass);
+                                            el.classList.add(staticClass);
+                                        }
+                                    }
+                                }
+                            }
                         }
 
                         activeRaids.push(raid);

@@ -161,89 +161,85 @@
 }
 
 /* USAF Jet Animation */
-@keyframes usafJetAnim {
-    0% {
-        background-image: url('/assets/images/korean-war/usaf_jet_0.png');
-    }
-
-    12.5% {
-        background-image: url('/assets/images/korean-war/usaf_jet_1.png');
-    }
-
-    25% {
-        background-image: url('/assets/images/korean-war/usaf_jet_1.png');
-    }
-
-    37.5% {
-        background-image: url('/assets/images/korean-war/usaf_jet_1.png');
-    }
-
-    50% {
-        background-image: url('/assets/images/korean-war/usaf_jet_2.png');
-    }
-
-    62.5% {
-        background-image: url('/assets/images/korean-war/usaf_jet_2.png');
-    }
-
-    75% {
-        background-image: url('/assets/images/korean-war/usaf_jet_2.png');
-    }
-
-    87.5% {
-        background-image: url('/assets/images/korean-war/usaf_jet_3.png');
-    }
-
-    100% {
-        background-image: url('/assets/images/korean-war/usaf_jet_0.png');
-    }
-}
-
-.usaf-jet-icon {
+/* USAF Jet Animation - Split States */
+.usaf-jet-static {
     width: 64px;
     height: 64px;
     background-size: contain;
     background-repeat: no-repeat;
     background-position: center;
-    animation: usafJetAnim 0.3s steps(1) infinite;
-    /* Faster fire */
+    background-image: url('/assets/images/korean-war/usaf_jet_0.png');
     filter: drop-shadow(0 15px 15px rgba(0, 0, 0, 0.4));
-    /* Higher altitude shadow */
+    transform-origin: center center;
+}
+
+@keyframes usafJetFlyingAnim {
+    0% {
+        background-image: url('/assets/images/korean-war/usaf_jet_1.png');
+    }
+
+    33% {
+        background-image: url('/assets/images/korean-war/usaf_jet_2.png');
+    }
+
+    66% {
+        background-image: url('/assets/images/korean-war/usaf_jet_3.png');
+    }
+
+    100% {
+        background-image: url('/assets/images/korean-war/usaf_jet_1.png');
+    }
+}
+
+.usaf-jet-flying {
+    width: 64px;
+    height: 64px;
+    background-size: contain;
+    background-repeat: no-repeat;
+    background-position: center;
+    animation: usafJetFlyingAnim 0.3s steps(1) infinite;
+    filter: drop-shadow(0 15px 15px rgba(0, 0, 0, 0.4));
     transform-origin: center center;
 }
 
 /* USAF Bomber Animation */
-@keyframes usafBomberAnim {
-    0% {
-        background-image: url('/assets/images/korean-war/usaf_bomber_0.png');
-    }
-
-    25% {
-        background-image: url('/assets/images/korean-war/usaf_bomber_1.png');
-    }
-
-    50% {
-        background-image: url('/assets/images/korean-war/usaf_bomber_2.png');
-    }
-
-    75% {
-        background-image: url('/assets/images/korean-war/usaf_bomber_3.png');
-    }
-
-    100% {
-        background-image: url('/assets/images/korean-war/usaf_bomber_0.png');
-    }
-}
-
-.usaf-bomber-icon {
+/* USAF Bomber Animation - Split States */
+.usaf-bomber-static {
     width: 96px;
-    /* Larger than jets */
     height: 96px;
     background-size: contain;
     background-repeat: no-repeat;
     background-position: center;
-    animation: usafBomberAnim 0.8s steps(1) infinite;
-    /* Slower, heavier feel */
+    background-image: url('/assets/images/korean-war/usaf_bomber_0.png');
+    filter: drop-shadow(0 20px 20px rgba(0, 0, 0, 0.6));
+    transform-origin: center center;
+}
+
+@keyframes usafBomberFlyingAnim {
+    0% {
+        background-image: url('/assets/images/korean-war/usaf_bomber_1.png');
+    }
+
+    33% {
+        background-image: url('/assets/images/korean-war/usaf_bomber_2.png');
+    }
+
+    66% {
+        background-image: url('/assets/images/korean-war/usaf_bomber_3.png');
+    }
+
+    100% {
+        background-image: url('/assets/images/korean-war/usaf_bomber_1.png');
+    }
+}
+
+.usaf-bomber-flying {
+    width: 96px;
+    height: 96px;
+    background-size: contain;
+    background-repeat: no-repeat;
+    background-position: center;
+    animation: usafBomberFlyingAnim 0.8s steps(1) infinite;
     filter: drop-shadow(0 20px 20px rgba(0, 0, 0, 0.6));
     transform-origin: center center;
 }
