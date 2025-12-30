@@ -34,7 +34,16 @@ export async function fetchAllPersons(): Promise<PersonData[]> {
     console.log('[Person API] Fetching from server (first time)');
     cachePromise = (async () => {
         try {
-            const response = await fetch(`${API_BASE_URL}/ai-person`);
+            const token = localStorage.getItem('accessToken');
+            const headers: HeadersInit = {
+                'Content-Type': 'application/json'
+            };
+            if (token) {
+                headers['Authorization'] = `Bearer ${token}`;
+            }
+
+            const response = await fetch(`${API_BASE_URL}/ai-person`, { headers });
+
             if (!response.ok) {
                 throw new Error(`HTTP error! status: ${response.status}`);
             }

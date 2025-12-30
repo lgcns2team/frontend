@@ -240,9 +240,21 @@ export default function HistoryMap() {
         tradeLayer.current = L.layerGroup().addTo(map.current);
 
         // Load capital data from API
+        // Load capital data from API
         const API_BASE_URL = import.meta.env.VITE_API_URL || '/api';
-        fetch(`${API_BASE_URL}/capitals`)
-            .then(res => res.json())
+        const token = localStorage.getItem('accessToken');
+        const headers: HeadersInit = {
+            'Content-Type': 'application/json'
+        };
+        if (token) {
+            headers['Authorization'] = `Bearer ${token}`;
+        }
+
+        fetch(`${API_BASE_URL}/capitals`, { headers })
+            .then(res => {
+                if (!res.ok) throw new Error('Failed to fetch capitals: ' + res.statusText);
+                return res.json();
+            })
             .then(data => {
                 console.log('Capital data loaded:', data);
                 if (data.length > 0) {

@@ -1,0 +1,40 @@
+# Dependencies
+node_modules
+
+# Build output
+dist
+
+# Git
+.git
+.gitignore
+
+# IDE
+.vscode
+.idea
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+npm-debug.log*
+
+# Environment files (use build args instead)
+.env.development
+.env.local
+
+# Test files
+test
+*.test.*
+*.spec.*
+
+# Documentation
+README.md
+ENV_SETUP.md
+
+# Misc
+.agent
+.continue

@@ -2,6 +2,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import styles from './DiscussionRoomPage.module.css';
 import { useDiscussion, getDiscussionRooms } from '../../../shared/lib/useStomp';
+import { getDiscussionSummary, type DiscussionSummaryResponse } from '../../../shared/api/debate-api';
 
 const DiscussionRoomPage: React.FC = () => {
     const { id } = useParams();
@@ -55,6 +56,9 @@ const DiscussionRoomPage: React.FC = () => {
     const [replyToId, setReplyToId] = useState<string | null>(null);
     const [flippedBoxes, setFlippedBoxes] = useState<{ [key: number]: boolean }>({});
     const [isTopicCollapsed, setIsTopicCollapsed] = useState(true);
+    const [summaryData, setSummaryData] = useState<DiscussionSummaryResponse | null>(null);
+    const [isLoadingSummary, setIsLoadingSummary] = useState(false);
+    const [summaryError, setSummaryError] = useState<string | null>(null);
 
     // Refs for auto-scrolling chat logs
     const agreeChatRef = useRef<HTMLDivElement>(null);
@@ -73,13 +77,29 @@ const DiscussionRoomPage: React.FC = () => {
     const topic = discussion?.title || '';
     const description = discussion?.description || discussion?.content || '';
 
-    const handleNext = () => {
+    const handleNext = async () => {
         let next: 'vote' | 'chat' | 'verify' | 'result' | 'final' = viewMode;
         if (viewMode === 'chat') next = 'verify';
         else if (viewMode === 'verify') next = 'result';
         else if (viewMode === 'result') next = 'final';
 
         if (next !== viewMode) {
+            // If transitioning to final, fetch summary data
+            if (next === 'final' && !summaryData) {
+                setIsLoadingSummary(true);
+                setSummaryError(null);
+                try {
+                    const summary = await getDiscussionSummary(id!, topic);
+                    setSummaryData(summary);
+                    console.log('✅ Summary loaded:', summary);
+                } catch (error) {
+                    console.error('❌ Failed to load summary:', error);
+                    setSummaryError('요약을 불러오는데 실패했습니다.');
+                } finally {
+                    setIsLoadingSummary(false);
+                }
+            }
+
             if (localStorage.getItem('userRole') === 'TEACHER') {
                 sendModeChange(next);
             } else {
@@ -165,26 +185,95 @@ const DiscussionRoomPage: React.FC = () => {
                         </div>
                     </div>
                     <div className={styles.resultBottomRow}>
-                        {[1, 2, 3].map((num) => (
-                            <div
-                                key={num}
-                                className={`${styles.flipCard} ${flippedBoxes[num] ? styles.flipped : ''}`}
-                                onClick={() => setFlippedBoxes(prev => ({ ...prev, [num]: !prev[num] }))}
-                            >
-                                <div className={styles.flipCardInner}>
-                                    <div className={`${styles.flipCardFront} ${styles.resultBox}`}>
-                                        결론 {num}
-                                    </div>
-                                    <div className={`${styles.flipCardBack} ${styles.resultBox}`}>
-                                        뒷면 {num}
+                        {isLoadingSummary ? (
+                            <div style={{ textAlign: 'center', padding: '40px', fontSize: '18px', color: '#666' }}>
+                                요약을 생성하고 있습니다...
+                            </div>
+                        ) : summaryError ? (
+                            <div style={{ textAlign: 'center', padding: '40px', fontSize: '18px', color: '#d32f2f' }}>
+                                {summaryError}
+                            </div>
+                        ) : summaryData?.result.options ? (
+                            summaryData.result.options.map((option, index) => (
+                                <div
+                                    key={option.id}
+                                    className={`${styles.flipCard} ${flippedBoxes[index + 1] ? styles.flipped : ''}`}
+                                    onClick={() => setFlippedBoxes(prev => ({ ...prev, [index + 1]: !prev[index + 1] }))}
+                                >
+                                    <div className={styles.flipCardInner}>
+                                        <div className={`${styles.flipCardFront} ${styles.resultBox}`} style={{
+                                            flexDirection: 'column',
+                                            alignItems: 'stretch',
+                                            justifyContent: 'flex-start',
+                                            padding: '20px'
+                                        }}>
+                                            <h3 style={{
+                                                marginBottom: '16px',
+                                                fontSize: '20px',
+                                                fontWeight: 'bold',
+                                                textAlign: 'center',
+                                                paddingBottom: '12px',
+                                                borderBottom: '2px solid #d4d1ca'
+                                            }}>{option.id}</h3>
+                                            <p style={{
+                                                fontSize: '14px',
+                                                lineHeight: '1.6',
+                                                padding: '0 20px',
+                                                textAlign: 'left'
+                                            }}>{option.argument}</p>
+                                        </div>
+                                        <div className={`${styles.flipCardBack} ${styles.resultBox}`} style={{
+                                            flexDirection: 'column',
+                                            alignItems: 'stretch',
+                                            justifyContent: 'flex-start',
+                                            padding: '20px'
+                                        }}>
+                                            <h3 style={{
+                                                marginBottom: '16px',
+                                                fontSize: '18px',
+                                                fontWeight: 'bold',
+                                                textAlign: 'center',
+                                                paddingBottom: '12px',
+                                                borderBottom: '2px solid #d4d1ca'
+                                            }}>역사적 결과</h3>
+                                            <ul style={{
+                                                textAlign: 'left',
+                                                fontSize: '13px',
+                                                lineHeight: '1.8',
+                                                paddingLeft: '40px',
+                                                paddingRight: '20px',
+                                                margin: 0
+                                            }}>
+                                                {option.historical_outcome.map((outcome, idx) => (
+                                                    <li key={idx} style={{ marginBottom: '8px' }}>{outcome}</li>
+                                                ))}
+                                            </ul>
+                                        </div>
                                     </div>
                                 </div>
-                            </div>
-                        ))}
+                            ))
+                        ) : (
+                            [1, 2, 3].map((num) => (
+                                <div
+                                    key={num}
+                                    className={`${styles.flipCard} ${flippedBoxes[num] ? styles.flipped : ''}`}
+                                    onClick={() => setFlippedBoxes(prev => ({ ...prev, [num]: !prev[num] }))}
+                                >
+                                    <div className={styles.flipCardInner}>
+                                        <div className={`${styles.flipCardFront} ${styles.resultBox}`}>
+                                            결론 {num}
+                                        </div>
+                                        <div className={`${styles.flipCardBack} ${styles.resultBox}`}>
+                                            뒷면 {num}
+                                        </div>
+                                    </div>
+                                </div>
+                            ))
+                        )}
                     </div>
-                    <div style={{ textAlign: 'right', marginTop: '10px' }}>
-                        <button className={styles.endButton} onClick={handleEnd}>종료</button>
-                    </div>
+                </div>
+                <div style={{ position: 'absolute', bottom: '15px', right: '55px', zIndex: 10 }}>
+                    <button className={styles.endButton} onClick={handleEnd}>종료</button>
                 </div>
             </div>
         );

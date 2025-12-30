@@ -37,7 +37,17 @@ export interface WarData {
 
 export const fetchWarData = async (year: number): Promise<WarData[]> => {
     try {
-        const response = await fetch(`${API_BASE_URL}/wars/${year}`);
+        const token = localStorage.getItem('accessToken');
+        const headers: HeadersInit = {
+            'Content-Type': 'application/json'
+        };
+        if (token) {
+            headers['Authorization'] = `Bearer ${token}`;
+        }
+
+        const response = await fetch(`${API_BASE_URL}/wars/${year}`, {
+            headers
+        });
         if (!response.ok) {
             throw new Error(`Failed to fetch war data: ${response.statusText}`);
         }

@@ -50,3 +50,67 @@ export const recommendDebateTopics = async (keyword: string): Promise<DebateTopi
 
     return data.debate_topics;
 };
+
+/**
+ * Discussion summary option interface
+ */
+export interface SummaryOption {
+    id: string;
+    argument: string;
+    historical_outcome: string[];
+}
+
+/**
+ * Discussion summary response interface
+ */
+export interface DiscussionSummaryResponse {
+    room_id: string;
+    topic: string;
+    used_message_count: number;
+    result: {
+        topic: string;
+        summary: string[];
+        options: SummaryOption[];
+    };
+    meta: {
+        extracted_pro_points: string[];
+        extracted_con_points: string[];
+        key_clashes: string[];
+        used_message_count: number;
+    };
+}
+
+/**
+ * Get discussion summary from AI
+ * @param roomId - Discussion room ID
+ * @param topic - Discussion topic
+ * @returns Discussion summary with options
+ */
+export const getDiscussionSummary = async (roomId: string, topic: string): Promise<DiscussionSummaryResponse> => {
+    console.log('🚀 [getDiscussionSummary] Starting request:', { roomId, topic });
+
+    const response = await fetch(`/api/ai/debate/${roomId}/summary`, {
+        method: 'POST',
+        headers: getAuthHeaders(),
+        body: JSON.stringify({ topic }),
+    });
+
+    console.log('📥 [getDiscussionSummary] Response received:', {
+        status: response.status,
+        ok: response.ok
+    });
+
+    if (!response.ok) {
+        const errorText = await response.text().catch(() => 'Unable to read error');
+        console.error('❌ [getDiscussionSummary] Request failed:', {
+            status: response.status,
+            errorText
+        });
+        throw new Error(`Failed to get summary: ${response.status}`);
+    }
+
+    const data: DiscussionSummaryResponse = await response.json();
+    console.log('✅ [getDiscussionSummary] Received summary with', data.result.options.length, 'options');
+
+    return data;
+};
