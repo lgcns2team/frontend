@@ -1,0 +1,533 @@
+.day-timeline-slider {
+    position: fixed;
+    bottom: 260px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 600px;
+    min-width: 350px;
+    max-width: 900px;
+    background: rgba(15, 23, 42, 0.95);
+    backdrop-filter: blur(12px);
+    border-radius: 16px;
+    padding: 16px 20px;
+    padding-top: 28px;
+    /* Extra space for drag handle */
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    z-index: 1000;
+    color: white;
+    user-select: none;
+}
+
+.day-timeline-slider.dragging {
+    opacity: 0.9;
+    box-shadow: 0 12px 48px rgba(0, 0, 0, 0.6);
+}
+
+/* Drag Handle */
+.drag-handle {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: grab;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 16px 16px 0 0;
+    transition: background 0.2s ease;
+}
+
+.drag-handle:hover {
+    background: rgba(255, 255, 255, 0.1);
+}
+
+.drag-handle:active {
+    cursor: grabbing;
+}
+
+.drag-handle-icon {
+    color: rgba(255, 255, 255, 0.5);
+    font-size: 14px;
+    letter-spacing: 2px;
+}
+
+/* Resize Handle */
+.resize-handle {
+    position: absolute;
+    bottom: 0;
+    right: 0;
+    width: 20px;
+    height: 20px;
+    cursor: se-resize;
+    background: transparent;
+    border-radius: 0 0 16px 0;
+}
+
+.resize-handle::before {
+    content: '';
+    position: absolute;
+    bottom: 6px;
+    right: 6px;
+    width: 8px;
+    height: 8px;
+    border-right: 2px solid rgba(255, 255, 255, 0.3);
+    border-bottom: 2px solid rgba(255, 255, 255, 0.3);
+}
+
+.resize-handle:hover::before {
+    border-color: rgba(255, 255, 255, 0.6);
+}
+
+.day-timeline-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 12px;
+}
+
+.day-timeline-title {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 16px;
+    font-weight: 700;
+}
+
+.war-icon {
+    font-size: 20px;
+}
+
+.day-timeline-controls {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.play-pause-btn {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    border: none;
+    background: linear-gradient(135deg, #3b82f6, #2563eb);
+    color: white;
+    font-size: 16px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.play-pause-btn:hover {
+    transform: scale(1.1);
+    box-shadow: 0 4px 16px rgba(59, 130, 246, 0.4);
+}
+
+.speed-controls {
+    display: flex;
+    gap: 4px;
+}
+
+.speed-btn {
+    padding: 6px 10px;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 6px;
+    background: transparent;
+    color: rgba(255, 255, 255, 0.7);
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.speed-btn:hover {
+    background: rgba(255, 255, 255, 0.1);
+}
+
+.speed-btn.active {
+    background: rgba(59, 130, 246, 0.3);
+    border-color: #3b82f6;
+    color: #3b82f6;
+}
+
+.day-timeline-date-display {
+    display: flex;
+    align-items: baseline;
+    gap: 12px;
+    margin-bottom: 16px;
+}
+
+.current-date {
+    font-size: 24px;
+    font-weight: 700;
+    background: linear-gradient(135deg, #f97316, #ef4444);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.current-phase {
+    font-size: 14px;
+    color: rgba(255, 255, 255, 0.7);
+    padding: 4px 12px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 20px;
+}
+
+.day-timeline-slider-container {
+    margin-bottom: 12px;
+}
+
+.slider-labels {
+    display: flex;
+    justify-content: space-between;
+    font-size: 11px;
+    color: rgba(255, 255, 255, 0.5);
+    margin-bottom: 8px;
+}
+
+.slider-wrapper {
+    position: relative;
+    height: 24px;
+}
+
+.slider-progress {
+    position: absolute;
+    top: 50%;
+    left: 0;
+    height: 6px;
+    background: linear-gradient(90deg, #3b82f6, #8b5cf6);
+    border-radius: 3px;
+    transform: translateY(-50%);
+    pointer-events: none;
+    z-index: 1;
+}
+
+.slider-input {
+    position: absolute;
+    top: 50%;
+    left: 0;
+    width: 100%;
+    height: 20px;
+    transform: translateY(-50%);
+    -webkit-appearance: none;
+    appearance: none;
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 3px;
+    cursor: pointer;
+    z-index: 2;
+}
+
+.slider-input::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 18px;
+    height: 18px;
+    background: white;
+    border-radius: 50%;
+    cursor: pointer;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+    transition: transform 0.2s ease;
+}
+
+.slider-input::-webkit-slider-thumb:hover {
+    transform: scale(1.2);
+}
+
+.slider-input::-moz-range-thumb {
+    width: 18px;
+    height: 18px;
+    background: white;
+    border: none;
+    border-radius: 50%;
+    cursor: pointer;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+}
+
+.phase-markers {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    z-index: 3;
+}
+
+.phase-marker {
+    position: absolute;
+    top: 50%;
+    width: 14px;
+    height: 14px;
+    padding: 0;
+    margin: 0;
+    background: #f97316;
+    border: 2px solid white;
+    border-radius: 50%;
+    transform: translate(-50%, -50%);
+    pointer-events: auto !important;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+    z-index: 10;
+}
+
+.phase-marker:hover {
+    transform: translate(-50%, -50%) scale(1.5);
+    background: #ea580c;
+}
+
+.phase-marker:focus {
+    outline: 2px solid #3b82f6;
+    outline-offset: 2px;
+}
+
+.day-timeline-footer {
+    display: flex;
+    justify-content: space-between;
+    font-size: 12px;
+    color: rgba(255, 255, 255, 0.5);
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .day-timeline-slider {
+        width: 95vw;
+        padding: 12px 16px;
+        bottom: 80px;
+    }
+
+    .current-date {
+        font-size: 20px;
+    }
+
+    .speed-controls {
+        display: none;
+    }
+}
+
+/* Collapse button */
+.collapse-btn {
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    background: transparent;
+    color: rgba(255, 255, 255, 0.7);
+    font-size: 12px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.collapse-btn:hover {
+    background: rgba(255, 255, 255, 0.1);
+    color: white;
+}
+
+/* Collapsed state */
+.day-timeline-slider.collapsed {
+    padding: 12px 20px;
+}
+
+.day-timeline-slider.collapsed .day-timeline-header {
+    margin-bottom: 0;
+}
+
+.collapsed-info {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-top: 8px;
+}
+
+.current-date-mini {
+    font-size: 14px;
+    font-weight: 600;
+    color: rgba(255, 255, 255, 0.9);
+}
+
+.current-phase-mini {
+    font-size: 12px;
+    color: rgba(255, 255, 255, 0.6);
+    padding: 2px 8px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 12px;
+}
+
+/* Clickable slider track */
+.slider-wrapper {
+    position: relative;
+    height: 24px;
+    cursor: pointer;
+}
+
+/* ======================================
+   Korean War Floating Label
+   ====================================== */
+.korean-war-label {
+    position: fixed;
+    top: 120px;
+    right: 80px;
+    z-index: 999;
+    cursor: pointer;
+    user-select: none;
+    animation: floatIn 0.6s ease-out;
+}
+
+@keyframes floatIn {
+    from {
+        opacity: 0;
+        transform: translateX(30px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+.korean-war-label-content {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 14px 20px;
+    background: linear-gradient(135deg,
+            rgba(30, 58, 138, 0.95) 0%,
+            rgba(59, 130, 246, 0.9) 50%,
+            rgba(239, 68, 68, 0.85) 100%);
+    border-radius: 16px;
+    box-shadow:
+        0 8px 32px rgba(0, 0, 0, 0.3),
+        0 0 0 1px rgba(255, 255, 255, 0.1),
+        inset 0 1px 0 rgba(255, 255, 255, 0.2);
+    backdrop-filter: blur(12px);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+    overflow: hidden;
+}
+
+/* Animated background shimmer */
+.korean-war-label-content::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg,
+            transparent,
+            rgba(255, 255, 255, 0.15),
+            transparent);
+    transition: left 0.5s ease;
+}
+
+.korean-war-label:hover .korean-war-label-content::before {
+    left: 100%;
+}
+
+.korean-war-label:hover .korean-war-label-content {
+    transform: scale(1.05) translateY(-2px);
+    box-shadow:
+        0 12px 48px rgba(0, 0, 0, 0.4),
+        0 0 0 2px rgba(255, 255, 255, 0.2),
+        inset 0 1px 0 rgba(255, 255, 255, 0.3);
+}
+
+.korean-war-label.active .korean-war-label-content {
+    background: linear-gradient(135deg,
+            rgba(22, 163, 74, 0.95) 0%,
+            rgba(34, 197, 94, 0.9) 50%,
+            rgba(74, 222, 128, 0.85) 100%);
+}
+
+.korean-war-label-flag {
+    font-size: 28px;
+    filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3));
+    animation: flagWave 2s ease-in-out infinite;
+}
+
+@keyframes flagWave {
+
+    0%,
+    100% {
+        transform: rotate(-2deg);
+    }
+
+    50% {
+        transform: rotate(2deg);
+    }
+}
+
+.korean-war-label-text {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.korean-war-label-title {
+    font-size: 20px;
+    font-weight: 800;
+    color: white;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+    letter-spacing: 1px;
+    font-family: 'Nanum Gothic', sans-serif;
+}
+
+.korean-war-label-subtitle {
+    font-size: 12px;
+    font-weight: 500;
+    color: rgba(255, 255, 255, 0.8);
+    letter-spacing: 2px;
+}
+
+.korean-war-label-arrow {
+    font-size: 14px;
+    color: rgba(255, 255, 255, 0.8);
+    transition: transform 0.3s ease;
+    margin-left: 4px;
+}
+
+.korean-war-label:hover .korean-war-label-arrow {
+    transform: translateX(3px);
+}
+
+.korean-war-label.active .korean-war-label-arrow {
+    transform: rotate(0deg);
+}
+
+/* Pulsing dot indicator */
+.korean-war-label-content::after {
+    content: '';
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    width: 8px;
+    height: 8px;
+    background: #22c55e;
+    border-radius: 50%;
+    animation: pulse 2s ease-in-out infinite;
+}
+
+@keyframes pulse {
+
+    0%,
+    100% {
+        opacity: 1;
+        transform: scale(1);
+    }
+
+    50% {
+        opacity: 0.5;
+        transform: scale(1.2);
+    }
+}
+
+.korean-war-label.active .korean-war-label-content::after {
+    background: white;
+}

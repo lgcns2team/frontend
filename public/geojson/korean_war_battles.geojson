@@ -1,0 +1,262 @@
+{
+    "type": "FeatureCollection",
+    "name": "korean_war_battles",
+    "description": "6.25 전쟁 주요 전투 위치",
+    "features": [
+        {
+            "type": "Feature",
+            "properties": {
+                "name": "춘천 전투",
+                "date": "1950-06-25",
+                "winner": "대한민국",
+                "loser": "북한",
+                "description": "6사단이 북한군 2군단의 남침을 지연시킨 전투"
+            },
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    127.73,
+                    37.87
+                ]
+            }
+        },
+        {
+            "type": "Feature",
+            "properties": {
+                "name": "서울 함락",
+                "date": "1950-06-28",
+                "winner": "북한",
+                "loser": "대한민국",
+                "description": "북한군 서울 점령"
+            },
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    126.97,
+                    37.56
+                ]
+            }
+        },
+        {
+            "type": "Feature",
+            "properties": {
+                "name": "오산 전투",
+                "date": "1950-07-05",
+                "winner": "북한",
+                "loser": "UN군",
+                "description": "스미스 특수임무부대와 북한군의 첫 교전"
+            },
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    127.08,
+                    37.15
+                ]
+            }
+        },
+        {
+            "type": "Feature",
+            "properties": {
+                "name": "대전 전투",
+                "date": "1950-07-20",
+                "winner": "북한",
+                "loser": "UN군",
+                "description": "딘 소장 포로, 대전 함락"
+            },
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    127.38,
+                    36.35
+                ]
+            }
+        },
+        {
+            "type": "Feature",
+            "properties": {
+                "name": "낙동강 방어선",
+                "date": "1950-08-04",
+                "winner": "UN군",
+                "loser": "북한",
+                "description": "UN군 최후의 방어선 구축 및 방어 성공"
+            },
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    128.88,
+                    35.88
+                ]
+            }
+        },
+        {
+            "type": "Feature",
+            "properties": {
+                "name": "다부동 전투",
+                "date": "1950-08-20",
+                "winner": "대한민국",
+                "loser": "북한",
+                "description": "낙동강 방어선의 핵심 전투"
+            },
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    128.52,
+                    36.00
+                ]
+            }
+        },
+        {
+            "type": "Feature",
+            "properties": {
+                "name": "인천 상륙작전",
+                "date": "1950-09-15",
+                "winner": "UN군",
+                "loser": "북한",
+                "description": "맥아더 장군의 인천 상륙, 전세 역전"
+            },
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    126.63,
+                    37.45
+                ]
+            }
+        },
+        {
+            "type": "Feature",
+            "properties": {
+                "name": "서울 수복",
+                "date": "1950-09-28",
+                "winner": "UN군",
+                "loser": "북한",
+                "description": "UN군 서울 탈환"
+            },
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    126.97,
+                    37.56
+                ]
+            }
+        },
+        {
+            "type": "Feature",
+            "properties": {
+                "name": "평양 점령",
+                "date": "1950-10-19",
+                "winner": "UN군",
+                "loser": "북한",
+                "description": "UN군 평양 점령"
+            },
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    125.75,
+                    39.03
+                ]
+            }
+        },
+        {
+            "type": "Feature",
+            "properties": {
+                "name": "장진호 전투",
+                "date": "1950-11-27",
+                "winner": "중국",
+                "loser": "UN군",
+                "description": "중공군 개입, 미 해병대 철수"
+            },
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    127.25,
+                    40.37
+                ]
+            }
+        },
+        {
+            "type": "Feature",
+            "properties": {
+                "name": "흥남 철수",
+                "date": "1950-12-24",
+                "winner": "UN군",
+                "loser": "중국",
+                "description": "10만 병력 + 10만 민간인 철수 성공"
+            },
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    127.64,
+                    39.83
+                ]
+            }
+        },
+        {
+            "type": "Feature",
+            "properties": {
+                "name": "1.4 후퇴",
+                "date": "1951-01-04",
+                "winner": "중국/북한",
+                "loser": "UN군",
+                "description": "서울 재함락"
+            },
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    126.97,
+                    37.56
+                ]
+            }
+        },
+        {
+            "type": "Feature",
+            "properties": {
+                "name": "지평리 전투",
+                "date": "1951-02-15",
+                "winner": "UN군",
+                "loser": "중국",
+                "description": "중공군 공세 저지"
+            },
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    127.43,
+                    37.37
+                ]
+            }
+        },
+        {
+            "type": "Feature",
+            "properties": {
+                "name": "서울 재수복",
+                "date": "1951-03-14",
+                "winner": "UN군",
+                "loser": "중국/북한",
+                "description": "UN군 서울 재탈환"
+            },
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    126.97,
+                    37.56
+                ]
+            }
+        },
+        {
+            "type": "Feature",
+            "properties": {
+                "name": "휴전협정",
+                "date": "1953-07-27",
+                "winner": "없음",
+                "loser": "없음",
+                "description": "판문점에서 휴전협정 체결"
+            },
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    126.68,
+                    37.96
+                ]
+            }
+        }
+    ]
+}

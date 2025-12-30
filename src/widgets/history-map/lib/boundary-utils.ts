@@ -167,10 +167,16 @@ const intersects = (bbox1: typeof VIEWPORT_BBOX, bbox2: typeof VIEWPORT_BBOX) =>
         bbox2.maxLat < bbox1.minLat);
 };
 
+export interface LoadBordersOptions {
+    onCountryClick?: (name: string, properties: any) => void;
+    isKoreanWarMode?: boolean; // If true, filter out Korea polygons (they will be replaced by dynamic frontline-based territories)
+}
+
 export const loadHistoricalBorders = async (
     year: number,
-    onCountryClick?: (name: string, properties: any) => void
+    options?: LoadBordersOptions
 ): Promise<L.Layer | null> => {
+    const { onCountryClick, isKoreanWarMode = false } = options || {};
     const baseFile = getGeojsonFileForYear(year);
     const filesToLoad = [baseFile];
 
@@ -249,11 +255,28 @@ export const loadHistoricalBorders = async (
 
         if (allFeatures.length > 0) {
             // Robust filtering using Bounding Box Intersection
-            const filteredFeatures = allFeatures.filter((feature: any) => {
+            let filteredFeatures = allFeatures.filter((feature: any) => {
                 if (!feature.geometry) return false;
                 const featureBBox = getGeometryBBox(feature.geometry);
                 return intersects(VIEWPORT_BBOX, featureBBox);
             });
+
+            // If Korean War mode is active, filter out North/South Korea polygons
+            // These will be replaced by dynamic frontline-based territories
+            if (isKoreanWarMode) {
+                const koreaNames = [
+                    'Korea, Republic of',
+                    'Korea, Democratic People\'s Republic of',
+                    '대한민국',
+                    '북한',
+                    'South Korea',
+                    'North Korea'
+                ];
+                filteredFeatures = filteredFeatures.filter((feature: any) => {
+                    const name = feature.properties?.NAME || feature.properties?.name;
+                    return !koreaNames.includes(name);
+                });
+            }
 
             const filteredData = {
                 type: 'FeatureCollection',

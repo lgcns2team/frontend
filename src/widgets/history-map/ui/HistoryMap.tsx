@@ -9,6 +9,8 @@ import { loadTradeRoutes } from '../lib/trade-route';
 import type { TradeRouteWithColor } from '../lib/trade-route';
 import { useTradeAnimation } from '../lib/useTradeAnimation';
 import { useWarLayer } from '../lib/useWarLayer';
+import { useFrontlineAnimation } from '../lib/useFrontlineAnimation';
+import { isKoreanWarPeriod, KOREAN_WAR_START } from '../../../shared/api/korean-war-api';
 import { fetchPersonsByYear, fetchAllPersons, type PersonData } from '../../../shared/api/person-api';
 
 // Features
@@ -33,6 +35,7 @@ import { FallingBomb } from '../../../features/falling-bomb';
 import { DiscussionPanel } from '../../../features/discussion';
 import { CloudTransition } from '../../../features/cloud-transition/ui/CloudTransition';
 import { MyPagePanel } from '../../../features/mypage';
+import { DayTimelineSlider } from '../../../features/day-timeline';
 
 // Fix Leaflet marker icon issue
 import icon from 'leaflet/dist/images/marker-icon.png';
@@ -113,6 +116,13 @@ export default function HistoryMap() {
     // My Page State
     const [showMyPage, setShowMyPage] = useState(false);
 
+    // Korean War Mode State (Day-based timeline)
+    const [isKoreanWarMode, setIsKoreanWarMode] = useState(false);
+    const [currentKoreanWarDate, setCurrentKoreanWarDate] = useState(KOREAN_WAR_START);
+    const [isKoreanWarPlaying, setIsKoreanWarPlaying] = useState(false);
+    const [koreanWarSpeed, setKoreanWarSpeed] = useState(1);
+    const [koreanWarFrontlines, setKoreanWarFrontlines] = useState<any[]>([]);
+
     const handleTransitionComplete = () => {
         setIsCloudTransitionActive(false);
     };
@@ -166,7 +176,38 @@ export default function HistoryMap() {
     const isAllUIHidden = timelineVisibility === 'full-hidden';
     // War Layer Hook
     // War Layer Hook
-    useWarLayer(map.current, currentYear, layerType === 'battles', historicalLayer.current, currentMapZoom);
+    useWarLayer(map.current, currentYear, layerType === 'battles' && !isKoreanWarMode, historicalLayer.current, currentMapZoom);
+
+    // Korean War Frontline Animation Hook
+    const { warData: koreanWarData } = useFrontlineAnimation({
+        map: map.current,
+        isActive: isKoreanWarMode && layerType === 'battles',
+        currentDate: currentKoreanWarDate,
+        animationSpeed: koreanWarSpeed
+    });
+
+    // Update frontlines when Korean War data loads
+    useEffect(() => {
+        if (koreanWarData?.frontlines) {
+            setKoreanWarFrontlines(koreanWarData.frontlines);
+        }
+    }, [koreanWarData]);
+
+    // Activate Korean War mode when year is 1950-1953 and battles layer is active
+    useEffect(() => {
+        const shouldBeKoreanWarMode = isKoreanWarPeriod(currentYear) && layerType === 'battles';
+        if (shouldBeKoreanWarMode && !isKoreanWarMode) {
+            setIsKoreanWarMode(true);
+            // Set date based on year
+            if (currentYear === 1950) setCurrentKoreanWarDate('1950-06-25');
+            else if (currentYear === 1951) setCurrentKoreanWarDate('1951-01-01');
+            else if (currentYear === 1952) setCurrentKoreanWarDate('1952-01-01');
+            else if (currentYear === 1953) setCurrentKoreanWarDate('1953-01-01');
+        } else if (!shouldBeKoreanWarMode && isKoreanWarMode) {
+            setIsKoreanWarMode(false);
+            setIsKoreanWarPlaying(false);
+        }
+    }, [currentYear, layerType, isKoreanWarMode]);
 
     const playInterval = useRef<ReturnType<typeof setInterval> | null>(null);
 
@@ -269,14 +310,14 @@ export default function HistoryMap() {
         };
     }, []);
 
-    // Update map when year changes with debounce
+    // Update map when year changes with debounce, or when Korean War mode changes
     useEffect(() => {
         const timer = setTimeout(() => {
             updateMapForYear(currentYear);
         }, 100); // 100ms debounce
 
         return () => clearTimeout(timer);
-    }, [currentYear]);
+    }, [currentYear, isKoreanWarMode, layerType]);
 
     // Save year to localStorage
     // Save year to localStorage
@@ -591,33 +632,39 @@ export default function HistoryMap() {
         lastRequestedYear.current = year;
         const requestId = year;
 
+        // Check if Korean War mode should be active
+        const shouldUseKoreanWarMode = isKoreanWarMode && layerType === 'battles';
+
         try {
             let newLayer: L.Layer | null = null;
 
-            // Check cache first
-            if (layerCache.current.has(year)) {
-                newLayer = layerCache.current.get(year)!;
-                // Note: Cached layers retain their event listeners.
-                // However, the 'click' listener closure captures the state at creation time.
-                // Since 'setSelectedCountry' is stable, this is fine.
-            } else {
-                newLayer = await loadHistoricalBorders(year, async (name, props) => {
-                    setSelectedCountry({ name, properties: props });
-                    setSelectedCountryData(null); // Reset previous data
+            // Create cache key that includes Korean War mode state
+            const cacheKey = shouldUseKoreanWarMode ? `${year}_kw` : `${year}`;
 
-                    if (props.CODE) {
-                        const data = await fetchCountryByCode(props.CODE);
-                        if (data) {
-                            setSelectedCountryData(data);
+            // Check cache first (with Korean War mode awareness)
+            if (layerCache.current.has(cacheKey as any)) {
+                newLayer = layerCache.current.get(cacheKey as any)!;
+            } else {
+                newLayer = await loadHistoricalBorders(year, {
+                    onCountryClick: async (name, props) => {
+                        setSelectedCountry({ name, properties: props });
+                        setSelectedCountryData(null); // Reset previous data
+
+                        if (props.CODE) {
+                            const data = await fetchCountryByCode(props.CODE);
+                            if (data) {
+                                setSelectedCountryData(data);
+                            }
                         }
-                    }
+                    },
+                    isKoreanWarMode: shouldUseKoreanWarMode
                 });
 
                 // If aborted during await, stop here
                 if (controller.signal.aborted) return;
 
                 if (newLayer) {
-                    layerCache.current.set(year, newLayer);
+                    layerCache.current.set(cacheKey as any, newLayer);
                 }
             }
 
@@ -1165,6 +1212,18 @@ export default function HistoryMap() {
                 />
             )}
 
+            {/* Korean War Day-based Timeline Slider */}
+            {isKoreanWarMode && koreanWarFrontlines.length > 0 && (
+                <DayTimelineSlider
+                    currentDate={currentKoreanWarDate}
+                    onDateChange={setCurrentKoreanWarDate}
+                    frontlines={koreanWarFrontlines}
+                    isPlaying={isKoreanWarPlaying}
+                    onPlayPause={() => setIsKoreanWarPlaying(prev => !prev)}
+                    speed={koreanWarSpeed}
+                    onSpeedChange={setKoreanWarSpeed}
+                />
+            )}
 
 
             {/* Bottom Timeline */}

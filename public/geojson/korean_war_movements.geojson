@@ -1,0 +1,368 @@
+{
+    "type": "FeatureCollection",
+    "name": "korean_war_movements",
+    "description": "6.25 전쟁 군 이동 경로 (마커 애니메이션용)",
+    "features": [
+        {
+            "type": "Feature",
+            "properties": {
+                "name": "북한군 1군단 남침",
+                "date": "1950-06-25",
+                "side": "north",
+                "unit_type": "infantry",
+                "description": "개성-서울 축선 공격"
+            },
+            "geometry": {
+                "type": "LineString",
+                "coordinates": [
+                    [
+                        126.56,
+                        37.97
+                    ],
+                    [
+                        126.70,
+                        37.80
+                    ],
+                    [
+                        126.85,
+                        37.65
+                    ],
+                    [
+                        126.97,
+                        37.56
+                    ]
+                ]
+            }
+        },
+        {
+            "type": "Feature",
+            "properties": {
+                "name": "북한군 2군단 춘천 공격",
+                "date": "1950-06-25",
+                "side": "north",
+                "unit_type": "infantry",
+                "description": "철원-춘천 축선 공격"
+            },
+            "geometry": {
+                "type": "LineString",
+                "coordinates": [
+                    [
+                        127.31,
+                        38.15
+                    ],
+                    [
+                        127.45,
+                        38.00
+                    ],
+                    [
+                        127.60,
+                        37.90
+                    ],
+                    [
+                        127.73,
+                        37.87
+                    ]
+                ]
+            }
+        },
+        {
+            "type": "Feature",
+            "properties": {
+                "name": "북한군 동해안 남하",
+                "date": "1950-06-25",
+                "side": "north",
+                "unit_type": "infantry",
+                "description": "동해안 축선 공격"
+            },
+            "geometry": {
+                "type": "LineString",
+                "coordinates": [
+                    [
+                        128.90,
+                        38.40
+                    ],
+                    [
+                        128.95,
+                        38.20
+                    ],
+                    [
+                        129.00,
+                        38.00
+                    ],
+                    [
+                        129.05,
+                        37.80
+                    ]
+                ]
+            }
+        },
+        {
+            "type": "Feature",
+            "properties": {
+                "name": "UN군 인천 상륙",
+                "date": "1950-09-15",
+                "side": "south",
+                "unit_type": "navy",
+                "description": "인천 상륙작전"
+            },
+            "geometry": {
+                "type": "LineString",
+                "coordinates": [
+                    [
+                        124.50,
+                        36.50
+                    ],
+                    [
+                        125.20,
+                        36.80
+                    ],
+                    [
+                        125.80,
+                        37.10
+                    ],
+                    [
+                        126.30,
+                        37.30
+                    ],
+                    [
+                        126.63,
+                        37.45
+                    ]
+                ]
+            }
+        },
+        {
+            "type": "Feature",
+            "properties": {
+                "name": "UN군 서울 진격",
+                "date": "1950-09-20",
+                "side": "south",
+                "unit_type": "infantry",
+                "description": "인천-서울 진격"
+            },
+            "geometry": {
+                "type": "LineString",
+                "coordinates": [
+                    [
+                        126.63,
+                        37.45
+                    ],
+                    [
+                        126.75,
+                        37.48
+                    ],
+                    [
+                        126.85,
+                        37.52
+                    ],
+                    [
+                        126.97,
+                        37.56
+                    ]
+                ]
+            }
+        },
+        {
+            "type": "Feature",
+            "properties": {
+                "name": "UN군 낙동강 돌파",
+                "date": "1950-09-16",
+                "side": "south",
+                "unit_type": "infantry",
+                "description": "낙동강 방어선에서 반격"
+            },
+            "geometry": {
+                "type": "LineString",
+                "coordinates": [
+                    [
+                        128.88,
+                        35.88
+                    ],
+                    [
+                        128.50,
+                        36.00
+                    ],
+                    [
+                        128.20,
+                        36.20
+                    ],
+                    [
+                        127.90,
+                        36.40
+                    ]
+                ]
+            }
+        },
+        {
+            "type": "Feature",
+            "properties": {
+                "name": "UN군 평양 진격",
+                "date": "1950-10-10",
+                "side": "south",
+                "unit_type": "infantry",
+                "description": "서울-평양 북진"
+            },
+            "geometry": {
+                "type": "LineString",
+                "coordinates": [
+                    [
+                        126.97,
+                        37.56
+                    ],
+                    [
+                        126.80,
+                        37.90
+                    ],
+                    [
+                        126.50,
+                        38.20
+                    ],
+                    [
+                        126.20,
+                        38.50
+                    ],
+                    [
+                        125.90,
+                        38.80
+                    ],
+                    [
+                        125.75,
+                        39.03
+                    ]
+                ]
+            }
+        },
+        {
+            "type": "Feature",
+            "properties": {
+                "name": "중공군 개입",
+                "date": "1950-10-25",
+                "side": "china",
+                "unit_type": "infantry",
+                "description": "중국군 대규모 개입"
+            },
+            "geometry": {
+                "type": "LineString",
+                "coordinates": [
+                    [
+                        126.00,
+                        40.50
+                    ],
+                    [
+                        125.90,
+                        40.20
+                    ],
+                    [
+                        125.80,
+                        39.80
+                    ],
+                    [
+                        125.75,
+                        39.50
+                    ]
+                ]
+            }
+        },
+        {
+            "type": "Feature",
+            "properties": {
+                "name": "중공군 장진호 공격",
+                "date": "1950-11-27",
+                "side": "china",
+                "unit_type": "infantry",
+                "description": "장진호 포위 공격"
+            },
+            "geometry": {
+                "type": "LineString",
+                "coordinates": [
+                    [
+                        127.80,
+                        41.00
+                    ],
+                    [
+                        127.60,
+                        40.80
+                    ],
+                    [
+                        127.40,
+                        40.60
+                    ],
+                    [
+                        127.25,
+                        40.37
+                    ]
+                ]
+            }
+        },
+        {
+            "type": "Feature",
+            "properties": {
+                "name": "미 해병대 흥남 철수",
+                "date": "1950-12-10",
+                "side": "south",
+                "unit_type": "infantry",
+                "description": "장진호-흥남 철수"
+            },
+            "geometry": {
+                "type": "LineString",
+                "coordinates": [
+                    [
+                        127.25,
+                        40.37
+                    ],
+                    [
+                        127.35,
+                        40.20
+                    ],
+                    [
+                        127.45,
+                        40.00
+                    ],
+                    [
+                        127.55,
+                        39.90
+                    ],
+                    [
+                        127.64,
+                        39.83
+                    ]
+                ]
+            }
+        },
+        {
+            "type": "Feature",
+            "properties": {
+                "name": "중공군/북한군 1.4 공세",
+                "date": "1951-01-01",
+                "side": "china",
+                "unit_type": "infantry",
+                "description": "서울 재공격"
+            },
+            "geometry": {
+                "type": "LineString",
+                "coordinates": [
+                    [
+                        126.50,
+                        38.50
+                    ],
+                    [
+                        126.60,
+                        38.20
+                    ],
+                    [
+                        126.75,
+                        37.90
+                    ],
+                    [
+                        126.90,
+                        37.70
+                    ],
+                    [
+                        126.97,
+                        37.56
+                    ]
+                ]
+            }
+        }
+    ]
+}
