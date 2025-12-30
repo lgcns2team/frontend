@@ -132,7 +132,7 @@ body {
 /* 9. 6.25 전쟁 (War-torn Dark Red) #7f1d1d */
 .theme-korean-war {
     font-family: 'Nanum Myeongjo', serif;
-    --ui-bg: rgba(40, 20, 20, 0.95);
+    --ui-bg: rgba(252, 252, 252, 0.95);
     /* 어두운 붉은 갈색 */
     --ui-bg-solid: #2a1a1a;
     --ui-text: #fecaca;

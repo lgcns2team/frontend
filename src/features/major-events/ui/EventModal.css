@@ -1,4 +1,10 @@
 .event-modal-overlay {
+    /* Color Palette */
+    --em-main: #496b6e;
+    --em-secondary: #88a09b;
+    --em-accent: #c49f64;
+    --em-background: #f9f7f1;
+
     position: fixed;
     top: 0;
     left: 0;
@@ -8,18 +14,17 @@
     align-items: center;
     justify-content: center;
     z-index: 2000;
-    /* Higher than other overlays */
-    /* backdrop-filter: blur(4px); removed */
     animation: fadeIn 0.2s ease-out;
 }
 
 .event-modal-content {
-    background: var(--ui-bg, #fff);
+    background: var(--em-background);
     width: 600px;
     max-width: 90%;
     max-height: 90vh;
     border-radius: 12px;
-    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+    border: 1px solid var(--em-secondary);
+    box-shadow: 0 10px 25px rgba(73, 107, 110, 0.25);
     overflow: hidden;
     position: relative;
     top: -100px;
@@ -63,12 +68,14 @@
     font-weight: 700;
     margin-top: 3px;
     margin-bottom: -15px;
+    color: #f9f7f1;
 }
 
 .event-modal-era {
     font-size: 1rem;
     opacity: 0.9;
     margin-right: auto;
+    color: #ffffff;
 }
 
 .event-modal-close {
@@ -76,31 +83,32 @@
     top: 24px;
     right: 24px;
     z-index: 60;
-    /* Above frame (z=50) */
-    background: none;
+    background: transparent;
     border: none;
-    color: white;
-    /* Adjust color if needed depending on background */
+    color: #f9f7f1;
     font-size: 24px;
     cursor: pointer;
+    width: 36px;
+    height: 36px;
+    line-height: 36px;
+    text-align: center;
     padding: 0;
-    line-height: 1;
-    opacity: 0.8;
-    transition: opacity 0.2s;
+    border-radius: 50%;
+    opacity: 0.9;
+    transition: all 0.2s ease;
 }
 
 .event-modal-close:hover {
     opacity: 1;
+    background: rgba(255, 255, 255, 0.25);
 }
 
 .event-modal-body {
     padding: 32px;
-    /* Increased padding for frame */
     overflow-y: auto;
-    color: var(--ui-text, #333);
+    color: #000000;
     position: relative;
     z-index: 20;
-    /* Above frame */
     margin-top: -40px;
 }
 
@@ -116,12 +124,12 @@
 }
 
 .country-badge {
-    background: rgba(0, 0, 0, 0.05);
+    background: rgba(0, 0, 0, 0.08);
     padding: 4px 12px;
     border-radius: 20px;
     font-weight: 600;
     font-size: 0.9rem;
-    color: var(--ui-text-muted, #666);
+    color: #000000;
 }
 
 .event-modal-section {
@@ -136,8 +144,8 @@
     margin: 0 0 8px 0;
     font-size: 1.1rem;
     font-weight: 700;
-    color: var(--ui-text, #333);
-    border-bottom: 2px solid rgba(0, 0, 0, 0.1);
+    color: #000000;
+    border-bottom: 2px solid var(--em-accent);
     padding-bottom: 4px;
     display: inline-block;
 }

@@ -27,8 +27,8 @@ export const EventModal = ({ event, onClose }: EventModalProps) => {
                 <div
                     className="event-modal-header"
                     style={{
-                        backgroundColor: eraConfig.color,
-                        color: 'white'
+                        backgroundColor: '#496b6e',
+                        color: '#f9f7f1'
                     }}
                 >
                     <span className="event-modal-year">{event.year}년</span>
