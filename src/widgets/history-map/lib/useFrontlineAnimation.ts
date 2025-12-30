@@ -12,6 +12,20 @@ import {
 } from '../../../shared/api/korean-war-api';
 import { interpolateCatmullRom } from './math-utils';
 
+interface AirRaid {
+    id: number;
+    type: 'jet' | 'bomber' | 'dogfight' | 'battleship';
+    startPos: number[]; // [lng, lat]
+    endPos: number[];   // [lng, lat]
+    startTime: number;
+    duration: number;
+    rotation: number;
+    marker?: L.Marker; // Persistent marker reference
+}
+
+
+
+
 interface UseFrontlineAnimationProps {
     map: L.Map | null;
     isActive: boolean;
@@ -97,11 +111,27 @@ export const useFrontlineAnimation = ({
     const [peninsula, setPeninsula] = useState<any>(null);
     const animationRef = useRef<number | null>(null);
 
+    // USAF Air Raids
+    const airRaidLayer = useRef<L.LayerGroup | null>(null);
+    const airRaidsRef = useRef<AirRaid[]>([]);
+    const lastRaidTimeRef = useRef<number>(0);
+    const battleshipRef = useRef<AirRaid | null>(null); // Track battleship instance
+    const currentFrontlinePointsRef = useRef<number[][]>([]);
+
+
+
     // Soldier icon definition (Animated North)
     const soldierIconNorth = L.divIcon({
         className: 'soldier-icon-north-anim',
         iconSize: [32, 32],
         iconAnchor: [16, 32]
+    });
+
+    // Tank icon definition (Animated North)
+    const tankIconNorth = L.divIcon({
+        className: 'tank-icon-north-anim',
+        iconSize: [48, 48],
+        iconAnchor: [24, 24] // More anchor for larger icon
     });
 
     // Soldier icon definition (Animated South)
@@ -110,6 +140,14 @@ export const useFrontlineAnimation = ({
         iconSize: [32, 32],
         iconAnchor: [16, 32]
     });
+
+    // Tank icon definition (Animated South)
+    const tankIconSouth = L.divIcon({
+        className: 'tank-icon-south-anim',
+        iconSize: [48, 48],
+        iconAnchor: [24, 24]
+    });
+
 
     // Load Korean War data and peninsula polygon
     useEffect(() => {
@@ -142,6 +180,7 @@ export const useFrontlineAnimation = ({
         soldierLayer.current = L.layerGroup().addTo(map);
         battleLayer.current = L.layerGroup().addTo(map);
         movementLayer.current = L.layerGroup().addTo(map);
+        airRaidLayer.current = L.layerGroup().addTo(map); // Add air raid layer
 
         return () => {
             frontlineLayer.current?.remove();
@@ -149,6 +188,7 @@ export const useFrontlineAnimation = ({
             soldierLayer.current?.remove();
             battleLayer.current?.remove();
             movementLayer.current?.remove();
+            airRaidLayer.current?.remove();
         };
     }, [map]);
 
@@ -321,12 +361,18 @@ export const useFrontlineAnimation = ({
                     }
                 }
 
-                // Render North Soldier if on land
+                // Render North Soldier/Tank if on land
                 const nPos = pNorth.geometry.coordinates;
                 // Check if point is inside peninsula polygon
                 if (!peninsula || turf.booleanPointInPolygon(pNorth, peninsula)) {
+                    // Randomly choose Tank (20%) or Soldier (80%)
+                    // Use deterministic hash based on index and position to prevent flickering
+                    // Use 1337 seed and position to keep it consistent for the same localized spot/index
+                    const hash = (i * 1337 + Math.floor(nPos[0] * 100)) % 100;
+                    const isTank = hash < 20;
+
                     L.marker([nPos[1], nPos[0]], {
-                        icon: soldierIconNorth,
+                        icon: isTank ? tankIconNorth : soldierIconNorth,
                         pane: 'soldierPane'
                     }).addTo(soldierLayer.current);
                 }
@@ -545,6 +591,18 @@ export const useFrontlineAnimation = ({
             currentProps = t < 0.5 ? prev : next;
         }
 
+        // Filter points that are on land for Air Raids
+        const validPoints: number[][] = [];
+        // Assuming currentCoords are [lng, lat]
+        currentCoords.forEach(c => {
+            if (!peninsula || turf.booleanPointInPolygon(c, peninsula)) {
+                validPoints.push(c);
+            }
+        });
+
+        // Update ref for Air Raid system
+        currentFrontlinePointsRef.current = validPoints;
+
         drawFrontline(currentCoords, currentProps);
 
         // 2. Battles
@@ -558,13 +616,248 @@ export const useFrontlineAnimation = ({
         return () => {
             if (animationRef.current) cancelAnimationFrame(animationRef.current);
         };
-    }, [isActive, warData, currentDate, map, drawFrontline, drawBattles, drawMovements]);
+    }, [isActive, warData, currentDate, map, drawFrontline, drawBattles, drawMovements, peninsula]); // Added peninsula to dependencies
+
+    // Air Raid Loop
+    useEffect(() => {
+        if (!isActive || !map) return;
+
+        const animateRaids = (timestamp: number) => {
+            if (!lastRaidTimeRef.current) lastRaidTimeRef.current = timestamp;
+
+            const now = Date.now();
+
+            // Spawn Check: Only after UN Intervention (Approx July 1950)
+            const currentYearMonth = currentDate.substring(0, 7); // "YYYY-MM"
+            // Simple check: year >= 1950. If 1950, month >= 07.
+            // Or just check full string comparison "1950-07-01"
+            if (currentDate < "1950-07-01") {
+                lastRaidTimeRef.current = timestamp; // Keep resetting so it doesn't backlog
+                // Clear existing if we went back in time
+                if (airRaidLayer.current) airRaidLayer.current.clearLayers();
+                airRaidsRef.current = [];
+                animationRef.current = requestAnimationFrame(animateRaids);
+                return;
+            }
+
+            // Spawn new raid every 2-4 seconds if we have frontline points
+            const timeSinceLast = timestamp - lastRaidTimeRef.current;
+            if (timeSinceLast > 2000 + Math.random() * 2000) {
+                const points = currentFrontlinePointsRef.current;
+                if (points.length > 10) {
+                    // Pick random point
+                    const randIdx = Math.floor(Math.random() * points.length);
+                    const centerPt = points[randIdx];
+
+                    // Determine bearing: Generally fly South to North.
+                    const bearing = (Math.random() - 0.5) * 60; // -30 to 30
+
+                    // Determine Type
+                    const isBomber = Math.random() < 0.3; // 30% Bomber
+                    const type = isBomber ? 'bomber' : 'jet';
+
+                    // Path Logic
+                    // Bombers almost always Deep Raid (80%)
+                    const isDeepRaid = isBomber ? (Math.random() < 0.8) : (Math.random() < 0.6);
+
+                    const startDist = 60 + Math.random() * 40; // 60-100km South
+                    const endDist = isDeepRaid
+                        ? 150 + Math.random() * 100 // Deep
+                        : 50 + Math.random() * 50;  // Frontline
+
+                    const startRaw = turf.destination(centerPt, startDist, bearing + 180, { units: 'kilometers' });
+                    const endRaw = turf.destination(centerPt, endDist, bearing, { units: 'kilometers' });
+
+                    const totalDist = startDist + endDist; // Restore definition
+
+                    // Speed Calculation
+                    // Jet: Fast (Factor 3) -> Duration / 3
+                    // Bomber: User requested 3x speed as well (matching jets or close to it).
+                    // Originally we did "2x slower". Now user says "Bomber speed 3x".
+                    // Let's make them same fast speed logic: baseDuration / 3.
+                    // But maybe slightly slower than jets still? "Just make it 3x".
+                    // Let's use same factor.
+
+                    let baseDuration = (1500 + (totalDist / 100) * 1500);
+                    // Apply 3x speed factor
+                    baseDuration = baseDuration / 3;
+
+                    if (type === 'bomber') {
+                        // User asked for fast bombers. We'll keep them fast.
+                        // Optional: slightly slower multiplier if desired, but user said "3x".
+                        // We will leave it as is (same as jet).
+                        // Or maybe 1.2x of jet duration to give sense of weight but still FAST.
+                        baseDuration = baseDuration * 1.2;
+                    }
+
+
+                    const newRaid: AirRaid = {
+                        id: now,
+                        type: type,
+                        startPos: startRaw.geometry.coordinates,
+                        endPos: endRaw.geometry.coordinates,
+                        startTime: now,
+                        duration: baseDuration,
+                        rotation: bearing
+                    };
+
+                    airRaidsRef.current.push(newRaid);
+                    lastRaidTimeRef.current = timestamp;
+                }
+            }
+
+
+            // --- Battleship Logic ---
+            // Spawn battleship at Incheon if date >= 1950-09-15
+            // Fixed position: 126.35, 37.45 (Further West into sea)
+
+            const INCHEON_POS = [126.35, 37.45];
+            const BATTLESHIP_START_DATE = "1950-09-15";
+
+            // Check if we should have a battleship
+            if (currentDate >= BATTLESHIP_START_DATE && !battleshipRef.current) {
+                // Create Battleship
+                const battleship: AirRaid = {
+                    id: 99999, // Special ID
+                    type: 'battleship',
+                    startPos: INCHEON_POS,
+                    endPos: INCHEON_POS,
+                    startTime: now,
+                    duration: 999999999, // Infinite
+                    rotation: 0
+                };
+                battleshipRef.current = battleship;
+                airRaidsRef.current.push(battleship);
+            } else if (currentDate < BATTLESHIP_START_DATE && battleshipRef.current) {
+                // Remove Battleship if we went back in time
+                // We need to remove it from airRaidsRef and also remove its marker
+                if (battleshipRef.current.marker) {
+                    battleshipRef.current.marker.remove();
+                }
+                airRaidsRef.current = airRaidsRef.current.filter(r => r.id !== 99999);
+                battleshipRef.current = null;
+            }
+
+
+            // Render and Update Raids
+
+            // Do NOT clear layers every frame. Use persistent markers.
+
+            const activeRaids: AirRaid[] = [];
+
+            airRaidsRef.current.forEach(raid => {
+                const elapsed = now - raid.startTime;
+                const progress = elapsed / raid.duration;
+
+                if (progress < 1.0) {
+                    try {
+                        // Interpolate position
+                        let lng, lat;
+                        if (raid.type === 'dogfight' || raid.type === 'battleship') {
+                            lng = raid.startPos[0];
+                            lat = raid.startPos[1];
+                        } else {
+                            lng = raid.startPos[0] + (raid.endPos[0] - raid.startPos[0]) * progress;
+                            lat = raid.startPos[1] + (raid.endPos[1] - raid.startPos[1]) * progress;
+                        }
+
+                        // Fade out
+                        let opacity = 1.0;
+                        if (raid.type !== 'dogfight' && raid.type !== 'battleship' && progress > 0.8) {
+                            opacity = (1 - progress) / 0.2;
+                        }
+
+                        // Create Marker if not exists
+                        if (!raid.marker && airRaidLayer.current) {
+                            let className = 'usaf-jet-icon';
+                            let size = [64, 64];
+
+                            if (raid.type === 'bomber') {
+                                className = 'usaf-bomber-icon';
+                                size = [96, 96];
+                            } else if (raid.type === 'dogfight') {
+                                className = 'dogfight-icon';
+                                size = [120, 120];
+                            } else if (raid.type === 'battleship') {
+                                className = 'battleship-icon';
+                                size = [140, 140];
+                            }
+
+
+                            const icon = L.divIcon({
+                                className: className,
+                                html: `<div style="width:100%; height:100%; transform: rotate(${raid.rotation}deg);"></div>`,
+                                iconSize: size as L.PointTuple,
+                                iconAnchor: [size[0] / 2, size[1] / 2] as L.PointTuple
+                            });
+
+                            raid.marker = L.marker([lat, lng], {
+                                icon: icon,
+                                zIndexOffset: raid.type === 'dogfight' ? 2000 : (raid.type === 'battleship' ? 900 : 1000)
+                            }).addTo(airRaidLayer.current);
+                        }
+
+                        // Update Marker
+                        if (raid.marker) {
+                            raid.marker.setLatLng([lat, lng]);
+                            raid.marker.setOpacity(opacity);
+                        }
+
+                        activeRaids.push(raid);
+                    } catch (e) { }
+                } else {
+                    // Check if it's infinite duration (battleship)
+                    if (raid.type === 'battleship') {
+                        // Do nothing, keep it alive
+                        activeRaids.push(raid);
+                    } else {
+                        // Remove marker when done
+                        if (raid.marker) {
+                            raid.marker.remove();
+                        }
+
+                        // Chance for Dogfight at end of raid (if not already dogfight)
+                        if (raid.type !== 'dogfight' && Math.random() < 0.2) {
+                            const dogfightRaid: AirRaid = {
+                                id: now + Math.random(),
+                                type: 'dogfight',
+                                startPos: raid.endPos, // Spawn at end position
+                                endPos: raid.endPos,
+                                startTime: now,
+                                duration: 2000, // 2 seconds duration
+                                rotation: 0 // No rotation
+                            };
+                            activeRaids.push(dogfightRaid);
+                        }
+                    }
+                }
+
+            });
+
+            airRaidsRef.current = activeRaids;
+
+
+            animationRef.current = requestAnimationFrame(animateRaids);
+        };
+
+        // Start loop
+        const raidLoopId = requestAnimationFrame(animateRaids);
+        return () => cancelAnimationFrame(raidLoopId);
+    }, [isActive, map, currentDate]); // Added currentDate dependency for date check
+
+
+    // We need to inject the spawning logic properly.
+    // Let's refactor:
+    // 1. Add `currentFrontlinePointsRef`.
+    // 2. Update `drawFrontline` to set `currentFrontlinePointsRef.current = validPoints`.
+    // 3. Implement the loop fully.
 
     return {
         warData,
         frontlineLayer: frontlineLayer.current,
         territoryLayer: territoryLayer.current,
         battleLayer: battleLayer.current,
-        movementLayer: movementLayer.current
+        movementLayer: movementLayer.current,
+        airRaidLayer: airRaidLayer.current
     };
 };
