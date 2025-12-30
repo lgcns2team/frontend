@@ -251,14 +251,6 @@ const DiscussionPanel: React.FC = () => {
                   </div>
                   {/* Fill Box */}
                   <div className={styles.leftPanelFillBox}>
-                    {/* Loading Spinner Overlay */}
-                    {isLoadingRecommendations && (
-                      <div className={styles.spinnerOverlay}>
-                        <div className={styles.spinner}></div>
-                        <div className={styles.spinnerText}>AI가 토론 주제를 선정하고 있습니다</div>
-                      </div>
-                    )}
-
                     {recommendationError && (
                       <div style={{ color: 'red', padding: '10px' }}>
                         {recommendationError}
@@ -266,6 +258,7 @@ const DiscussionPanel: React.FC = () => {
                     )}
                     {recommendedTopics.length > 0 && (
                       <div style={{ padding: '10px' }}>
+                        <h4 style={{ marginBottom: '10px', fontSize: '14px' }}>추천 주제 ({recommendedTopics.length}개)</h4>
                         {recommendedTopics.map((item, index) => (
                           <div
                             key={index}
@@ -294,7 +287,7 @@ const DiscussionPanel: React.FC = () => {
                               {index + 1}. {item.topic}
                             </div>
                             <div style={{ fontSize: '12px', color: '#666', lineHeight: '1.4' }}>
-                              {item.description}
+                              {item.description.substring(0, 80)}...
                             </div>
                           </div>
                         ))}
