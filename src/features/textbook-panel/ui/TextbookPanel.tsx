@@ -26,9 +26,9 @@ const PERSON_HOTSPOTS: Record<number, PersonHotspot[]> = {
     143: [{ name: '영조', x: 9, y: 60, width: 18, height: 18 }],      // 144페이지 - 탐구 박스 내
     148: [{ name: '정약용', x: 37, y: 48, width: 15, height: 18 }],    // 149페이지 - 두번째 원형 초상화
     171: [{ name: '고종', x: 9, y: 72, width: 16, height: 20 }],       // 172페이지 - 왼쪽 하단
-    172: [{ name: '안중근', x: 72, y: 40, width: 18, height: 18 }],    // 173페이지 - 오른쪽 의열 투쟁 박스
-    178: [{ name: '윤봉길', x: 72, y: 28, width: 19, height: 20 }],    // 179페이지 - 오른쪽 상단
-    180: [{ name: '김구', x: 77, y: 14, width: 13, height: 14 }]       // 181페이지 - 오른쪽 상단
+    172: [{ name: '안중근', x: 74, y: 40, width: 16, height: 18 }],    // 173페이지 - 오른쪽 의열 투쟁 박스
+    178: [{ name: '윤봉길', x: 72, y: 22, width: 19, height: 20 }],    // 179페이지 - 오른쪽 상단
+    180: [{ name: '김구', x: 77, y: 15, width: 13, height: 14 }]       // 181페이지 - 오른쪽 상단
 };
 
 interface TextbookPanelProps {
