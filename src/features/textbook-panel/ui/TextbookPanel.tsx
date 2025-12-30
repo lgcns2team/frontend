@@ -15,7 +15,7 @@ interface PersonHotspot {
 // 키는 0-indexed (currentPage 값과 일치), 주석은 실제 표시 페이지 번호
 const PERSON_HOTSPOTS: Record<number, PersonHotspot[]> = {
     45: [{ name: '을지문덕', x: 5, y: 72, width: 25, height: 20 }],   // 46페이지 - 왼쪽 하단
-    48: [{ name: '신채호', x: 32, y: 4, width: 16, height: 20 }],     // 49페이지 - 중앙 하단
+    48: [{ name: '신채호', x: 34, y: 52, width: 16, height: 15 }],     // 49페이지 - 중앙 하단
     50: [{ name: '대조영', x: 70, y: 66, width: 22, height: 24 }],      // 51페이지 - 왼쪽 상단
     81: [{ name: '서희', x: 60, y: 70, width: 20, height: 18 }],       // 82페이지 - 왼쪽 하단
     121: [                                                              // 122페이지 - 중앙 두 원형 초상화
