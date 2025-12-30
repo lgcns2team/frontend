@@ -187,7 +187,7 @@ const DiscussionRoomPage: React.FC = () => {
                     <div className={styles.resultBottomRow}>
                         {isLoadingSummary ? (
                             <div style={{ textAlign: 'center', padding: '40px', fontSize: '18px', color: '#666' }}>
-                                요약을 생성하고 있습니다...
+                                요약을 생성하고 있습니다.
                             </div>
                         ) : summaryError ? (
                             <div style={{ textAlign: 'center', padding: '40px', fontSize: '18px', color: '#d32f2f' }}>
@@ -202,52 +202,69 @@ const DiscussionRoomPage: React.FC = () => {
                                 >
                                     <div className={styles.flipCardInner}>
                                         <div className={`${styles.flipCardFront} ${styles.resultBox}`} style={{
-                                            flexDirection: 'column',
-                                            alignItems: 'stretch',
-                                            justifyContent: 'flex-start',
                                             padding: '20px'
                                         }}>
-                                            <h3 style={{
-                                                marginBottom: '16px',
-                                                fontSize: '20px',
-                                                fontWeight: 'bold',
-                                                textAlign: 'center',
-                                                paddingBottom: '12px',
-                                                borderBottom: '2px solid #d4d1ca'
-                                            }}>{option.id}</h3>
-                                            <p style={{
-                                                fontSize: '14px',
-                                                lineHeight: '1.6',
-                                                padding: '0 20px',
-                                                textAlign: 'left'
-                                            }}>{option.argument}</p>
+                                            <div style={{
+                                                width: '100%',
+                                                height: '100%',
+                                                overflowY: 'auto',
+                                                overflowX: 'hidden',
+                                                display: 'flex',
+                                                flexDirection: 'column',
+                                                paddingLeft: '20px',
+                                                paddingRight: '20px'
+                                            }}>
+                                                <h3 style={{
+                                                    marginBottom: '16px',
+                                                    fontSize: '20px',
+                                                    fontWeight: 'bold',
+                                                    textAlign: 'center',
+                                                    paddingBottom: '12px',
+                                                    borderBottom: '2px solid #d4d1ca',
+                                                    flexShrink: 0
+                                                }}>{option.id}</h3>
+                                                <p style={{
+                                                    fontSize: '14px',
+                                                    lineHeight: '1.6',
+                                                    textAlign: 'left',
+                                                    margin: 0
+                                                }}>{option.argument}</p>
+                                            </div>
                                         </div>
                                         <div className={`${styles.flipCardBack} ${styles.resultBox}`} style={{
-                                            flexDirection: 'column',
-                                            alignItems: 'stretch',
-                                            justifyContent: 'flex-start',
                                             padding: '20px'
                                         }}>
-                                            <h3 style={{
-                                                marginBottom: '16px',
-                                                fontSize: '18px',
-                                                fontWeight: 'bold',
-                                                textAlign: 'center',
-                                                paddingBottom: '12px',
-                                                borderBottom: '2px solid #d4d1ca'
-                                            }}>역사적 결과</h3>
-                                            <ul style={{
-                                                textAlign: 'left',
-                                                fontSize: '13px',
-                                                lineHeight: '1.8',
-                                                paddingLeft: '40px',
-                                                paddingRight: '20px',
-                                                margin: 0
+                                            <div style={{
+                                                width: '100%',
+                                                height: '100%',
+                                                overflowY: 'auto',
+                                                overflowX: 'hidden',
+                                                display: 'flex',
+                                                flexDirection: 'column',
+                                                paddingLeft: '20px',
+                                                paddingRight: '20px'
                                             }}>
-                                                {option.historical_outcome.map((outcome, idx) => (
-                                                    <li key={idx} style={{ marginBottom: '8px' }}>{outcome}</li>
-                                                ))}
-                                            </ul>
+                                                <h3 style={{
+                                                    marginBottom: '16px',
+                                                    fontSize: '18px',
+                                                    fontWeight: 'bold',
+                                                    textAlign: 'center',
+                                                    paddingBottom: '12px',
+                                                    borderBottom: '2px solid #d4d1ca',
+                                                    flexShrink: 0
+                                                }}>역사적 결과</h3>
+                                                <ul style={{
+                                                    textAlign: 'left',
+                                                    fontSize: '13px',
+                                                    lineHeight: '1.8',
+                                                    paddingLeft: '20px',
+                                                    margin: 0
+                                                }}>
+                                                    {option.historical_outcome.map((outcome, idx) => (
+                                                        <li key={idx} style={{ marginBottom: '8px' }}>{outcome}</li>
+                                                    ))}
+                                                </ul>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
@@ -534,7 +551,7 @@ const DiscussionRoomPage: React.FC = () => {
                                     value={inputValue}
                                     onChange={(e) => setInputValue(e.target.value)}
                                     onKeyDown={(e) => e.key === 'Enter' && handleSendMessage()}
-                                    placeholder={viewMode === 'result' && !replyToId ? "반론할 의견을 선택하세요..." : (replyToId ? "반론을 입력하세요..." : "의견을 입력하세요...")}
+                                    placeholder={viewMode === 'result' && !replyToId ? "반론할 의견을 선택하세요." : (replyToId ? "반론을 입력하세요." : "의견을 입력하세요.")}
                                     disabled={viewMode === 'result' && !replyToId}
                                 />
                                 <button
@@ -545,6 +562,20 @@ const DiscussionRoomPage: React.FC = () => {
                             </div>
                         </div>
                     )}
+                </div>
+            )}
+
+            {/* Loading Overlay Panel */}
+            {isLoadingSummary && (
+                <div className={styles.loadingOverlay}>
+                    <div className={styles.loadingPanel}>
+                        <div className={styles.spinner}></div>
+                        <div className={styles.loadingText}>
+                            AI가 토론 결과를 분석하고 있습니다.
+                            <br />
+                            잠시만 기다려주세요.
+                        </div>
+                    </div>
                 </div>
             )}
         </div>
