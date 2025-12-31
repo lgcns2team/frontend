@@ -37,8 +37,15 @@ export const useTradeAnimation = ({
 
     const shipIcon = L.icon({
         iconUrl: `/assets/images/${era.id}/ship.png`,
-        iconSize: [40, 40],
-        iconAnchor: [20, 20],
+        iconSize: [70, 30],
+        iconAnchor: [30, 20],
+        className: 'trade-unit-icon'
+    });
+
+    const truckIcon = L.icon({
+        iconUrl: `/assets/images/war/truck.png`,
+        iconSize: [60, 40], // Wider for truck
+        iconAnchor: [30, 20],
         className: 'trade-unit-icon'
     });
 
@@ -192,7 +199,14 @@ export const useTradeAnimation = ({
                 }
 
                 // Update icon
-                const targetIcon = isOnLand ? horseIcon : shipIcon;
+                // For Korean War (1950-1953), use Truck for land transport
+                const isKoreanWar = currentYear >= 1950 && currentYear <= 1953;
+                let targetIcon = isOnLand ? horseIcon : shipIcon;
+
+                if (isOnLand && isKoreanWar) {
+                    targetIcon = truckIcon;
+                }
+
                 if (unit.marker.getIcon() !== targetIcon) {
                     unit.marker.setIcon(targetIcon);
                 }

@@ -5,7 +5,7 @@ import './HistoryMap.css';
 import '../../../shared/config/era-theme.css';
 import { getEraForYear } from '../../../shared/config/era-theme';
 import { loadHistoricalBorders } from '../lib/boundary-utils';
-import { loadTradeRoutes } from '../lib/trade-route';
+import { loadTradeRoutes, loadSupportRoutes } from '../lib/trade-route';
 import type { TradeRouteWithColor } from '../lib/trade-route';
 import { useTradeAnimation } from '../lib/useTradeAnimation';
 import { useWarLayer } from '../lib/useWarLayer';
@@ -399,7 +399,7 @@ export default function HistoryMap() {
         updateMarkers(currentYear);
     }, [layerType, capitalData, personData, currentMapZoom]);
 
-    // Update Trade Routes
+    // Update Trade Routes (and Support Routes in War Mode)
     useEffect(() => {
         let isMounted = true;
 
@@ -409,13 +409,17 @@ export default function HistoryMap() {
             // Clear existing layers first
             tradeLayer.current.clearLayers();
 
-            // Only load trade routes if the trade layer is active
-            if (layerType !== 'trade') {
+            let routesWithColor: TradeRouteWithColor[] = [];
+
+            if (layerType === 'trade') {
+                routesWithColor = await loadTradeRoutes(currentYear);
+            } else if (layerType === 'battles' && isKoreanWarMode) {
+                // In Korean War mode, show UN support routes (stored as 1950 data)
+                routesWithColor = await loadSupportRoutes(1950);
+            } else {
                 setActiveTradeRoutes([]);
                 return;
             }
-
-            const routesWithColor = await loadTradeRoutes(currentYear);
 
             if (!isMounted) return;
 
@@ -451,14 +455,14 @@ export default function HistoryMap() {
         return () => {
             isMounted = false;
         };
-    }, [currentYear, layerType]);
+    }, [currentYear, layerType, isKoreanWarMode]);
 
     // Trade Animation Hook
     useTradeAnimation({
         map: map.current,
         routes: activeTradeRoutes,
         historicalLayer: historicalLayer.current,
-        isActive: layerType === 'trade',
+        isActive: layerType === 'trade' || (layerType === 'battles' && isKoreanWarMode),
         speed: speed,
         currentYear: currentYear
     });

@@ -424,51 +424,97 @@ export const useFrontlineAnimation = ({
         }
     }, [map, peninsula, clipTerritoryByFrontline, soldierIconNorth, soldierIconSouth]);
 
+    // Track shown battle IDs to prevent duplicate popups
+    const shownBattleIdsRef = useRef<Set<string>>(new Set());
+    // Track active battle markers to prevent re-creation
+    const activeBattleMarkersRef = useRef<Map<string, L.Marker>>(new Map());
+
+    // Reset shown battles when date resets significantly (e.g. user scrubs back)
+    useEffect(() => {
+        if (currentDate < "1950-06-25") {
+            shownBattleIdsRef.current.clear();
+            activeBattleMarkersRef.current.forEach(marker => marker.remove());
+            activeBattleMarkersRef.current.clear();
+        }
+    }, [currentDate]);
+
     // Draw battle markers
     const drawBattles = useCallback((battles: KoreanWarBattle[]) => {
         if (!map || !battleLayer.current) return;
-        battleLayer.current.clearLayers();
+
+        // Key set of currently visible battles
+        const currentBattleKeys = new Set<string>();
 
         battles.forEach(battle => {
-            const icon = L.divIcon({
-                className: 'korean-war-battle-marker',
-                html: `
-                    <div style="
-                        width: 24px;
-                        height: 24px;
-                        background: ${battle.winner === '북한' || battle.winner === '중국' || battle.winner === '중국/북한' ? '#ef4444' : '#3b82f6'};
-                        border: 3px solid white;
-                        border-radius: 50%;
-                        box-shadow: 0 2px 8px rgba(0,0,0,0.4);
-                        display: flex;
-                        align-items: center;
-                        justify-content: center;
-                    ">
-                        <span style="color: white; font-size: 12px; font-weight: bold;">⚔</span>
+            const uniqueKey = `${battle.name}-${battle.date}`;
+            currentBattleKeys.add(uniqueKey);
+
+            // If marker doesn't exist, create it
+            if (!activeBattleMarkersRef.current.has(uniqueKey)) {
+                const icon = L.divIcon({
+                    className: 'korean-war-battle-marker',
+                    html: `
+                        <div style="
+                            width: 24px;
+                            height: 24px;
+                            background: ${battle.winner === '북한' || battle.winner === '중국' || battle.winner === '중국/북한' ? '#ef4444' : '#3b82f6'};
+                            border: 3px solid white;
+                            border-radius: 50%;
+                            box-shadow: 0 2px 8px rgba(0,0,0,0.4);
+                            display: flex;
+                            align-items: center;
+                            justify-content: center;
+                        ">
+                            <span style="color: white; font-size: 12px; font-weight: bold;">⚔</span>
+                        </div>
+                    `,
+                    iconSize: [24, 24],
+                    iconAnchor: [12, 12]
+                });
+
+                const marker = L.marker(
+                    [battle.coordinates[1], battle.coordinates[0]],
+                    { icon, pane: 'koreanWarBattlePane' }
+                );
+
+                marker.bindPopup(`
+                    <div style="min-width: 220px;">
+                        <h3 style="margin: 0 0 8px 0; font-size: 16px; font-weight: bold;">${battle.name}</h3>
+                        <p style="margin: 4px 0; font-size: 14px;"><strong>날짜:</strong> ${battle.date}</p>
+                        <div style="margin-top: 8px; padding-top: 8px; border-top: 1px solid #eee;">
+                            <p style="margin: 4px 0;"><strong>승리:</strong> ${battle.winner}</p>
+                            <p style="margin: 4px 0;"><strong>패배:</strong> ${battle.loser}</p>
+                        </div>
+                        <p style="margin-top: 8px; font-size: 13px; color: #666;">${battle.description}</p>
                     </div>
-                `,
-                iconSize: [24, 24],
-                iconAnchor: [12, 12]
-            });
+                `);
 
-            const marker = L.marker(
-                [battle.coordinates[1], battle.coordinates[0]],
-                { icon, pane: 'koreanWarBattlePane' }
-            );
+                marker.addTo(battleLayer.current!);
+                activeBattleMarkersRef.current.set(uniqueKey, marker);
 
-            marker.bindPopup(`
-                <div style="min-width: 220px;">
-                    <h3 style="margin: 0 0 8px 0; font-size: 16px; font-weight: bold;">${battle.name}</h3>
-                    <p style="margin: 4px 0; font-size: 14px;"><strong>날짜:</strong> ${battle.date}</p>
-                    <div style="margin-top: 8px; padding-top: 8px; border-top: 1px solid #eee;">
-                        <p style="margin: 4px 0;"><strong>승리:</strong> ${battle.winner}</p>
-                        <p style="margin: 4px 0;"><strong>패배:</strong> ${battle.loser}</p>
-                    </div>
-                    <p style="margin-top: 8px; font-size: 13px; color: #666;">${battle.description}</p>
-                </div>
-            `);
+                // Auto-open logic (only once per battle unique key)
+                if (!shownBattleIdsRef.current.has(uniqueKey)) {
+                    shownBattleIdsRef.current.add(uniqueKey);
 
-            marker.addTo(battleLayer.current!);
+                    // Open popup after short delay
+                    setTimeout(() => {
+                        marker.openPopup();
+                    }, 100);
+
+                    // Auto-close after 5 seconds
+                    setTimeout(() => {
+                        marker.closePopup();
+                    }, 3000);
+                }
+            }
+        });
+
+        // Remove markers that remain in the Map but serve no battle in the current list
+        activeBattleMarkersRef.current.forEach((marker, key) => {
+            if (!currentBattleKeys.has(key)) {
+                marker.remove();
+                activeBattleMarkersRef.current.delete(key);
+            }
         });
     }, [map]);
 
