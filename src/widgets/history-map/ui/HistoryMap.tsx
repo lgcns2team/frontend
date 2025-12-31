@@ -36,6 +36,7 @@ import { DiscussionPanel } from '../../../features/discussion';
 import { CloudTransition } from '../../../features/cloud-transition/ui/CloudTransition';
 import { MyPagePanel } from '../../../features/mypage';
 import { DayTimelineSlider } from '../../../features/day-timeline';
+import { EraNameDisplay } from '../../era-name-display';
 
 // Fix Leaflet marker icon issue
 import icon from 'leaflet/dist/images/marker-icon.png';
@@ -1023,6 +1024,11 @@ export default function HistoryMap() {
     return (
         <div className={`history-map-container theme-${currentEra.id}`}>
             <div id="map" ref={mapContainer}></div>
+
+            {/* Top Center: Era Name Display */}
+            {!isAllUIHidden && (
+                <EraNameDisplay currentEra={currentEra} />
+            )}
 
             {/* Top Center: Search Year only */}
             {/* <div className={`center-controls-group ${!isUIVisible ? 'ui-hidden' : ''}`}>
