@@ -43,24 +43,24 @@ interface MapHotspot {
 
 // 페이지별 지도 핫스팟 매핑 (좌표는 임시)
 const MAP_HOTSPOTS: Record<number, MapHotspot[]> = {
-    13: [{ year: -108, x: 10, y: 10, width: 30, height: 30, description: '고조선-한 전쟁' }], // 14p
-    23: [{ year: 413, x: 10, y: 10, width: 30, height: 30, description: '고구려 전성기' }],   // 24p
-    25: [{ year: 371, x: 50, y: 10, width: 30, height: 30, description: '백제 전성기' }],     // 26p
-    28: [{ year: 554, x: 10, y: 50, width: 30, height: 30, description: '신라 전성기' }],     // 29p
-    46: [{ year: 612, x: 10, y: 10, width: 30, height: 30, description: '고구려 vs 수-당 전쟁' }], // 47p
-    48: [{ year: 675, x: 50, y: 10, width: 30, height: 30, description: '나당 전쟁' }],       // 49p
-    50: [{ year: 698, x: 10, y: 50, width: 30, height: 30, description: '발해 건국 전쟁' }],  // 51p
-    57: [{ year: 822, x: 50, y: 50, width: 30, height: 30, description: '통일신라 반란' }],   // 58p
-    73: [{ year: 936, x: 10, y: 10, width: 30, height: 30, description: '후삼국 전쟁' }],     // 74p
-    80: [{ year: 1176, x: 50, y: 10, width: 30, height: 30, description: '망이·망소이의 난' }], // 81p
-    81: [{ year: 993, x: 10, y: 50, width: 30, height: 30, description: '거란의 침입 (서희)' }], // 82p
-    85: [{ year: 1231, x: 50, y: 50, width: 30, height: 30, description: '여몽전쟁' }],       // 86p
-    90: [{ year: 1380, x: 10, y: 10, width: 30, height: 30, description: '홍건적/왜구 침입' }], // 91p
-    125: [{ year: 1592, x: 10, y: 10, width: 30, height: 30, description: '임진왜란' }],      // 126p
-    130: [{ year: 1636, x: 50, y: 10, width: 30, height: 30, description: '병자호란' }],      // 131p
-    160: [{ year: 1811, x: 10, y: 50, width: 30, height: 30, description: '홍경래의 난/민란' }], // 161p
-    178: [{ year: 1920, x: 50, y: 50, width: 30, height: 30, description: '독립 전쟁 (청산리/봉오동)' }], // 179p
-    182: [{ year: 1950, x: 10, y: 10, width: 30, height: 30, description: '6.25 전쟁' }],     // 183p
+    13: [{ year: -108, x: 4, y: 7, width: 32, height: 22, description: '고조선-한 전쟁' }], // 14p
+    23: [{ year: 413, x: 5, y: 3, width: 22, height: 24, description: '고구려 전성기' }],   // 24p
+    25: [{ year: 371, x: 4, y: 33, width: 23, height: 16, description: '백제 전성기' }],     // 26p
+    28: [{ year: 554, x: 38, y: 48, width: 30, height: 30, description: '신라 전성기' }],     // 29p
+    46: [{ year: 612, x: 66, y: 19, width: 30, height: 20, description: '고구려 vs 수-당 전쟁' }], // 47p
+    48: [{ year: 675, x: 66, y: 3, width: 30, height: 24, description: '나당 전쟁' }],       // 49p
+    50: [{ year: 698, x: 62, y: 26, width: 28, height: 16, description: '발해 건국 전쟁' }],  // 51p
+    57: [{ year: 822, x: 4, y: 47, width: 22, height: 23, description: '통일신라 반란' }],   // 58p
+    73: [{ year: 936, x: 10, y: 34, width: 21, height: 19, description: '후삼국 전쟁' }],     // 74p
+    80: [{ year: 1176, x: 17, y: 56, width: 24, height: 21, description: '망이·망소이의 난' }], // 81p
+    81: [{ year: 993, x: 10, y: 66, width: 30, height: 23, description: '거란의 침입 (서희)' }], // 82p
+    85: [{ year: 1231, x: 32, y: 20, width: 33, height: 33, description: '여몽전쟁' }],       // 86p
+    90: [{ year: 1380, x: 70, y: 29, width: 30, height: 28, description: '홍건적/왜구 침입' }], // 91p
+    125: [{ year: 1592, x: 6, y: 61, width: 30, height: 28, description: '임진왜란' }],      // 126p
+    130: [{ year: 1636, x: 72, y: 9, width: 24, height: 24, description: '병자호란' }],      // 131p
+    160: [{ year: 1811, x: 70, y: 20, width: 28, height: 30, description: '홍경래의 난/민란' }], // 161p
+    178: [{ year: 1920, x: 74, y: 3, width: 25, height: 20, description: '독립 전쟁 (청산리/봉오동)' }], // 179p
+    182: [{ year: 1950, x: 70, y: 3, width: 28, height: 29, description: '6.25 전쟁' }],     // 183p
 };
 
 interface TextbookPanelProps {
