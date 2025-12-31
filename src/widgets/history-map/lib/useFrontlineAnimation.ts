@@ -716,7 +716,7 @@ export const useFrontlineAnimation = ({
 
             const INCHEON_POS = [126.35, 37.45];
             const BATTLESHIP_START_DATE = "1950-09-15";
-            const BATTLESHIP_END_DATE = "1950-09-28"; // Seoul Retaken
+            const BATTLESHIP_END_DATE = "1950-10-05"; // Extended to cover post-Seoul reclamation support
 
             // Check if we should have a battleship
             const shouldHaveBattleship = currentDate >= BATTLESHIP_START_DATE && currentDate <= BATTLESHIP_END_DATE;
