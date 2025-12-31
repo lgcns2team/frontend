@@ -42,7 +42,12 @@ const DiscussionRoomPage: React.FC = () => {
         confirmStart,
         sendModeChange,
         sendVoteStatus,
-        sendEndSession
+        sendEndSession,
+        agreeCount,
+        disagreeCount,
+        broadcastVote,
+        isAnonymous,
+        sendSystemSignal
     } = useDiscussion(id);
 
     // Debug: Log messages changes
@@ -51,6 +56,30 @@ const DiscussionRoomPage: React.FC = () => {
         console.log('🎬 Agree messages:', messages.filter(m => m.side === 'agree' && !m.parentId));
         console.log('🎬 Disagree messages:', messages.filter(m => m.side === 'disagree' && !m.parentId));
     }, [messages]);
+
+    // State for Anonymous Mode (Now handled in useDiscussion)
+    // const [isAnonymous, setIsAnonymous] = useState(false);
+
+    // Monitor messages for Anonymous signal (Removed: Handled in useDiscussion)
+    // useEffect(() => {
+    //     if (messages.length > 0) {
+    //         const lastMsg = messages[messages.length - 1];
+    //         if (lastMsg.content === '__ANONYMOUS__:ON') {
+    //             setIsAnonymous(true);
+    //         } else if (lastMsg.content === '__ANONYMOUS__:OFF') {
+    //             setIsAnonymous(false);
+    //         }
+    //     }
+    // }, [messages]);
+
+    const toggleAnonymous = () => {
+        const nextState = !isAnonymous;
+        // Broadcast state via non-persisting message (like sendModeChange)
+        if (isConnected && localStorage.getItem('userRole') === 'TEACHER') {
+            sendSystemSignal(`__ANONYMOUS__:${nextState ? 'ON' : 'OFF'}`);
+            // State will be updated via message interception in useDiscussion hook
+        }
+    };
 
     const [inputValue, setInputValue] = useState('');
     const [replyToId, setReplyToId] = useState<string | null>(null);
@@ -317,7 +346,11 @@ const DiscussionRoomPage: React.FC = () => {
                         onClick={() => localStorage.getItem('userRole') === 'TEACHER' && sendModeChange('chat')}
                         style={{ cursor: localStorage.getItem('userRole') === 'TEACHER' ? 'pointer' : 'default' }}
                     >
-                        <div className={styles.circle}>의견제시</div>
+                        <div className={styles.circle}>
+                            <div className={styles.flipFrontContent}>
+                                <span className={styles.choiceLabel}>의견제시</span>
+                            </div>
+                        </div>
                     </div>
                     <div className={styles.line} />
                     <div
@@ -343,15 +376,35 @@ const DiscussionRoomPage: React.FC = () => {
                     <div className={styles.voteContainer}>
                         <button
                             className={`${styles.voteButton} ${styles.agreeButton} ${vote === 'agree' ? styles.selectedVote : ''} ${isExiting ? styles.exitLeft : ''}`}
-                            onClick={(e) => { e.stopPropagation(); setVote(vote === 'agree' ? null : 'agree'); }}
+                            onClick={(e) => {
+                                e.stopPropagation();
+                                const newVote = vote === 'agree' ? null : 'agree';
+                                setVote(newVote);
+                                broadcastVote(newVote);
+                            }}
                             style={{ opacity: vote === 'disagree' ? 0.3 : 1 }}
-                        ><span>찬성</span></button>
+                        >
+                            <span>찬성</span>
+                            {localStorage.getItem('userRole') === 'TEACHER' && (
+                                <span className={styles.voteCount}>{agreeCount}명</span>
+                            )}
+                        </button>
 
                         <button
                             className={`${styles.voteButton} ${styles.disagreeButton} ${vote === 'disagree' ? styles.selectedVote : ''} ${isExiting ? styles.exitRight : ''}`}
-                            onClick={(e) => { e.stopPropagation(); setVote(vote === 'disagree' ? null : 'disagree'); }}
+                            onClick={(e) => {
+                                e.stopPropagation();
+                                const newVote = vote === 'disagree' ? null : 'disagree';
+                                setVote(newVote);
+                                broadcastVote(newVote);
+                            }}
                             style={{ opacity: vote === 'agree' ? 0.3 : 1 }}
-                        ><span>반대</span></button>
+                        >
+                            <span>반대</span>
+                            {localStorage.getItem('userRole') === 'TEACHER' && (
+                                <span className={styles.voteCount}>{disagreeCount}명</span>
+                            )}
+                        </button>
 
                         <div className={`${styles.vsBadge} ${isExiting ? styles.fadeOut : ''}`}>VS</div>
                     </div>
@@ -395,24 +448,36 @@ const DiscussionRoomPage: React.FC = () => {
                     <div className={styles.chatWrapper}>
                         {/* chat 모드: 카카오톡 스타일 통합 채팅 */}
                         {viewMode === 'chat' && (
-                            <div className={styles.kakaoColumn}>
+                            <div className={`${styles.kakaoColumn} ${vote === 'agree' ? styles.borderAgree : (vote === 'disagree' ? styles.borderDisagree : '')}`}>
                                 <div className={styles.kakaoChatLog} ref={agreeChatRef}>
-                                    {messages.filter(m => !m.parentId).map((msg, index) => (
-                                        <div
-                                            key={msg.id || `msg-${index}`}
-                                            className={`${styles.kakaoMessageRow} ${msg.side === 'agree' ? styles.kakaoLeft : styles.kakaoRight}`}
-                                        >
-                                            {msg.side === 'agree' && (
-                                                <img src="/assets/images/discussion/yesman.png" alt="찬성" className={styles.kakaoProfileImg} />
-                                            )}
-                                            <div className={`${styles.kakaoBubble} ${msg.side === 'agree' ? styles.kakaoBubbleAgree : styles.kakaoBubbleDisagree}`}>
-                                                {msg.content || '[Empty message]'}
+                                    {messages
+                                        .filter(msg => !msg.parentId && !msg.content?.startsWith('__ANONYMOUS__:'))
+                                        .map((msg, index) => (
+                                            <div
+                                                key={msg.id || `msg-${index}`}
+                                                className={`${styles.kakaoMessageRow} ${msg.side === 'agree' ? styles.kakaoLeft : styles.kakaoRight}`}
+                                            >
+                                                {msg.side === 'agree' && (
+                                                    <div className={styles.profileContainer}>
+                                                        <img src="/assets/images/discussion/yesman.png" alt="찬성" className={styles.kakaoProfileImg} />
+                                                        <span className={styles.senderName}>
+                                                            {isAnonymous ? 'ㅇㅇㅇ' : (msg.sender || '찬성')}
+                                                        </span>
+                                                    </div>
+                                                )}
+                                                <div className={`${styles.kakaoBubble} ${msg.side === 'agree' ? styles.kakaoBubbleAgree : styles.kakaoBubbleDisagree}`}>
+                                                    {msg.content || '[Empty message]'}
+                                                </div>
+                                                {msg.side === 'disagree' && (
+                                                    <div className={styles.profileContainer}>
+                                                        <img src="/assets/images/discussion/noman.png" alt="반대" className={styles.kakaoProfileImg} />
+                                                        <span className={styles.senderName}>
+                                                            {isAnonymous ? 'ㅇㅇㅇ' : (msg.sender || '반대')}
+                                                        </span>
+                                                    </div>
+                                                )}
                                             </div>
-                                            {msg.side === 'disagree' && (
-                                                <img src="/assets/images/discussion/noman.png" alt="반대" className={styles.kakaoProfileImg} />
-                                            )}
-                                        </div>
-                                    ))}
+                                        ))}
                                 </div>
                             </div>
                         )}
@@ -513,12 +578,24 @@ const DiscussionRoomPage: React.FC = () => {
                                 >
                                     찬성
                                 </button>
-                                <button
-                                    className={`${styles.teacherVoteBtn} ${styles.disagreeVoteButton} ${vote === 'disagree' ? styles.activeVote : ''}`}
-                                    onClick={() => sendVoteStatus('disagree')}
-                                >
-                                    반대
-                                </button>
+                                <div className={styles.rightVoteColumn}>
+                                    {viewMode === 'chat' ? (
+                                        <button
+                                            className={`${styles.anonymousButton} ${isAnonymous ? styles.anonymousActive : ''}`}
+                                            onClick={toggleAnonymous}
+                                        >
+                                            익명
+                                        </button>
+                                    ) : (
+                                        <div style={{ height: '40px' }} />
+                                    )}
+                                    <button
+                                        className={`${styles.teacherVoteBtn} ${styles.disagreeVoteButton} ${vote === 'disagree' ? styles.activeVote : ''}`}
+                                        onClick={() => sendVoteStatus('disagree')}
+                                    >
+                                        반대
+                                    </button>
+                                </div>
                             </div>
                             <div className={styles.mainButtons}>
                                 <button className={styles.endButton} onClick={handleEnd}>종료</button>

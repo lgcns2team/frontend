@@ -272,11 +272,32 @@ export const useDiscussion = (roomId: string | undefined) => {
     const [messages, setMessages] = useState<DisplayMessage[]>([]);
     const [vote, setVote] = useState<'agree' | 'disagree' | null>(null);
     const [viewMode, setViewMode] = useState<'vote' | 'chat' | 'verify' | 'result' | 'final'>('vote');
+    const [isAnonymous, setIsAnonymous] = useState(false);
 
+
+    const [participantVotes, setParticipantVotes] = useState<Record<string, 'agree' | 'disagree'>>({});
 
     // 3. Helpers
     const handleIncomingMessage = useCallback((message: any) => {
         console.log('🔍 handleIncomingMessage called with type:', message.type, 'full message:', message);
+
+        // 0. Update Vote Counts (Capture status from ANY message type if present)
+        // Fallback to message.sender if userId is missing (which seems to be the case for STATUS messages)
+        const userKey = message.userId || message.sender;
+
+        if (userKey && (message.status || message.type === 'STATUS')) {
+            let voteSide: 'agree' | 'disagree' | null = null;
+            if (message.status === 'PRO') voteSide = 'agree';
+            else if (message.status === 'CON') voteSide = 'disagree';
+
+            if (voteSide) {
+                setParticipantVotes(prev => {
+                    if (prev[userKey] === voteSide) return prev;
+                    console.log(`🗳️ Updating vote for ${userKey}: ${voteSide}`);
+                    return { ...prev, [userKey]: voteSide! };
+                });
+            }
+        }
 
         if (message.type === 'JOIN' || message.type === 'LEAVE') {
             console.log('⏭️ Skipping JOIN/LEAVE message');
@@ -315,11 +336,49 @@ export const useDiscussion = (roomId: string | undefined) => {
             return; // Don't display this as a chat message
         }
 
+        // Check for VOTE message via chat
+        if (message.content && typeof message.content === 'string' && message.content.startsWith('__VOTE__:')) {
+            const voteSideStr = message.content.replace('__VOTE__:', '');
+            console.log('🗳️ VOTE detected via chat:', voteSideStr, 'from:', message.sender);
+
+            const userKey = message.userId || message.sender;
+            if (userKey) {
+                setParticipantVotes(prev => {
+                    const newVotes = { ...prev };
+                    if (voteSideStr === 'cancel') {
+                        delete newVotes[userKey];
+                        return newVotes;
+                    }
+
+                    if (voteSideStr === 'agree' || voteSideStr === 'disagree') {
+                        newVotes[userKey] = voteSideStr as 'agree' | 'disagree';
+                        return newVotes;
+                    }
+                    return prev;
+                });
+            }
+            return; // Don't display
+        }
+
+        // Check for ANONYMOUS message via chat
+        if (message.content && typeof message.content === 'string' && message.content.startsWith('__ANONYMOUS__:')) {
+            const anonSignal = message.content.replace('__ANONYMOUS__:', '');
+            console.log('🕵️ ANONYMOUS signal detected:', anonSignal);
+            if (anonSignal === 'ON') setIsAnonymous(true);
+            else if (anonSignal === 'OFF') setIsAnonymous(false);
+            return; // Don't display
+        }
+
         // Skip STATUS messages (they're for internal state management)
         if (message.type === 'STATUS') {
             console.log('⏭️ Skipping STATUS message');
             return;
         }
+
+        // Filter out anonymous system messages from chat log processing
+        // (They are already handled by DiscussionRoomPage via messages prop, but good to keep clean here if needed)
+        // Actually, DiscussionRoomPage filters them at render time, so we let them pass through to 'messages' state
+        // so that the component can see them and toggle state.
 
         let side: 'agree' | 'disagree' = 'agree';
         if (message.status === 'CON') side = 'disagree';
@@ -343,7 +402,7 @@ export const useDiscussion = (roomId: string | undefined) => {
         //     // alert("✅ 채팅 전송 성공! (Backend를 거쳐 Redis에 저장되었습니다)");
         //     // Alert removed as per typical UX, or kept if requested. User removed it in recent edit.
         // }
-    }, [userId, setViewMode, setVote]);
+    }, [userId, setViewMode, setVote, setParticipantVotes]);
 
     // 4. WebSocket Integration
     const { connect, disconnect, subscribe, sendMessage, isConnected, lastError } = useStomp({
@@ -442,6 +501,21 @@ export const useDiscussion = (roomId: string | undefined) => {
         );
     };
 
+    // Non-persisting system signal (no type: 'CHAT')
+    const sendSystemSignal = (signalContent: string) => {
+        if (!roomId || !isConnected) return;
+        console.log('📤 Sending system signal (no persist):', signalContent);
+        sendMessage(
+            "/app/room/" + roomId + "/chat",
+            {
+                content: signalContent,
+                status: 'PRO',
+                userId: userId,
+                sender: username,
+            }
+        );
+    };
+
     const sendVoteStatus = (selectedVote: 'agree' | 'disagree') => {
         if (!roomId) return;
         setVote(selectedVote);
@@ -488,11 +562,11 @@ export const useDiscussion = (roomId: string | undefined) => {
             return;
         }
 
-        console.log('📤 Sending END_SESSION message');
+        console.log('📤 Sending END_SESSION message (no persist)');
+        // Omit type to prevent DB save
         sendMessage(
             "/app/room/" + roomId + "/chat",
             {
-                type: 'END_SESSION',
                 content: '__END_SESSION__',
                 status: 'PRO',
                 userId: userId,
@@ -511,6 +585,33 @@ export const useDiscussion = (roomId: string | undefined) => {
         }
     };
 
+    const broadcastVote = (selectedVote: 'agree' | 'disagree' | null) => {
+        if (!roomId || !isConnected) return;
+
+        let content = '';
+        let status = 'PRO'; // Default fallback, backend might require one of PRO/CON
+
+        if (selectedVote === null) {
+            content = '__VOTE__:cancel';
+        } else {
+            content = `__VOTE__:${selectedVote}`;
+            status = selectedVote === 'agree' ? 'PRO' : 'CON';
+        }
+
+        console.log('📤 Broadcasting vote (no persist):', selectedVote || 'CANCEL');
+
+        // Omit type: 'CHAT' to prevent DB save (same as sendModeChange)
+        sendMessage(
+            "/app/room/" + roomId + "/chat",
+            {
+                content: content,
+                status: status,
+                userId: userId,
+                sender: username
+            }
+        );
+    };
+
     return {
         // State
         messages,
@@ -520,11 +621,16 @@ export const useDiscussion = (roomId: string | undefined) => {
         username,
         isConnected, // Exposed for UI indicators
         lastError,
+        agreeCount: Object.values(participantVotes).filter(v => v === 'agree').length,
+        disagreeCount: Object.values(participantVotes).filter(v => v === 'disagree').length,
+        isAnonymous,
 
         // Actions
         setVote: setVoteLocal,
+        broadcastVote,
         setViewMode,
         sendChat,
+        sendSystemSignal,
         sendVoteStatus, // This combines setting vote (if needed) and sending status
         sendModeChange,
         sendEndSession,

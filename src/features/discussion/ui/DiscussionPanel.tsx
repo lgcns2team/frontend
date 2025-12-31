@@ -256,9 +256,21 @@ const DiscussionPanel: React.FC = () => {
                         {recommendationError}
                       </div>
                     )}
-                    {recommendedTopics.length > 0 && (
+                    {isLoadingRecommendations && (
+                      <div style={{
+                        display: 'flex',
+                        flexDirection: 'column',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        padding: '40px 20px',
+                        gap: '16px'
+                      }}>
+                        <div className={styles.spinner}></div>
+                        <span className={styles.spinnerText}>AI가 주제를 선정하고 있습니다</span>
+                      </div>
+                    )}
+                    {!isLoadingRecommendations && recommendedTopics.length > 0 && (
                       <div style={{ padding: '10px' }}>
-                        <h4 style={{ marginBottom: '10px', fontSize: '14px' }}>추천 주제 ({recommendedTopics.length}개)</h4>
                         {recommendedTopics.map((item, index) => (
                           <div
                             key={index}
@@ -287,7 +299,7 @@ const DiscussionPanel: React.FC = () => {
                               {index + 1}. {item.topic}
                             </div>
                             <div style={{ fontSize: '12px', color: '#666', lineHeight: '1.4' }}>
-                              {item.description.substring(0, 80)}...
+                              {item.description}
                             </div>
                           </div>
                         ))}

@@ -163,7 +163,7 @@
     display: inline-flex;
     flex-direction: column;
     align-items: center;
-    z-index: 20;
+    z-index: 25;
 
     width: 80%;
     /* Slightly narrower to fit flowers */
@@ -270,6 +270,7 @@
     font-weight: 900;
     cursor: pointer;
     display: flex;
+    flex-direction: column;
     justify-content: center;
     align-items: center;
     color: #3E2723;
@@ -545,6 +546,16 @@
     font-weight: 900;
 }
 
+.voteCount {
+    font-size: calc(3rem);
+    margin-top: 10px;
+    font-weight: 900;
+    color: inherit;
+    display: block;
+    text-align: center;
+    line-height: 1;
+}
+
 .actionButtons button:hover {
     background-color: #FFE0B2;
     /* Warmer Wood */
@@ -562,6 +573,7 @@
 .voteButtons {
     display: flex;
     gap: 10px;
+    align-items: flex-end;
 }
 
 .teacherVoteBtn {
@@ -600,6 +612,43 @@
 
 .disagreeVoteButton:hover {
     background-color: #FFCDD2;
+}
+
+.rightVoteColumn {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.anonymousButton {
+    width: 90px !important;
+    height: 40px !important;
+    padding: 0 !important;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.9rem !important;
+    white-space: nowrap;
+    font-family: 'Gungsuh', 'Batang', serif;
+    border: 2px solid #9E9E9E;
+    border-radius: 6px;
+    box-shadow: 0 3px 6px rgba(0, 0, 0, 0.2);
+    font-weight: 900;
+    cursor: pointer;
+    background-color: #F5F5F5;
+    color: #616161;
+    transition: all 0.2s ease;
+}
+
+.anonymousButton:hover {
+    background-color: #E0E0E0;
+}
+
+.anonymousActive {
+    background-color: #757575;
+    color: white;
+    border-color: #616161;
+    box-shadow: inset 0 2px 5px rgba(0, 0, 0, 0.2);
 }
 
 .activeVote {
@@ -2041,6 +2090,16 @@
     border-radius: 0;
 }
 
+.borderAgree {
+    border: 5px solid #A5D6A7 !important;
+    border-radius: 12px !important;
+}
+
+.borderDisagree {
+    border: 5px solid #EF9A9A !important;
+    border-radius: 12px !important;
+}
+
 /* 카카오톡 스타일 채팅 로그 */
 .kakaoChatLog {
     flex: 1;
@@ -2097,7 +2156,7 @@
 /* 반대 메시지: 오른쪽 정렬 */
 .kakaoRight {
     align-self: flex-end;
-    flex-direction: row-reverse;
+    flex-direction: row;
     margin-left: auto;
 }
 
@@ -2114,6 +2173,32 @@
     color: white;
     flex-shrink: 0;
     box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+}
+
+.profileContainer {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-right: 10px;
+    /* Basic spacing */
+    flex-shrink: 0;
+}
+
+.kakaoRight .profileContainer {
+    margin-right: 0;
+    margin-left: 10px;
+}
+
+.senderName {
+    font-size: 0.75rem;
+    color: #555;
+    margin-top: 4px;
+    max-width: 60px;
+    text-overflow: ellipsis;
+    overflow: hidden;
+    white-space: nowrap;
+    text-align: center;
+    font-weight: 600;
 }
 
 .kakaoProfileAgree {
