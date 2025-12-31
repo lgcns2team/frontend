@@ -16,19 +16,41 @@ pipeline {
             }
         }
         
+        stage('Verify Structure') {
+            steps {
+                echo '=== Verifying repository structure ==='
+                sh '''
+                    pwd
+                    ls -la
+                    cat package.json | grep "name"
+                '''
+            }
+        }
+        
         stage('Build Frontend with Docker') {
             steps {
                 echo '=== Building frontend with Docker ==='
                 sh '''
+                    # 현재 디렉토리를 절대 경로로
+                    WORKSPACE_PATH=$(pwd)
+                    echo "Workspace: ${WORKSPACE_PATH}"
+                    
                     # Docker로 빌드
                     docker run --rm \
-                        -v $(pwd):/app \
+                        -v "${WORKSPACE_PATH}":/app \
                         -w /app \
                         node:18-alpine \
-                        sh -c "npm install && npm run build"
+                        sh -c "npm ci && npm run build"
                     
                     # 빌드 결과 확인
-                    ls -la dist/ || ls -la build/
+                    if [ -d "dist" ]; then
+                        echo "✅ Build successful! Contents:"
+                        ls -la dist/
+                    else
+                        echo "❌ dist directory not found!"
+                        ls -la
+                        exit 1
+                    fi
                 '''
             }
         }
@@ -41,29 +63,17 @@ pipeline {
                     credentialsId: 'aws-credentials'
                 ]]) {
                     sh '''
-                        echo "Uploading to bucket: ${BUCKET_NAME}"
-                        
-                        # 빌드 디렉토리 확인 (dist 또는 build)
-                        if [ -d "dist" ]; then
-                            BUILD_DIR="dist"
-                        elif [ -d "build" ]; then
-                            BUILD_DIR="build"
-                        else
-                            echo "❌ Build directory not found!"
-                            exit 1
-                        fi
-                        
-                        echo "Using build directory: ${BUILD_DIR}"
+                        echo "Uploading dist/ to bucket: ${BUCKET_NAME}"
                         
                         # Upload all files except index.html with long cache
-                        aws s3 sync ${BUILD_DIR}/ s3://${BUCKET_NAME}/ \
+                        aws s3 sync dist/ s3://${BUCKET_NAME}/ \
                             --delete \
                             --cache-control "public, max-age=31536000" \
                             --exclude "index.html" \
                             --region ${AWS_REGION}
                         
                         # Upload index.html with no-cache
-                        aws s3 cp ${BUILD_DIR}/index.html s3://${BUCKET_NAME}/index.html \
+                        aws s3 cp dist/index.html s3://${BUCKET_NAME}/index.html \
                             --cache-control "no-cache, no-store, must-revalidate" \
                             --region ${AWS_REGION}
                         
@@ -122,9 +132,9 @@ pipeline {
             echo '❌ Frontend deployment failed!'
         }
         always {
-            // Clean up build artifacts
+            // Clean up
             sh '''
-                rm -rf dist/ build/ node_modules/ || true
+                rm -rf dist/ node_modules/ || true
             '''
         }
     }
