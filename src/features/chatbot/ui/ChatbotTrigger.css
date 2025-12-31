@@ -21,7 +21,7 @@
 .ai-chat-btn:hover {
     transform: scale(1.1);
     background: var(--color-accent, #c49f64);
-    color: #ffffff;
+    color: #f9f7f1;
     border-color: var(--color-accent, #c49f64);
 }
 
@@ -30,4 +30,14 @@
     font-weight: bold;
     margin-bottom: 2px;
     color: var(--color-accent, #c49f64);
+    transition: color 0.3s ease;
+}
+
+.ai-chat-btn:hover .ai-icon {
+    color: #f9f7f1;
+}
+
+.ai-chat-btn:focus {
+    outline: 2px solid #c49f64;
+    outline-offset: 2px;
 }
