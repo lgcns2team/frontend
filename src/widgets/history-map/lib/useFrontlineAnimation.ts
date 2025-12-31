@@ -494,16 +494,28 @@ export const useFrontlineAnimation = ({
                 dashArray: '8, 4'
             }).addTo(movementLayer.current!);
 
-            const iconHtml = movement.unit_type === 'navy'
-                ? '🚢'
-                : movement.side === 'south' ? '🔵' : '🔴';
+            let unitIcon;
 
-            const unitIcon = L.divIcon({
-                className: 'korean-war-unit-marker',
-                html: `<div style="font-size: 20px; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.5));">${iconHtml}</div>`,
-                iconSize: [24, 24],
-                iconAnchor: [12, 12]
-            });
+            // Check if this is the Incheon Landing Operation movement
+            if (movement.name && movement.name.includes('인천')) {
+                unitIcon = L.divIcon({
+                    className: '', // Container class
+                    html: `<div class="landing-craft-anim" style="width:100%; height:100%; transform: rotate(0deg);"></div>`,
+                    iconSize: [80, 40], // 2x size for landing craft
+                    iconAnchor: [40, 20]
+                });
+            } else {
+                const iconHtml = movement.unit_type === 'navy'
+                    ? '🚢'
+                    : movement.side === 'south' ? '🔵' : '🔴';
+
+                unitIcon = L.divIcon({
+                    className: 'korean-war-unit-marker',
+                    html: `<div style="font-size: 20px; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.5));">${iconHtml}</div>`,
+                    iconSize: [24, 24],
+                    iconAnchor: [12, 12]
+                });
+            }
 
             const unitMarker = L.marker(smoothedLatLngs[0], { icon: unitIcon });
             unitMarker.bindTooltip(movement.name, {
@@ -790,6 +802,7 @@ export const useFrontlineAnimation = ({
                                 zIndexOffset: raid.type === 'dogfight' ? 2000 : (raid.type === 'battleship' ? 900 : 1000)
                             }).addTo(airRaidLayer.current);
                         }
+
 
                         // Update Marker Position & Animation State
                         if (raid.marker) {

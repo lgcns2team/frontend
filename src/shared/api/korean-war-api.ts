@@ -81,7 +81,7 @@ export const getBattlesForDate = (
     battles: KoreanWarBattle[],
     targetDate: string
 ): KoreanWarBattle[] => {
-    return battles.filter(b => b.date === targetDate);
+    return battles.filter(b => b.date <= targetDate);
 };
 
 // Get active movements for date range (within 3 days)
@@ -98,20 +98,14 @@ export const getActiveMovements = (
     });
 };
 
-// Fetch Korean War data from GeoJSON files
+import { fetchWarData } from './war-api';
+
+// Fetch Korean War data from Backend and GeoJSON
 export const fetchKoreanWarData = async (): Promise<KoreanWarData> => {
     try {
-        const [frontlinesRes, battlesRes, movementsRes] = await Promise.all([
-            fetch('/geojson/korean_war_frontlines.geojson'),
-            fetch('/geojson/korean_war_battles.geojson'),
-            fetch('/geojson/korean_war_movements.geojson')
-        ]);
-
-        const [frontlinesGeo, battlesGeo, movementsGeo] = await Promise.all([
-            frontlinesRes.json(),
-            battlesRes.json(),
-            movementsRes.json()
-        ]);
+        // Fetch frontlines from GeoJSON (still static)
+        const frontlinesRes = await fetch('/geojson/korean_war_frontlines.geojson');
+        const frontlinesGeo = await frontlinesRes.json();
 
         // Parse frontlines
         const frontlines: FrontlineData[] = frontlinesGeo.features.map((f: any) => ({
@@ -121,25 +115,54 @@ export const fetchKoreanWarData = async (): Promise<KoreanWarData> => {
             coordinates: f.geometry.coordinates
         }));
 
-        // Parse battles
-        const battles: KoreanWarBattle[] = battlesGeo.features.map((f: any) => ({
-            name: f.properties.name,
-            date: f.properties.date,
-            winner: f.properties.winner,
-            loser: f.properties.loser,
-            description: f.properties.description,
-            coordinates: f.geometry.coordinates as [number, number]
-        }));
+        // Fetch War Data from Backend (Year 1950 covers the war)
+        const wars = await fetchWarData(1950);
+        const koreanWar = wars.find(w => w.name.includes('6.25') || w.name.includes('한국전쟁'));
 
-        // Parse movements
-        const movements: KoreanWarMovement[] = movementsGeo.features.map((f: any) => ({
-            name: f.properties.name,
-            date: f.properties.date,
-            side: f.properties.side,
-            unit_type: f.properties.unit_type,
-            description: f.properties.description,
-            coordinates: f.geometry.coordinates
-        }));
+        let battles: KoreanWarBattle[] = [];
+        let movements: KoreanWarMovement[] = [];
+
+        if (koreanWar && koreanWar.battles) {
+            koreanWar.battles.forEach(b => {
+                if (b.markerRoute) {
+                    // It's a movement
+                    let side: 'north' | 'south' | 'china' = 'south';
+                    if (b.routeColor === '#ef4444') {
+                        side = 'north';
+                    }
+                    if (b.battleName.includes('중공군') || b.battleName.includes('중국')) {
+                        side = 'china';
+                    }
+
+                    let unitType: 'infantry' | 'navy' = 'infantry';
+                    if (b.battleName.includes('상륙') || b.battleName.includes('해군')) {
+                        unitType = 'navy';
+                    } else if (b.markerRoute.coordinates.length > 0 && Array.isArray(b.markerRoute.coordinates[0]) && b.markerRoute.coordinates[0].length >= 2) {
+                        // Check if coordinates imply sea? No, hard to tell. Rely on name.
+                    }
+
+                    movements.push({
+                        name: b.battleName,
+                        date: b.battleDate,
+                        side: side,
+                        unit_type: unitType,
+                        description: b.details,
+                        coordinates: b.markerRoute.coordinates
+                    });
+                } else {
+                    // It's a battle point
+                    // Infer winner/loser from backend data (which might be generic "UN군", "북한" etc)
+                    battles.push({
+                        name: b.battleName,
+                        date: b.battleDate,
+                        winner: b.winnerGeneral || 'Unknown',
+                        loser: b.loserGeneral || 'Unknown',
+                        description: b.details,
+                        coordinates: [b.longitude, b.latitude]
+                    });
+                }
+            });
+        }
 
         return { frontlines, battles, movements };
     } catch (error) {

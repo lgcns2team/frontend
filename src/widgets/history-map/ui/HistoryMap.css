@@ -321,6 +321,40 @@
     transform-origin: center center;
 }
 
+/* Landing Craft Animation */
+@keyframes landingCraftAnim {
+    0% {
+        background-image: url('/assets/images/korean-war/landing_craft_anim_0.png');
+    }
+
+    20% {
+        background-image: url('/assets/images/korean-war/landing_craft_anim_1.png');
+    }
+
+    40% {
+        background-image: url('/assets/images/korean-war/landing_craft_anim_2.png');
+    }
+
+    60% {
+        background-image: url('/assets/images/korean-war/landing_craft_anim_3.png');
+    }
+
+    80% {
+        background-image: url('/assets/images/korean-war/landing_craft_anim_4.png');
+    }
+}
+
+.landing-craft-anim {
+    width: 100%;
+    height: 100%;
+    background-size: contain;
+    background-repeat: no-repeat;
+    background-position: center;
+    /* Use the animation */
+    animation: landingCraftAnim 1.0s step-end infinite;
+    filter: drop-shadow(0 5px 5px rgba(0, 0, 0, 0.4));
+}
+
 /* Center Controls Group */
 .center-controls-group {
     position: absolute;

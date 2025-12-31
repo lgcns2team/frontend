@@ -100,8 +100,9 @@ export const useWarAnimation = ({
             className: 'war-unit-icon'
         });
 
+        // Use ship.png as it exists, warship.png does not
         const warshipIcon = L.icon({
-            iconUrl: `/assets/images/${era.id}/warship.png`,
+            iconUrl: `/assets/images/${era.id}/ship.png`,
             iconSize: [40, 40],
             iconAnchor: [20, 20],
             className: 'war-unit-icon'
@@ -153,6 +154,15 @@ export const useWarAnimation = ({
                 className: 'war-unit-icon'
             });
         }
+
+        // Special icon for Incheon Landing (Korean War)
+        // Special icon for Incheon Landing (Korean War)
+        const landingCraftIcon = L.divIcon({
+            className: 'landing-craft-unit',
+            html: '',
+            iconSize: [80, 40], // Wider for landing craft
+            iconAnchor: [40, 20]
+        });
 
 
         const activeUnits: {
@@ -449,6 +459,11 @@ export const useWarAnimation = ({
                             // Use only soldier1 for land, warship for sea (regardless of route color)
                             targetIcon = isOnLand ? soldierIcon : warshipIcon;
                         }
+                    }
+
+                    // Special Override: Incheon Landing Operation
+                    if (unit.battleName.includes('인천')) {
+                        targetIcon = landingCraftIcon;
                     }
                 }
 
