@@ -114,24 +114,29 @@
 .timeline-visibility-btn {
     width: 32px;
     height: 32px;
-    background: rgba(255, 255, 255, 0.95);
-    border: 1px solid #d1d5db;
+    background: #f9f7f1;
+    border: 1px solid rgba(255, 255, 255, 0.1);
     border-radius: 50%;
     cursor: pointer;
     display: flex;
     align-items: center;
     justify-content: center;
-    color: #4b5563;
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    color: #c49f64;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
     transition: all 0.3s ease;
     padding: 0;
 }
 
 .timeline-visibility-btn:hover:not(:disabled) {
-    background: white;
-    color: #111827;
-    transform: translateY(-2px);
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+    background: #c49f64;
+    color: #f9f7f1;
+    transform: scale(1.1);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+.timeline-visibility-btn:focus {
+    outline: 2px solid #c49f64;
+    outline-offset: 2px;
 }
 
 .timeline-visibility-btn svg {
