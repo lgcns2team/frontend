@@ -36,6 +36,7 @@ import { DiscussionPanel } from '../../../features/discussion';
 import { CloudTransition } from '../../../features/cloud-transition/ui/CloudTransition';
 import { MyPagePanel } from '../../../features/mypage';
 import { DayTimelineSlider } from '../../../features/day-timeline';
+import { EraNameDisplay } from '../../era-name-display';
 
 // Fix Leaflet marker icon issue
 import icon from 'leaflet/dist/images/marker-icon.png';
@@ -109,6 +110,9 @@ export default function HistoryMap() {
 
     // Character Panel Toggle State
     const [characterPanelToggle, setCharacterPanelToggle] = useState<React.ReactNode>(null);
+
+    // Major Events Panel Toggle State
+    const [majorEventsPanelToggle, setMajorEventsPanelToggle] = useState<React.ReactNode>(null);
 
     // Cloud Transition State
     const [isCloudTransitionActive, setIsCloudTransitionActive] = useState(false);
@@ -1021,6 +1025,11 @@ export default function HistoryMap() {
         <div className={`history-map-container theme-${currentEra.id}`}>
             <div id="map" ref={mapContainer}></div>
 
+            {/* Top Center: Era Name Display */}
+            {!isAllUIHidden && (
+                <EraNameDisplay currentEra={currentEra} />
+            )}
+
             {/* Top Center: Search Year only */}
             {/* <div className={`center-controls-group ${!isUIVisible ? 'ui-hidden' : ''}`}>
                 <SearchYear
@@ -1118,7 +1127,9 @@ export default function HistoryMap() {
                 headerRightContent={
                     activePanel === 'people'
                         ? (chatCharacter ? null : characterPanelToggle)
-                        : null
+                        : activePanel === 'search'
+                            ? majorEventsPanelToggle
+                            : null
                 }
             >
                 {activePanel === 'textbook' ? (
@@ -1135,6 +1146,8 @@ export default function HistoryMap() {
                     <MajorEventsPanel
                         onYearChange={handleYearChange}
                         onEventClick={handleEventClickWithTransition}
+                        currentYear={currentYear}
+                        renderToggle={setMajorEventsPanelToggle}
                     />
                 ) : activePanel === 'people' ? (
                     chatCharacter ? (
