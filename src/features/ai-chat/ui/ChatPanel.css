@@ -54,8 +54,67 @@
     font-size: 1.2rem;
     font-weight: 700;
     color: var(--ui-text-highlight);
-    margin: 0 0 6px 0;
+    margin: 0;
     text-align: left;
+}
+
+.chat-profile-name-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 6px;
+}
+
+/* TTS Button in ChatPanel */
+.chat-profile-info .tts-btn {
+    background: rgba(136, 160, 155, 0.3);
+    border: none;
+    cursor: pointer;
+    padding: 4px 8px;
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+    opacity: 0.7;
+}
+
+.chat-profile-info .tts-btn:hover {
+    background: rgba(136, 160, 155, 0.5);
+    opacity: 1;
+}
+
+.chat-profile-info .tts-btn.tts-active {
+    background: rgba(196, 159, 100, 0.8);
+    opacity: 1;
+    box-shadow: 0 0 8px rgba(196, 159, 100, 0.5);
+}
+
+/* Call Button in ChatPanel */
+.chat-profile-info .call-btn {
+    background: rgba(136, 160, 155, 0.3);
+    border: none;
+    cursor: pointer;
+    padding: 4px 8px;
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+    opacity: 0.7;
+    color: #496b6e;
+}
+
+.chat-profile-info .call-btn:hover {
+    background: rgba(136, 160, 155, 0.5);
+    opacity: 1;
+}
+
+.chat-profile-info .call-btn.call-active {
+    background: rgba(76, 175, 80, 0.8);
+    opacity: 1;
+    color: white;
+    box-shadow: 0 0 8px rgba(76, 175, 80, 0.5);
 }
 
 .chat-profile-desc {
@@ -312,4 +371,15 @@
     border-style: solid;
     border-width: 7px 9px 7px 0;
     border-color: transparent #f9f7f1 transparent transparent;
+}
+
+/* Call Panel Overlay */
+.call-panel-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 100;
+    background: #f5f5f5;
 }

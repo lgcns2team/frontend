@@ -193,6 +193,9 @@ export const ChatbotPanel = ({ onClose, initialPosition, initialSize, onStateCha
     };
 
     const [isLoading, setIsLoading] = useState(false);
+    const [isTTSEnabled, setIsTTSEnabled] = useState(false);
+
+    // TODO: TTS 기능은 나중에 백엔드 API로 연결 예정
 
     // ↘↘ 추가: 버퍼에서 한 글자씩 꺼내서 현재 봇 메시지에 붙이는 타이핑 루프
     const startTypingLoop = () => {
@@ -207,6 +210,7 @@ export const ChatbotPanel = ({ onClose, initialPosition, initialSize, onStateCha
                     window.clearInterval(typingIntervalRef.current);
                     typingIntervalRef.current = null;
                 }
+
                 return;
             }
 
@@ -381,6 +385,22 @@ export const ChatbotPanel = ({ onClose, initialPosition, initialSize, onStateCha
             <div className="chatbot-header" onMouseDown={handleMouseDown} onTouchStart={handleTouchStart}>
                 <div className="chatbot-title">
                     <span>🤖</span> 역사 챗봇 H.AI
+                    <button
+                        className={`tts-btn ${isTTSEnabled ? 'tts-active' : ''}`}
+                        onClick={(e) => {
+                            e.stopPropagation();
+                            setIsTTSEnabled(!isTTSEnabled);
+                            // TODO: 백엔드 API 연결 시 여기에 TTS 호출 로직 추가
+                        }}
+                        onMouseDown={(e) => e.stopPropagation()}
+                        title={isTTSEnabled ? 'TTS 끄기' : 'TTS 켜기'}
+                    >
+                        <img
+                            src="/assets/images/etc/speaker.png"
+                            alt="TTS"
+                            style={{ width: '18px', height: '18px' }}
+                        />
+                    </button>
                 </div>
                 <button className="close-btn" onClick={onClose} onMouseDown={(e) => e.stopPropagation()}>×</button>
             </div>

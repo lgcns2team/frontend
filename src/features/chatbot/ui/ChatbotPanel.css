@@ -56,6 +56,34 @@
     gap: 8px;
 }
 
+/* TTS Button */
+.tts-btn {
+    background: rgba(255, 255, 255, 0.15);
+    border: none;
+    color: #f9f7f1;
+    font-size: 16px;
+    cursor: pointer;
+    padding: 4px 8px;
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+    margin-left: 4px;
+    opacity: 0.7;
+}
+
+.tts-btn:hover {
+    background: rgba(255, 255, 255, 0.25);
+    opacity: 1;
+}
+
+.tts-btn.tts-active {
+    background: rgba(196, 159, 100, 0.8);
+    opacity: 1;
+    box-shadow: 0 0 8px rgba(196, 159, 100, 0.5);
+}
+
 .chatbot-header .close-btn {
     background: none;
     border: none;

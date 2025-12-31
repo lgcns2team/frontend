@@ -6,7 +6,6 @@ import {
     getBattlesForDate,
     getActiveMovements,
     type KoreanWarData,
-    type FrontlineData,
     type KoreanWarBattle,
     type KoreanWarMovement
 } from '../../../shared/api/korean-war-api';
@@ -141,12 +140,6 @@ export const useFrontlineAnimation = ({
         iconAnchor: [16, 32]
     });
 
-    // Tank icon definition (Animated South)
-    const tankIconSouth = L.divIcon({
-        className: 'tank-icon-south-anim',
-        iconSize: [48, 48],
-        iconAnchor: [24, 24]
-    });
 
     // --- Configuration Constants ---
     const JET_SIZE: L.PointTuple = [38, 38];
@@ -267,7 +260,7 @@ export const useFrontlineAnimation = ({
     }, []);
 
     // Draw frontline, territories and soldiers
-    const drawFrontline = useCallback((coords: number[][], properties?: any) => {
+    const drawFrontline = useCallback((coords: number[][]) => {
         if (!map || !frontlineLayer.current || !territoryLayer.current || !soldierLayer.current) return;
 
         frontlineLayer.current.clearLayers();
@@ -556,7 +549,6 @@ export const useFrontlineAnimation = ({
 
         // 1. Interpolate Frontline
         let currentCoords: number[][] = [];
-        let currentProps: any = {};
 
         // Sort frontlines by date
         const sortedFrontlines = [...warData.frontlines].sort((a, b) =>
@@ -578,11 +570,9 @@ export const useFrontlineAnimation = ({
         if (prevIndex === -1) {
             // Before first date
             currentCoords = sortedFrontlines[0].coordinates;
-            currentProps = sortedFrontlines[0];
         } else if (prevIndex === sortedFrontlines.length - 1) {
             // After last date
             currentCoords = sortedFrontlines[prevIndex].coordinates;
-            currentProps = sortedFrontlines[prevIndex];
         } else {
             // Between two dates: Interpolate
             const prev = sortedFrontlines[prevIndex];
@@ -594,7 +584,6 @@ export const useFrontlineAnimation = ({
             const t = (currentTs - prevTs) / (nextTs - prevTs);
 
             currentCoords = interpolateLines(prev.coordinates, next.coordinates, t);
-            currentProps = t < 0.5 ? prev : next;
         }
 
         // Filter points that are on land for Air Raids
@@ -609,7 +598,7 @@ export const useFrontlineAnimation = ({
         // Update ref for Air Raid system
         currentFrontlinePointsRef.current = validPoints;
 
-        drawFrontline(currentCoords, currentProps);
+        drawFrontline(currentCoords);
 
         // 2. Battles
         const battles = getBattlesForDate(warData.battles, currentDate);
@@ -633,10 +622,6 @@ export const useFrontlineAnimation = ({
 
             const now = Date.now();
 
-            // Spawn Check: Only after UN Intervention (Approx July 1950)
-            const currentYearMonth = currentDate.substring(0, 7); // "YYYY-MM"
-            // Simple check: year >= 1950. If 1950, month >= 07.
-            // Or just check full string comparison "1950-07-01"
             if (currentDate < "1950-07-01") {
                 lastRaidTimeRef.current = timestamp; // Keep resetting so it doesn't backlog
                 // Clear existing if we went back in time
