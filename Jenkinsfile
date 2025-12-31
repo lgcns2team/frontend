@@ -16,36 +16,19 @@ pipeline {
             }
         }
         
-        stage('Build Frontend with Docker') {
+        stage('Install Dependencies') {
             steps {
-                echo '=== Building frontend with Docker ==='
+                echo '=== Installing dependencies ==='
+                sh 'npm ci'
+            }
+        }
+        
+        stage('Build Frontend') {
+            steps {
+                echo '=== Building frontend ==='
                 sh '''
-                    # Jenkins workspace를 호스트 경로로 변환
-                    # /var/jenkins_home은 호스트의 docker volume에 마운트됨
-                    WORKSPACE_PATH="${WORKSPACE}"
-                    
-                    echo "Building in: ${WORKSPACE_PATH}"
-                    ls -la
-                    
-                    # 직접 npm 명령어 실행 (Docker 없이)
-                    # Jenkins 컨테이너 안에서 직접 실행
-                    
-                    # Node.js 이미지를 사용하되, 파일을 복사하는 방식
-                    docker run --rm \
-                        -v jenkins_home:/var/jenkins_home:ro \
-                        -v $(pwd):/build \
-                        -w /build \
-                        node:18-alpine \
-                        sh -c "npm ci && npm run build"
-                    
-                    # 빌드 결과 확인
-                    if [ -d "dist" ]; then
-                        echo "✅ Build successful!"
-                        ls -la dist/
-                    else
-                        echo "❌ Build failed!"
-                        exit 1
-                    fi
+                    npm run build
+                    ls -la dist/
                 '''
             }
         }
@@ -89,16 +72,18 @@ pipeline {
                             --output text 2>/dev/null || echo "")
                         
                         if [ -z "$DISTRIBUTION_ID" ]; then
-                            echo "⚠️ CloudFront not found"
+                            echo "⚠️ CloudFront distribution not found"
                             exit 0
                         fi
+                        
+                        echo "Distribution ID: ${DISTRIBUTION_ID}"
                         
                         aws cloudfront create-invalidation \
                             --distribution-id ${DISTRIBUTION_ID} \
                             --paths "/*" \
                             --no-cli-pager
                         
-                        echo "✅ CloudFront invalidated!"
+                        echo "✅ CloudFront cache invalidated!"
                     '''
                 }
             }
