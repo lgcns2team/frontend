@@ -110,6 +110,9 @@ export default function HistoryMap() {
     // Character Panel Toggle State
     const [characterPanelToggle, setCharacterPanelToggle] = useState<React.ReactNode>(null);
 
+    // Major Events Panel Toggle State
+    const [majorEventsPanelToggle, setMajorEventsPanelToggle] = useState<React.ReactNode>(null);
+
     // Cloud Transition State
     const [isCloudTransitionActive, setIsCloudTransitionActive] = useState(false);
 
@@ -1118,7 +1121,9 @@ export default function HistoryMap() {
                 headerRightContent={
                     activePanel === 'people'
                         ? (chatCharacter ? null : characterPanelToggle)
-                        : null
+                        : activePanel === 'search'
+                            ? majorEventsPanelToggle
+                            : null
                 }
             >
                 {activePanel === 'textbook' ? (
@@ -1135,6 +1140,8 @@ export default function HistoryMap() {
                     <MajorEventsPanel
                         onYearChange={handleYearChange}
                         onEventClick={handleEventClickWithTransition}
+                        currentYear={currentYear}
+                        renderToggle={setMajorEventsPanelToggle}
                     />
                 ) : activePanel === 'people' ? (
                     chatCharacter ? (

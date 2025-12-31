@@ -2,6 +2,71 @@
     color: var(--color-text-primary, #040316);
 }
 
+/* Toggle Switch Container */
+.major-events-panel .filter-toggle-container-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.major-events-panel .toggle-label {
+    font-size: 0.9rem;
+    color: var(--color-text-primary, #040316);
+    font-weight: 500;
+}
+
+/* Toggle Switch */
+.major-events-panel .toggle-switch {
+    position: relative;
+    display: inline-block;
+    width: 50px;
+    height: 24px;
+    cursor: pointer;
+}
+
+.major-events-panel .toggle-switch input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+.major-events-panel .toggle-slider {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: var(--color-border, #d4d1ca);
+    border-radius: 24px;
+    transition: 0.3s;
+    border: 1px solid var(--color-text-muted, #6b6b7a);
+    box-sizing: border-box;
+}
+
+.major-events-panel .toggle-slider:before {
+    position: absolute;
+    content: "";
+    height: 18px;
+    width: 18px;
+    left: 3px;
+    bottom: 3px;
+    background-color: white;
+    border-radius: 50%;
+    transition: 0.3s;
+}
+
+.major-events-panel .toggle-switch input:checked+.toggle-slider {
+    background-color: var(--color-main, #496b6e);
+}
+
+.major-events-panel .toggle-switch input:checked+.toggle-slider:before {
+    transform: translateX(26px);
+}
+
+.major-events-panel .toggle-switch:hover .toggle-slider {
+    opacity: 0.9;
+}
+
 .major-events-loading {
     display: flex;
     justify-content: center;
