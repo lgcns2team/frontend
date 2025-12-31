@@ -2,6 +2,7 @@ import { useState, useRef, useEffect } from 'react';
 import { type ParsedCharacter, fetchCharacterDetail } from '../../../shared/api/characters-api';
 import { sendCharacterMessage } from '../../../shared/api/aichat-api';
 import { ERAS } from '../../../shared/config/era-theme';
+import { CallPanel } from '../../ai-call';
 import './ChatPanel.css';
 
 interface ChatMessage {
@@ -19,6 +20,10 @@ export const ChatPanel = ({ character }: ChatPanelProps) => {
     const [input, setInput] = useState('');
     const [messages, setMessages] = useState<ChatMessage[]>([]);
     const [isLoading, setIsLoading] = useState(false);
+    const [isTTSEnabled, setIsTTSEnabled] = useState(false);
+    const [isCallPanelOpen, setIsCallPanelOpen] = useState(false);
+
+    // TODO: TTS 기능은 나중에 백엔드 API로 연결 예정
 
     // 타이핑 효과 관련 Ref
     const typingBufferRef = useRef<string>('');
@@ -128,7 +133,7 @@ export const ChatPanel = ({ character }: ChatPanelProps) => {
 
         currentBotMsgIdRef.current = botMsgId;
         typingBufferRef.current = '';
-        let fullResponse = ''; 
+        let fullResponse = '';
 
         try {
             await sendCharacterMessage(character.promptId!, msgToSend, (text) => {
@@ -152,7 +157,7 @@ export const ChatPanel = ({ character }: ChatPanelProps) => {
             ));
 
             setIsLoading(false);
-            
+
             // ✅ 에러 메시지 음성 재생
             playVoice(errorMsg);
         } finally {
@@ -191,7 +196,32 @@ export const ChatPanel = ({ character }: ChatPanelProps) => {
                     )}
                 </div>
                 <div className="chat-profile-info">
-                    <h3 className="chat-profile-name">{character.characterName}</h3>
+                    <div className="chat-profile-name-row">
+                        <h3 className="chat-profile-name">{character.characterName}</h3>
+                        <button
+                            className={`tts-btn ${isTTSEnabled ? 'tts-active' : ''}`}
+                            onClick={() => {
+                                setIsTTSEnabled(!isTTSEnabled);
+                                // TODO: 백엔드 API 연결 시 여기에 TTS 호출 로직 추가
+                            }}
+                            title={isTTSEnabled ? 'TTS 끄기' : 'TTS 켜기'}
+                        >
+                            <img
+                                src="/assets/images/etc/speaker.png"
+                                alt="TTS"
+                                style={{ width: '18px', height: '18px' }}
+                            />
+                        </button>
+                        <button
+                            className="call-btn"
+                            onClick={() => setIsCallPanelOpen(true)}
+                            title="통화 시작"
+                        >
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+                                <path d="M6.62 10.79c1.44 2.83 3.76 5.14 6.59 6.59l2.2-2.2c.27-.27.67-.36 1.02-.24 1.12.37 2.33.57 3.57.57.55 0 1 .45 1 1V20c0 .55-.45 1-1 1-9.39 0-17-7.61-17-17 0-.55.45-1 1-1h3.5c.55 0 1 .45 1 1 0 1.25.2 2.45.57 3.57.11.35.03.74-.25 1.02l-2.2 2.2z" />
+                            </svg>
+                        </button>
+                    </div>
                     {character.summary && <p className="chat-profile-desc">{character.summary}</p>}
                 </div>
             </div>
@@ -252,6 +282,17 @@ export const ChatPanel = ({ character }: ChatPanelProps) => {
                     ➤
                 </button>
             </div>
+
+            {/* Call Panel Overlay */}
+            {isCallPanelOpen && (
+                <div className="call-panel-overlay">
+                    <CallPanel
+                        characterName={character.characterName}
+                        characterImage={character.imagePath || ''}
+                        onClose={() => setIsCallPanelOpen(false)}
+                    />
+                </div>
+            )}
         </div>
     );
 };
