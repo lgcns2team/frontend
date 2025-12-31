@@ -16,39 +16,34 @@ pipeline {
             }
         }
         
-        stage('Verify Structure') {
-            steps {
-                echo '=== Verifying repository structure ==='
-                sh '''
-                    pwd
-                    ls -la
-                    cat package.json | grep "name"
-                '''
-            }
-        }
-        
         stage('Build Frontend with Docker') {
             steps {
                 echo '=== Building frontend with Docker ==='
                 sh '''
-                    # 현재 디렉토리를 절대 경로로
-                    WORKSPACE_PATH=$(pwd)
-                    echo "Workspace: ${WORKSPACE_PATH}"
+                    # Jenkins workspace를 호스트 경로로 변환
+                    # /var/jenkins_home은 호스트의 docker volume에 마운트됨
+                    WORKSPACE_PATH="${WORKSPACE}"
                     
-                    # Docker로 빌드
+                    echo "Building in: ${WORKSPACE_PATH}"
+                    ls -la
+                    
+                    # 직접 npm 명령어 실행 (Docker 없이)
+                    # Jenkins 컨테이너 안에서 직접 실행
+                    
+                    # Node.js 이미지를 사용하되, 파일을 복사하는 방식
                     docker run --rm \
-                        -v "${WORKSPACE_PATH}":/app \
-                        -w /app \
+                        -v jenkins_home:/var/jenkins_home:ro \
+                        -v $(pwd):/build \
+                        -w /build \
                         node:18-alpine \
                         sh -c "npm ci && npm run build"
                     
                     # 빌드 결과 확인
                     if [ -d "dist" ]; then
-                        echo "✅ Build successful! Contents:"
+                        echo "✅ Build successful!"
                         ls -la dist/
                     else
-                        echo "❌ dist directory not found!"
-                        ls -la
+                        echo "❌ Build failed!"
                         exit 1
                     fi
                 '''
@@ -63,21 +58,19 @@ pipeline {
                     credentialsId: 'aws-credentials'
                 ]]) {
                     sh '''
-                        echo "Uploading dist/ to bucket: ${BUCKET_NAME}"
+                        echo "Uploading to bucket: ${BUCKET_NAME}"
                         
-                        # Upload all files except index.html with long cache
                         aws s3 sync dist/ s3://${BUCKET_NAME}/ \
                             --delete \
                             --cache-control "public, max-age=31536000" \
                             --exclude "index.html" \
                             --region ${AWS_REGION}
                         
-                        # Upload index.html with no-cache
                         aws s3 cp dist/index.html s3://${BUCKET_NAME}/index.html \
                             --cache-control "no-cache, no-store, must-revalidate" \
                             --region ${AWS_REGION}
                         
-                        echo "✅ Frontend uploaded to S3!"
+                        echo "✅ Uploaded to S3!"
                     '''
                 }
             }
@@ -85,39 +78,27 @@ pipeline {
         
         stage('Invalidate CloudFront') {
             steps {
-                echo '=== Invalidating CloudFront cache ==='
+                echo '=== Invalidating CloudFront ==='
                 withCredentials([[
                     $class: 'AmazonWebServicesCredentialsBinding',
                     credentialsId: 'aws-credentials'
                 ]]) {
                     sh '''
-                        # Find CloudFront distribution
                         DISTRIBUTION_ID=$(aws cloudfront list-distributions \
                             --query "DistributionList.Items[?Comment=='${PROJECT_NAME} ${ENVIRONMENT} distribution'].Id" \
                             --output text 2>/dev/null || echo "")
                         
                         if [ -z "$DISTRIBUTION_ID" ]; then
-                            echo "⚠️ CloudFront distribution not found. Skipping invalidation."
+                            echo "⚠️ CloudFront not found"
                             exit 0
                         fi
                         
-                        echo "Distribution ID: ${DISTRIBUTION_ID}"
-                        
-                        # Create invalidation
                         aws cloudfront create-invalidation \
                             --distribution-id ${DISTRIBUTION_ID} \
                             --paths "/*" \
                             --no-cli-pager
                         
-                        echo "✅ CloudFront cache invalidation started!"
-                        
-                        # Get CloudFront URL
-                        CLOUDFRONT_URL=$(aws cloudfront get-distribution \
-                            --id ${DISTRIBUTION_ID} \
-                            --query 'Distribution.DomainName' \
-                            --output text 2>/dev/null || echo "unknown")
-                        
-                        echo "🌐 Frontend URL: https://${CLOUDFRONT_URL}"
+                        echo "✅ CloudFront invalidated!"
                     '''
                 }
             }
@@ -132,10 +113,7 @@ pipeline {
             echo '❌ Frontend deployment failed!'
         }
         always {
-            // Clean up
-            sh '''
-                rm -rf dist/ node_modules/ || true
-            '''
+            sh 'rm -rf dist/ node_modules/ || true'
         }
     }
 }
