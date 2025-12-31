@@ -92,7 +92,7 @@ pipeline {
     
     post {
         success {
-            echo '✅ Frontend deployment succeeded!!'
+            echo '✅ Frontend deployment succeeded!'
         }
         failure {
             echo '❌ Frontend deployment failed!'
