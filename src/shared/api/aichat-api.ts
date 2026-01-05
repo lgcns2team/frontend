@@ -222,7 +222,7 @@ export const sendGeneralMessage = async (
     onChunk: StreamCallback,
     onToolCall?: ToolCallCallback
 ): Promise<void> => {
-    const url = '${ALB_URL}/api/ai/agent-chat';
+    const url = '/api/ai/agent-chat';
     console.log('🚀 [sendGeneralMessage] Starting request:', { url, message: message.substring(0, 50) });
 
     const response = await fetch(url, {
