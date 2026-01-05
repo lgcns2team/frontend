@@ -1,17 +1,15 @@
 .day-timeline-slider {
     position: fixed;
-    bottom: 260px;
+    bottom: 20px;
     left: 50%;
     transform: translateX(-50%);
-    width: 600px;
-    min-width: 350px;
-    max-width: 900px;
+    width: 70%;
+    max-width: 1600px;
     background: #88a09b;
     backdrop-filter: blur(12px);
     border-radius: 16px;
     padding: 16px 20px;
-    padding-top: 28px;
-    /* Extra space for drag handle */
+    /* padding-top: 28px; Removed extra space for drag handle */
     box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
     border: 1px solid rgba(255, 255, 255, 0.1);
     z-index: 1000;
@@ -19,107 +17,24 @@
     user-select: none;
 }
 
-.day-timeline-slider.dragging {
-    opacity: 0.9;
-    box-shadow: 0 12px 48px rgba(0, 0, 0, 0.6);
-}
+/* Drag and resize handles removed */
 
-/* Drag Handle */
-.drag-handle {
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    height: 24px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    cursor: grab;
-    background: rgba(255, 255, 255, 0.05);
-    border-radius: 16px 16px 0 0;
-    transition: background 0.2s ease;
-}
-
-.drag-handle:hover {
-    background: rgba(255, 255, 255, 0.1);
-}
-
-.drag-handle:active {
-    cursor: grabbing;
-}
-
-.drag-handle-icon {
-    color: #000000;
-    font-size: 14px;
-    letter-spacing: 2px;
-}
-
-/* Resize Handle */
-.resize-handle {
-    position: absolute;
-    bottom: 0;
-    right: 0;
-    width: 20px;
-    height: 20px;
-    cursor: se-resize;
-    background: transparent;
-    border-radius: 0 0 16px 0;
-}
-
-.resize-handle::before {
-    content: '';
-    position: absolute;
-    bottom: 6px;
-    right: 6px;
-    width: 8px;
-    height: 8px;
-    border-right: 2px solid rgba(255, 255, 255, 0.3);
-    border-bottom: 2px solid rgba(255, 255, 255, 0.3);
-}
-
-.resize-handle:hover::before {
-    border-color: rgba(255, 255, 255, 0.6);
-}
-
-.day-timeline-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 12px;
-    background: #496b6e;
-    padding: 12px 16px;
-    border-radius: 12px;
-    margin: -8px -12px 12px -12px;
-}
-
-.day-timeline-title {
+/* Inline controls next to date */
+.day-timeline-controls-inline {
     display: flex;
     align-items: center;
     gap: 8px;
-    font-size: 16px;
-    font-weight: 700;
-    color: #f9f7f1;
+    margin-left: auto;
 }
 
-.war-icon {
-    font-size: 20px;
-    color: #f9f7f1;
-}
-
-.day-timeline-controls {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-}
-
-.play-pause-btn {
-    width: 40px;
-    height: 40px;
+.play-pause-btn-small {
+    width: 28px;
+    height: 28px;
     border-radius: 50%;
     border: none;
     background: #c49f64;
     color: #f9f7f1;
-    font-size: 16px;
+    font-size: 12px;
     cursor: pointer;
     transition: all 0.2s ease;
     display: flex;
@@ -127,34 +42,33 @@
     justify-content: center;
 }
 
-.play-pause-btn:hover {
+.play-pause-btn-small:hover {
     transform: scale(1.1);
     background: #b08f54;
-    box-shadow: 0 4px 16px rgba(196, 159, 100, 0.4);
 }
 
-.speed-controls {
+.speed-controls-small {
     display: flex;
-    gap: 4px;
+    gap: 2px;
 }
 
-.speed-btn {
-    padding: 6px 10px;
+.speed-btn-small {
+    padding: 4px 6px;
     border: 1px solid rgba(196, 159, 100, 0.3);
-    border-radius: 6px;
+    border-radius: 4px;
     background: transparent;
     color: #000000;
-    font-size: 12px;
+    font-size: 10px;
     font-weight: 600;
     cursor: pointer;
     transition: all 0.2s ease;
 }
 
-.speed-btn:hover {
+.speed-btn-small:hover {
     background: rgba(196, 159, 100, 0.2);
 }
 
-.speed-btn.active {
+.speed-btn-small.active {
     background: #c49f64;
     border-color: #c49f64;
     color: #000000;
@@ -404,15 +318,12 @@
     align-items: center;
     gap: 12px;
     padding: 14px 20px;
-    background: linear-gradient(135deg,
-            rgba(30, 58, 138, 0.95) 0%,
-            rgba(59, 130, 246, 0.9) 50%,
-            rgba(239, 68, 68, 0.85) 100%);
+    background: #f9f7f1;
     border-radius: 16px;
     box-shadow:
         0 8px 32px rgba(0, 0, 0, 0.3),
-        0 0 0 1px rgba(255, 255, 255, 0.1),
-        inset 0 1px 0 rgba(255, 255, 255, 0.2);
+        0 0 0 1px rgba(196, 159, 100, 0.3),
+        inset 0 1px 0 rgba(255, 255, 255, 0.5);
     backdrop-filter: blur(12px);
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     position: relative;
@@ -447,10 +358,20 @@
 }
 
 .korean-war-label.active .korean-war-label-content {
-    background: linear-gradient(135deg,
-            rgba(22, 163, 74, 0.95) 0%,
-            rgba(34, 197, 94, 0.9) 50%,
-            rgba(74, 222, 128, 0.85) 100%);
+    background: #c49f64;
+}
+
+.korean-war-label.active .korean-war-label-title {
+    color: #f9f7f1;
+}
+
+.korean-war-label.active .korean-war-label-subtitle {
+    color: #f9f7f1;
+}
+
+.korean-war-label.active .korean-war-label-arrow {
+    color: #f9f7f1;
+    transform: rotate(0deg);
 }
 
 .korean-war-label-flag {
@@ -480,8 +401,8 @@
 .korean-war-label-title {
     font-size: 20px;
     font-weight: 800;
-    color: #000000;
-    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+    color: #c49f64;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
     letter-spacing: 1px;
     font-family: 'Nanum Gothic', sans-serif;
 }
@@ -489,23 +410,19 @@
 .korean-war-label-subtitle {
     font-size: 12px;
     font-weight: 500;
-    color: #000000;
+    color: #c49f64;
     letter-spacing: 2px;
 }
 
 .korean-war-label-arrow {
     font-size: 14px;
-    color: #000000;
+    color: #c49f64;
     transition: transform 0.3s ease;
     margin-left: 4px;
 }
 
 .korean-war-label:hover .korean-war-label-arrow {
     transform: translateX(3px);
-}
-
-.korean-war-label.active .korean-war-label-arrow {
-    transform: rotate(0deg);
 }
 
 /* Pulsing dot indicator */
