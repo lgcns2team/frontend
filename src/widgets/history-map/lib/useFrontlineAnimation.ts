@@ -139,8 +139,8 @@ export const useFrontlineAnimation = ({
 
 
     // --- Configuration Constants ---
-    const JET_SIZE: L.PointTuple = [38, 38];
-    const BOMBER_SIZE: L.PointTuple = [50, 50];
+    const JET_SIZE: L.PointTuple = [70, 70];
+    const BOMBER_SIZE: L.PointTuple = [150, 150];
     const DOGFIGHT_SIZE: L.PointTuple = [50, 50];
     const BATTLESHIP_SIZE: L.PointTuple = [120, 120];
 
@@ -752,8 +752,8 @@ export const useFrontlineAnimation = ({
                     // Let's use same factor.
 
                     let baseDuration = (1500 + (totalDist / 100) * 1500);
-                    // Apply 3x speed factor
-                    baseDuration = baseDuration / 6;
+                    // Apply speed factor (Higher divisor = Faster)
+                    baseDuration = baseDuration / 2;
 
                     if (type === 'bomber') {
                         // User asked for fast bombers. We'll keep them fast.
@@ -860,9 +860,14 @@ export const useFrontlineAnimation = ({
                                 size = BATTLESHIP_SIZE;
                             }
 
+                            // Calculate bearing directly from path vector for value precision
+                            const vectorBearing = turf.bearing(turf.point(raid.startPos), turf.point(raid.endPos));
+                            const rotationOffset = 0; // Image points Up (North) by default, so +0 to align with bearing
+
                             const icon = L.divIcon({
-                                className: className,
-                                html: `<div style="width:100%; height:100%; transform: rotate(${raid.rotation}deg);"></div>`,
+                                className: 'korean-war-air-raid-marker', // Generic class for container
+                                // Apply specific class to inner div so it rotates with the transform
+                                html: `<div class="${className}" style="width:100%; height:100%; transform: rotate(${vectorBearing + rotationOffset}deg);"></div>`,
                                 iconSize: size as L.PointTuple,
                                 iconAnchor: [size[0] / 2, size[1] / 2] as L.PointTuple
                             });
@@ -881,7 +886,9 @@ export const useFrontlineAnimation = ({
 
                             // Handle Animation State (Static -> Flying -> Static)
                             if (raid.type === 'jet' || raid.type === 'bomber') {
-                                const el = raid.marker.getElement();
+                                const wrapper = raid.marker.getElement();
+                                const el = wrapper?.firstElementChild as HTMLElement;
+
                                 if (el) {
                                     const isFlying = progress > 0.1 && progress < 0.9;
                                     const baseClass = raid.type === 'jet' ? 'usaf-jet' : 'usaf-bomber';
