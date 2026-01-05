@@ -1,7 +1,10 @@
 import { useState, useEffect, useRef } from 'react';
 import { sendCharacterMessage } from '../../../shared/api/aichat-api';
 import { fetchCharacterDetail } from '../../../shared/api/characters-api';
+import { createBrowserStt } from "../../../shared/api/browseStt";
 import './CallPanel.css';
+
+
 
 interface CallPanelProps {
     characterName: string;
@@ -30,8 +33,9 @@ export const CallPanel = ({ characterName, characterImage, promptId, initialMess
     const [input, setInput] = useState('');
     const [messages, setMessages] = useState<ChatMessage[]>([]);
     const [isLoading, setIsLoading] = useState(false);
+    const [isPlaying, setIsPlaying] = useState(false); // TTS 재생 중 상태
 
-    // 타이핑 효과 관련 Ref
+
     const typingBufferRef = useRef<string>('');
     const typingIntervalRef = useRef<number | null>(null);
     const currentBotMsgIdRef = useRef<number | null>(null);
@@ -46,6 +50,38 @@ export const CallPanel = ({ characterName, characterImage, promptId, initialMess
     // Component Mounted State
     const isMountedRef = useRef(true);
     const abortControllerRef = useRef<AbortController | null>(null);
+
+    // STT State & Ref
+    const [isListening, setIsListening] = useState(false);
+    const [interimText, setInterimText] = useState("");
+    const sttRef = useRef<ReturnType<typeof createBrowserStt> | null>(null);
+
+    useEffect(() => {
+        sttRef.current = createBrowserStt("ko-KR", {
+            onStart: () => setIsListening(true),
+            onEnd: () => {
+                setIsListening(false);
+                setInterimText("");
+            },
+            onInterim: (text) => setInterimText(text),
+            onFinal: (text) => {
+                sttRef.current?.stop();
+                setInterimText("");
+                handleSend(text);
+                setInput(""); // Clear input after sending
+            },
+            onError: (e) => {
+                console.error("STT Error", e);
+                setIsListening(false);
+                setInterimText("");
+            }
+        });
+        return () => sttRef.current?.stop();
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [promptId, isLoading]); // Re-bind if dependencies change, or handleSend is stable?
+    // handleSend depends on updated state/refs. Ideally use a ref for handleSend or just pass dependencies.
+    // For simplicity, including handleSend's main deps or suppressing lint with care.
+
 
     useEffect(() => {
         isMountedRef.current = true;
@@ -145,6 +181,9 @@ export const CallPanel = ({ characterName, characterImage, promptId, initialMess
                 ttsAudioRef.current = null;
             }
 
+            // Speaking -> Stop Listening
+            sttRef.current?.stop();
+
             // Cancel previous request if any
             if (abortControllerRef.current) {
                 abortControllerRef.current.abort();
@@ -174,8 +213,17 @@ export const CallPanel = ({ characterName, characterImage, promptId, initialMess
                 const audio = new Audio(url);
                 ttsAudioRef.current = audio;
 
+                // 재생 시작 시 상태 업데이트
+                setIsPlaying(true);
+
                 audio.onended = () => {
                     window.URL.revokeObjectURL(url);
+                    setIsPlaying(false); // 재생 종료
+
+                    // ✅ Bot finished -> Auto Start STT
+                    if (isMountedRef.current && !isMuted) {
+                        sttRef.current?.start();
+                    }
                 };
 
                 if (onPlay) onPlay();
@@ -193,6 +241,7 @@ export const CallPanel = ({ characterName, characterImage, promptId, initialMess
                 return;
             }
             console.error("TTS 재생 실패:", error);
+            setIsPlaying(false);
             if (onPlay) onPlay();
         } finally {
             abortControllerRef.current = null;
@@ -283,18 +332,20 @@ export const CallPanel = ({ characterName, characterImage, promptId, initialMess
         };
     }, []);
 
-    const handleSend = async () => {
-        if (!input.trim() || isLoading) return;
+    const handleSend = async (textOverride?: string) => {
+        const msgText = typeof textOverride === 'string' ? textOverride : input;
+
+        if (!msgText.trim() || isLoading) return;
 
         if (!promptId) {
             alert('캐릭터 ID(promptId)가 없습니다. 대화를 시작할 수 없습니다.');
             return;
         }
 
-        const userMsg: ChatMessage = { id: Date.now(), text: input, sender: 'user' };
+        const userMsg: ChatMessage = { id: Date.now(), text: msgText, sender: 'user' };
         setMessages(prev => [...prev, userMsg]);
-        const msgToSend = input;
-        setInput('');
+        const msgToSend = msgText;
+        if (!textOverride) setInput(''); // Only clear if manual input
         setIsLoading(true);
 
         const botMsgId = Date.now() + 1;
@@ -487,7 +538,20 @@ export const CallPanel = ({ characterName, characterImage, promptId, initialMess
                     <div className="call-button-wrapper">
                         <button
                             className="call-control-btn"
-                            onClick={() => setIsMuted(!isMuted)}
+                            onClick={() => {
+                                const nextMute = !isMuted;
+                                setIsMuted(nextMute);
+                                if (nextMute) {
+                                    // Muting -> Turn OFF mic (Stop STT)
+                                    // Abort to prevent sending partial result
+                                    sttRef.current?.abort();
+                                    setInterimText("");
+                                    setInput(""); // Clear input
+                                } else {
+                                    // Unmuting -> Turn ON mic (Start STT)
+                                    sttRef.current?.start();
+                                }
+                            }}
                         >
                             <svg width="28" height="28" viewBox="0 0 24 24" fill={isMuted ? '#333' : '#999'}>
                                 {isMuted ? (
@@ -507,14 +571,22 @@ export const CallPanel = ({ characterName, characterImage, promptId, initialMess
                         <button
                             className="call-control-btn"
                             onClick={() => {
-                                if (isSpeaker) {
-                                    // Turning OFF: Stop current TTS
+                                const nextSpeaker = !isSpeaker;
+                                setIsSpeaker(nextSpeaker);
+
+                                if (!nextSpeaker) {
+                                    // Turning OFF (Speaker Only) -> Stop current TTS
                                     if (ttsAudioRef.current) {
                                         ttsAudioRef.current.pause();
                                         ttsAudioRef.current = null;
+                                        setIsPlaying(false);
+                                    }
+                                } else {
+                                    // Turning ON -> Start STT ONLY if not muted
+                                    if (!isMuted) {
+                                        sttRef.current?.start();
                                     }
                                 }
-                                setIsSpeaker(!isSpeaker);
                             }}
                         >
                             <svg width="28" height="28" viewBox="0 0 24 24" fill={isSpeaker ? '#333' : '#999'}>
@@ -603,6 +675,23 @@ export const CallPanel = ({ characterName, characterImage, promptId, initialMess
                         ))}
                         <div ref={messagesEndRef} />
                     </div>
+
+                    {/* Status Indicator (Fixed Position) */}
+                    <div style={{
+                        fontSize: '12px',
+                        color: '#666',
+                        padding: '4px 12px',
+                        textAlign: 'left',
+                        backgroundColor: 'rgba(255,255,255,0.9)',
+                        borderTop: '1px solid #eee',
+                        minHeight: '26px' // Ensure fixed height
+                    }}>
+                        {(isLoading || isPlaying) ? `(답변중)...` :
+                            isMuted ? `(음소거)` :
+                                isListening ? `(인식중) ${interimText}` :
+                                    `(대기중)`} {/* Fallback if none of the above */}
+                    </div>
+
                     {/* 채팅 입력 영역 */}
                     <div className="call-chatlog-input-area">
                         <input
@@ -612,14 +701,17 @@ export const CallPanel = ({ characterName, characterImage, promptId, initialMess
                             value={input}
                             onChange={(e) => setInput(e.target.value)}
                             onClick={() => {
-                                if (isMuted) setIsMuted(false);
+                                if (isMuted) {
+                                    setIsMuted(false);
+                                    sttRef.current?.start();
+                                }
                             }}
                             onKeyDown={handleKeyDown}
                             disabled={isLoading} // 로딩중일 때만 입력 불가 (음소거는 클릭으로 해제)
                         />
                         <button
                             className="call-chatlog-send-btn"
-                            onClick={handleSend}
+                            onClick={() => handleSend()}
                             disabled={isLoading || isMuted} // 로딩중이거나 음소거 상태면 전송 불가
                         >
                             ➤

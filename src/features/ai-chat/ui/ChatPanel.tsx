@@ -18,7 +18,7 @@ interface ChatPanelProps {
     onCallStart: () => void;
 }
 
-export const ChatPanel = ({ character }: ChatPanelProps) => {
+export const ChatPanel = ({ character, onCallStart }: ChatPanelProps) => {
 
     const [isListening, setIsListening] = useState(false);
     const [interimText, setInterimText] = useState(""); // (선택) 실시간 자막 표시용
@@ -26,21 +26,31 @@ export const ChatPanel = ({ character }: ChatPanelProps) => {
     const sttRef = useRef<ReturnType<typeof createBrowserStt> | null>(null);
 
     useEffect(() => {
-    sttRef.current = createBrowserStt("ko-KR", {
-        onStart: () => { setIsListening(true); },
-        onEnd: () => { setIsListening(false); setInterimText(""); },
-        onInterim: (t) => { setInterimText(t); },
-        onFinal: (t) => {
-        // 확정 텍스트를 input에 채움 (기존 입력 뒤에 붙이기)
-        setInput(prev => (prev ? `${prev} ${t}` : t));
-        },
-        onError: (e) => {
-        setIsListening(false);
-        setInterimText("");
-        console.error("[STT] error:", e);
-        alert("STT 오류/미지원 브라우저일 수 있어요: " + e);
-        }
-    });
+        sttRef.current = createBrowserStt("ko-KR", {
+            onStart: () => {
+                setIsListening(true);
+            },
+            onEnd: () => {
+                setIsListening(false);
+                setInterimText("");
+            },
+            onInterim: (t) => {
+                setInterimText(t);
+            },
+            onFinal: (t) => {
+                // 확정 텍스트를 input에 채움 (기존 입력 뒤에 붙이기)
+                setInput(prev => (prev ? `${prev} ${t}` : t));
+                // 텍스트 입력 후 즉시 STT 종료
+                sttRef.current?.stop();
+            },
+            onError: (e) => {
+                setIsListening(false);
+                setInterimText("");
+                console.error("[STT] error:", e);
+                // alert("STT 오류/미지원 브라우저일 수 있어요: " + e);
+            }
+        });
+
     }, []);
 
     const [input, setInput] = useState('');
@@ -48,7 +58,7 @@ export const ChatPanel = ({ character }: ChatPanelProps) => {
     const [isLoading, setIsLoading] = useState(false);
     const [isTTSEnabled, setIsTTSEnabled] = useState(false);
 
-    {/* Call Panel Overlay removed */ }
+    // Call Panel Overlay removed
     const typingBufferRef = useRef<string>('');
     const typingIntervalRef = useRef<number | null>(null);
     const currentBotMsgIdRef = useRef<number | null>(null);
@@ -328,9 +338,9 @@ export const ChatPanel = ({ character }: ChatPanelProps) => {
 
             {/* 입력 영역 */}
             {interimText && (
-            <div style={{ fontSize: 12, color: "#666", margin: "6px 0" }}>
-                (인식중) {interimText}
-            </div>
+                <div style={{ fontSize: 12, color: "#666", margin: "6px 0" }}>
+                    (인식중) {interimText}
+                </div>
             )}
             <div className="chat-input-area">
                 <input
@@ -358,8 +368,8 @@ export const ChatPanel = ({ character }: ChatPanelProps) => {
                         if (!stt) return;
 
                         if (!stt.isSupported) {
-                        alert("이 브라우저는 Web Speech STT를 지원하지 않습니다. (iOS Safari/Chrome일 수 있어요)");
-                        return;
+                            alert("이 브라우저는 Web Speech STT를 지원하지 않습니다. (iOS Safari/Chrome일 수 있어요)");
+                            return;
                         }
 
                         if (!isListening) stt.start();
@@ -368,9 +378,9 @@ export const ChatPanel = ({ character }: ChatPanelProps) => {
                     disabled={isLoading}
                     style={{ backgroundColor: isListening ? "#999" : eraColor, marginLeft: 8 }}
                     title={isListening ? "음성 인식 종료" : "음성 인식 시작"}
-                    >
+                >
                     🎙️
-                    </button>
+                </button>
 
             </div>
 
