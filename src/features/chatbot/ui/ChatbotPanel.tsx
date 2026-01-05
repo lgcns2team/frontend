@@ -197,6 +197,31 @@ export const ChatbotPanel = ({ onClose, initialPosition, initialSize, onStateCha
 
     // TODO: TTS 기능은 나중에 백엔드 API로 연결 예정
 
+    // 🆕 음성 재생 함수 (handleSend보다 위에 있어야 함)
+    const playVoice = async (text: string) => {
+        if (!isTTSEnabled) return;
+
+        try {
+            const response = await fetch('http://127.0.0.1:8000/api/prompt/speak/', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    text: text,
+                    promptId: 'J791UNXAHE'
+                })
+            });
+
+            if (response.ok) {
+                const blob = await response.blob();
+                const url = window.URL.createObjectURL(blob);
+                const audio = new Audio(url);
+                audio.play();
+            }
+        } catch (error) {
+            console.error("TTS 재생 실패:", error);
+        }
+    };
+
     // ↘↘ 추가: 버퍼에서 한 글자씩 꺼내서 현재 봇 메시지에 붙이는 타이핑 루프
     const startTypingLoop = () => {
         // 이미 인터벌 돌고 있으면 또 만들지 않기
@@ -236,6 +261,7 @@ export const ChatbotPanel = ({ onClose, initialPosition, initialSize, onStateCha
     // 컴포넌트 unmount 시 인터벌 정리
     useEffect(() => {
         return () => {
+            console.log('📉 [ChatbotPanel] Unmounting...');
             if (typingIntervalRef.current !== null) {
                 window.clearInterval(typingIntervalRef.current);
             }
@@ -271,6 +297,9 @@ export const ChatbotPanel = ({ onClose, initialPosition, initialSize, onStateCha
         // Flag to track if bot message has been created
         let botMessageCreated = false;
 
+        // Capture full response for TTS
+        let fullResponse = '';
+
         try {
             console.log('🚀 [DEBUG] Sending message to AI chat');
 
@@ -295,6 +324,7 @@ export const ChatbotPanel = ({ onClose, initialPosition, initialSize, onStateCha
 
                 // Add text to typing buffer
                 typingBufferRef.current += text;
+                fullResponse += text;
                 console.log('✍️ [DEBUG] Added to typing buffer. Buffer now:', typingBufferRef.current.length, 'chars');
                 // Start typing loop (if not already running)
                 startTypingLoop();
@@ -345,6 +375,11 @@ export const ChatbotPanel = ({ onClose, initialPosition, initialSize, onStateCha
             });
 
             console.log('✅ [DEBUG] Message sent successfully');
+
+            // ✅ 정상 답변 완료 후 음성 재생
+            if (fullResponse) {
+                setTimeout(() => playVoice(fullResponse), 500);
+            }
         } catch (error) {
             console.error('Error sending message:', error);
 
@@ -360,6 +395,9 @@ export const ChatbotPanel = ({ onClose, initialPosition, initialSize, onStateCha
                 sender: 'bot' as const
             };
             setMessages(prev => [...prev, errorMsg]);
+
+            // ✅ 에러 메시지 음성 재생
+            playVoice('죄송합니다. 오류가 발생했습니다. 잠시 후 다시 시도해주세요.');
         } finally {
             setIsLoading(false);
         }

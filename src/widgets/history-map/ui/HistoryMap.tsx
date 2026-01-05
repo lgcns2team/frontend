@@ -26,6 +26,7 @@ import { TextbookPanel } from '../../../features/textbook-panel';
 import { MajorEventsPanel, EventModal } from '../../../features/major-events';
 import { CharactersPanel } from '../../../features/ai-character';
 import { ChatPanel } from '../../../features/ai-chat';
+import { CallPanel } from '../../../features/ai-call';
 import type { ParsedCharacter } from '../../../shared/api/characters-api';
 import { fetchCountryByCode, type CountryData } from '../../../shared/api/country-api';
 import { getEraForPage } from '../../../shared/lib/k-history-data/textbook-data';
@@ -105,6 +106,11 @@ export default function HistoryMap() {
     const [dockingPanelWidth, setDockingPanelWidth] = useState(800);
     const [isConversationMode, setIsConversationMode] = useState(false);
     const [chatCharacter, setChatCharacter] = useState<ParsedCharacter | null>(null);
+
+    // Call Panel State
+    const [isCallPanelOpen, setIsCallPanelOpen] = useState(false);
+    const [isCallMinimized, setIsCallMinimized] = useState(false);
+    const [callCharacter, setCallCharacter] = useState<ParsedCharacter | null>(null);
 
     // Event Popup State
     const [selectedEvent, setSelectedEvent] = useState<ParsedMainEvent | null>(null);
@@ -912,6 +918,12 @@ export default function HistoryMap() {
 
     // Panel Handlers
     const handleSidebarClick = (id: string) => {
+        // Special handling for 'people' button when call is active but minimized
+        if (id === 'people' && isCallPanelOpen && isCallMinimized) {
+            setIsCallMinimized(false);
+            return;
+        }
+
         setActivePanel(prev => prev === id ? null : id);
 
         if (id === 'textbook') {
@@ -1177,6 +1189,13 @@ export default function HistoryMap() {
                     chatCharacter ? (
                         <ChatPanel
                             character={chatCharacter}
+                            onCallStart={() => {
+                                // Start call logic: open call panel with this character, close chat panel
+                                setCallCharacter(chatCharacter);
+                                setIsCallPanelOpen(true);
+                                setActivePanel(null); // Close ChatPanel
+                                setChatCharacter(null); // Reset chat character so next time list opens
+                            }}
                         />
                     ) : (
                         <CharactersPanel
@@ -1195,6 +1214,76 @@ export default function HistoryMap() {
                     </div>
                 )}
             </DockingPanel>
+
+            {/* Characters Panel */}
+            {activePanel === 'characters' && (
+                <CharactersPanel
+                    onCharacterSelect={(char) => {
+                        // Open chat only
+                        setChatCharacter(char);
+                        setActivePanel('character-chat');
+                    }}
+                    onClose={() => setActivePanel(null)}
+                />
+            )}
+
+            {/* AI Call Panel */}
+            {isCallPanelOpen && callCharacter && (
+                <DockingPanel
+                    isOpen={true}
+                    onClose={() => setIsCallPanelOpen(false)}
+                    title={callCharacter.characterName}
+                    width={450}
+                    hideHeader={true}
+                    hideCloseButton={true}
+                    style={isCallMinimized ? {
+                        background: 'transparent',
+                        border: 'none',
+                        boxShadow: 'none',
+                        pointerEvents: 'none',
+                        width: '0px',
+                        minWidth: '0px',
+                        overflow: 'visible',
+                        transform: 'none', // Critical for fixed positioning of child
+                        transition: 'none'
+                    } : undefined}
+                >
+                    <CallPanel
+                        characterName={callCharacter.characterName}
+                        characterImage={callCharacter.imagePath || ''}
+                        promptId={callCharacter.promptId || ''}
+                        initialMessage={callCharacter.greetingMessage || `안녕하세요. ${callCharacter.characterName}입니다.`}
+                        onClose={() => {
+                            setIsCallPanelOpen(false);
+                            setIsCallMinimized(false);
+                        }}
+                        isMinimized={isCallMinimized}
+                        onMinimize={setIsCallMinimized}
+                    />
+                </DockingPanel>
+            )}
+
+            {/* Character Chat Panel */}
+            {activePanel === 'character-chat' && chatCharacter && (
+                <FloatingPanel
+                    title={`${chatCharacter.characterName}와의 대화`}
+                    onClose={() => setActivePanel(null)}
+                    width={400}
+                    height={600}
+                    position={{ x: 100, y: 100 }}
+                >
+                    <ChatPanel
+                        character={chatCharacter}
+                        onCallStart={() => {
+                            // Start call logic: open call panel with this character, close chat panel
+                            setCallCharacter(chatCharacter);
+                            setIsCallPanelOpen(true);
+                            setActivePanel(null); // Close ChatPanel
+                            setChatCharacter(null); // Reset chat character so next time list opens
+                        }}
+                    />
+                </FloatingPanel>
+            )}
 
             {(activePanel === 'textbook' && isConversationMode) && (
                 <DockingPanel

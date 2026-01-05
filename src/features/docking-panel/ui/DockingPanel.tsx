@@ -13,6 +13,7 @@ interface DockingPanelProps {
     width?: number;
     style?: React.CSSProperties;
     hideHeader?: boolean; // New prop to hide header for full-screen content like textbook
+    hideCloseButton?: boolean; // New prop to hide the external close side-tab
 }
 
 export const DockingPanel = ({
@@ -26,7 +27,8 @@ export const DockingPanel = ({
     headerRightContent,
     width: controlledWidth,
     style,
-    hideHeader = false
+    hideHeader = false,
+    hideCloseButton = false
 }: DockingPanelProps) => {
     const [width, setWidth] = useState(initialWidth);
     const isResizing = useRef(false);
@@ -77,8 +79,8 @@ export const DockingPanel = ({
             {/* Resize Handle */}
             <div className="resize-handle" onMouseDown={startResizing}></div>
 
-            {/* External Close Tab - Only when header is hidden */}
-            {hideHeader && (
+            {/* External Close Tab - Only when header is hidden AND close button is not explicitly hidden */}
+            {hideHeader && !hideCloseButton && (
                 <button
                     className="external-close-tab"
                     onClick={onClose}

@@ -2,7 +2,6 @@ import { useState, useRef, useEffect } from 'react';
 import { type ParsedCharacter, fetchCharacterDetail } from '../../../shared/api/characters-api';
 import { sendCharacterMessage } from '../../../shared/api/aichat-api';
 import { ERAS } from '../../../shared/config/era-theme';
-import { CallPanel } from '../../ai-call';
 import './ChatPanel.css';
 
 interface ChatMessage {
@@ -14,18 +13,18 @@ interface ChatMessage {
 
 interface ChatPanelProps {
     character: ParsedCharacter;
+    onCallStart: () => void;
 }
 
-export const ChatPanel = ({ character }: ChatPanelProps) => {
+export const ChatPanel = ({ character, onCallStart }: ChatPanelProps) => {
     const [input, setInput] = useState('');
     const [messages, setMessages] = useState<ChatMessage[]>([]);
     const [isLoading, setIsLoading] = useState(false);
     const [isTTSEnabled, setIsTTSEnabled] = useState(false);
-    const [isCallPanelOpen, setIsCallPanelOpen] = useState(false);
+    const [currentGreeting, setCurrentGreeting] = useState('');
+    // CallPanel state removed (hoisted to parent)
 
-    // TODO: TTS 기능은 나중에 백엔드 API로 연결 예정
-
-    // 타이핑 효과 관련 Ref
+    {/* Call Panel Overlay removed */ }
     const typingBufferRef = useRef<string>('');
     const typingIntervalRef = useRef<number | null>(null);
     const currentBotMsgIdRef = useRef<number | null>(null);
@@ -49,10 +48,13 @@ export const ChatPanel = ({ character }: ChatPanelProps) => {
                 }
             }
 
+            const finalGreeting = greeting || `안녕하세요. ${character.characterName}입니다. 무엇이 궁금하신가요?`;
+
             if (isMounted) {
+                setCurrentGreeting(finalGreeting);
                 setMessages([{
                     id: Date.now(),
-                    text: greeting || `안녕하세요. ${character.characterName}입니다. 무엇이 궁금하신가요?`,
+                    text: finalGreeting,
                     sender: 'bot'
                 }]);
             }
@@ -61,6 +63,8 @@ export const ChatPanel = ({ character }: ChatPanelProps) => {
 
         return () => { isMounted = false; };
     }, [character.characterId, character.characterName, character.promptId]);
+
+
 
     // 메시지 추가 시 스크롤 하단 이동
     useEffect(() => {
@@ -71,6 +75,8 @@ export const ChatPanel = ({ character }: ChatPanelProps) => {
 
     // 🆕 음성 재생 함수 (handleSend보다 위에 있어야 함)
     const playVoice = async (text: string) => {
+        if (!isTTSEnabled) return;
+
         try {
             const response = await fetch('http://127.0.0.1:8000/api/prompt/speak/', {
                 method: 'POST',
@@ -202,7 +208,6 @@ export const ChatPanel = ({ character }: ChatPanelProps) => {
                             className={`tts-btn ${isTTSEnabled ? 'tts-active' : ''}`}
                             onClick={() => {
                                 setIsTTSEnabled(!isTTSEnabled);
-                                // TODO: 백엔드 API 연결 시 여기에 TTS 호출 로직 추가
                             }}
                             title={isTTSEnabled ? 'TTS 끄기' : 'TTS 켜기'}
                         >
@@ -214,7 +219,7 @@ export const ChatPanel = ({ character }: ChatPanelProps) => {
                         </button>
                         <button
                             className="call-btn"
-                            onClick={() => setIsCallPanelOpen(true)}
+                            onClick={onCallStart}
                             title="통화 시작"
                         >
                             <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
@@ -283,16 +288,6 @@ export const ChatPanel = ({ character }: ChatPanelProps) => {
                 </button>
             </div>
 
-            {/* Call Panel Overlay */}
-            {isCallPanelOpen && (
-                <div className="call-panel-overlay">
-                    <CallPanel
-                        characterName={character.characterName}
-                        characterImage={character.imagePath || ''}
-                        onClose={() => setIsCallPanelOpen(false)}
-                    />
-                </div>
-            )}
-        </div>
+        </div >
     );
 };
