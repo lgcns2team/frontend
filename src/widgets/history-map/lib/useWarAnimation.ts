@@ -75,6 +75,12 @@ export const useWarAnimation = ({
     }, [map, isActive, currentZoom]);
 
     useEffect(() => {
+        console.log('[useWarAnimation] Effect triggered UNCONDITIONAL:', {
+            isActive,
+            currentYear,
+            eraId: getEraForYear(currentYear).id,
+            warDataLength: warData.length
+        });
         // console.log('[useWarAnimation] Effect triggered:', { isActive, hasMap: !!map, hasLayer: !!animationLayer.current, warDataCount: warData.length });
 
         if (!isActive || !map || !animationLayer.current || warData.length === 0) {
@@ -155,6 +161,25 @@ export const useWarAnimation = ({
             });
         }
 
+        let flagNorthIcon: L.DivIcon | undefined;
+        let flagSouthIcon: L.DivIcon | undefined;
+
+        if (era.id === 'korean-war') {
+            // Use DivIcon to leverage CSS classes (which now hold the flag images)
+            flagNorthIcon = L.divIcon({
+                className: 'soldier-icon-north-anim', // Reusing class name but animation is removed in CSS
+                html: '',
+                iconSize: [32, 32],
+                iconAnchor: [16, 16]
+            });
+            flagSouthIcon = L.divIcon({
+                className: 'soldier-icon-south-anim', // Reusing class name but animation is removed in CSS
+                html: '',
+                iconSize: [32, 32],
+                iconAnchor: [16, 16]
+            });
+        }
+
         // Special icon for Incheon Landing (Korean War)
         // Special icon for Incheon Landing (Korean War)
         const landingCraftIcon = L.divIcon({
@@ -178,6 +203,7 @@ export const useWarAnimation = ({
             winnerGeneral: string | null; // Winner force/general name
             loserGeneral: string | null; // Loser force/general name
             tooltipShown: boolean; // Whether tooltip has been shown for this cycle
+            isLeader?: boolean; // Whether this is the leader unit (for tooltips)
         }[] = [];
 
         // Total cycle time: all routes + 10 second pause
@@ -257,29 +283,51 @@ export const useWarAnimation = ({
                     const startCoord = smoothedCoords[0];
                     const startLatLng: [number, number] = [startCoord[1], startCoord[0]];
 
-                    // Create marker at starting position, initially invisible
-                    const marker = L.marker(startLatLng, {
-                        icon: soldierIcon, // Using soldierIcon instead of removed kimaIcon
-                        interactive: false,
-                        opacity: 0 // Start invisible, will fade in when animation starts
-                    }).addTo(animationLayer.current!);
+                    // Determine number of units for the "army line" effect
+                    const isKoreanWar = getEraForYear(currentYear).id === 'korean-war';
+                    // For Korean War, spawn 60 units for a dense line. For others, just 1.
+                    const unitCount = isKoreanWar ? 60 : 1;
+                    // Interval between units in the line (ms)
+                    const unitInterval = isKoreanWar ? 40 : 0;
 
-                    // console.log('[useWarAnimation] Created marker for battle:', battle.battleName, 'startDelay:', startDelay, 'length:', length, 'duration:', calculatedDuration);
+                    // DEBUG: Check if Korean War logic is active
+                    if (battleIndex === 0) { // Log only once per render cycle (ish)
+                        console.log('[useWarAnimation] DEBUG:', {
+                            currentYear,
+                            eraId: getEraForYear(currentYear).id,
+                            isKoreanWar,
+                            unitCount,
+                            battleName: battle.battleName
+                        });
+                    }
 
-                    activeUnits.push({
-                        marker,
-                        line,
-                        length,
-                        duration: calculatedDuration, // UNIT_TRAVEL_DURATION 대신 계산된 시간 사용
-                        startDelay,
-                        isVisible: false,
-                        routeColor: battle.routeColor || '#ef4444',
-                        battleName: battle.battleName,
-                        battleDate: battle.battleDate || null,
-                        winnerGeneral: battle.winnerGeneral || null,
-                        loserGeneral: battle.loserGeneral || null,
-                        tooltipShown: false
-                    });
+                    for (let i = 0; i < unitCount; i++) {
+                        // Create marker at starting position, initially invisible
+                        const marker = L.marker(startLatLng, {
+                            icon: soldierIcon, // Will be updated to flag in the animation loop
+                            interactive: false,
+                            opacity: 0 // Start invisible, will fade in when animation starts
+                        }).addTo(animationLayer.current!);
+
+                        // Calculate specific delay for this unit in the column
+                        const currentUnitStartDelay = startDelay + (i * unitInterval);
+
+                        activeUnits.push({
+                            marker,
+                            line,
+                            length,
+                            duration: calculatedDuration,
+                            startDelay: currentUnitStartDelay,
+                            isVisible: false,
+                            routeColor: battle.routeColor || '#ef4444',
+                            battleName: battle.battleName,
+                            battleDate: battle.battleDate || null,
+                            winnerGeneral: battle.winnerGeneral || null,
+                            loserGeneral: battle.loserGeneral || null,
+                            tooltipShown: false,
+                            isLeader: i === 0 // Only the first unit is the leader (for tooltips)
+                        });
+                    }
                 }
             });
         });
@@ -340,7 +388,8 @@ export const useWarAnimation = ({
                     unit.isVisible = true;
 
                     // Show battle info tooltip when marker becomes visible
-                    if (!unit.tooltipShown) {
+                    // Only show for the leader (first unit) to avoid clutter in army lines
+                    if (!unit.tooltipShown && unit.isLeader !== false) {
                         unit.tooltipShown = true;
 
                         // Use Leaflet's built-in tooltip for reliable display
@@ -440,8 +489,30 @@ export const useWarAnimation = ({
                                 targetIcon = isOnLand ? soldierIcon : warshipIcon;
                             }
                         }
+                    } else if (era.id === 'korean-war') {
+                        // Korean War: Use flags based on route color
+                        if (unit.routeColor === '#ef4444' || unit.routeColor === 'red') {
+                            targetIcon = flagNorthIcon;
+                        } else if (unit.routeColor === '#3b82f6' || unit.routeColor === 'blue') {
+                            targetIcon = flagSouthIcon;
+                        } else {
+                            // Fallback logic
+                            if (historicalLayer) {
+                                let isOnLand = false;
+                                (historicalLayer as any).eachLayer((layer: any) => {
+                                    if (isOnLand) return;
+                                    if (layer.feature && (layer.feature.geometry.type === 'Polygon' || layer.feature.geometry.type === 'MultiPolygon')) {
+                                        const pt = turf.point([coords[0], coords[1]]);
+                                        if (turf.booleanPointInPolygon(pt, layer.feature)) {
+                                            isOnLand = true;
+                                        }
+                                    }
+                                });
+                                targetIcon = isOnLand ? soldierIcon : warshipIcon;
+                            }
+                        }
                     } else {
-                        // Non-Joseon eras: simple logic - only soldier1 (land) or warship (sea), ignore route color
+                        // Non-Joseon, Non-Korean-War eras: simple logic
                         if (historicalLayer) {
                             let isOnLand = false;
 
