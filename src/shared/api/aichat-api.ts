@@ -284,7 +284,7 @@ export const sendGeneralMessage = async (
                     const event: AIChatStreamEvent = JSON.parse(dataStr);
 
                     if (event.type === 'content' && event.text) {
-                        onChunk(event.text.trim());
+                        onChunk(event.text);
                     } else if (event.type === 'tool_call' && event.tool_name && event.parameters) {
                         console.log('🔧 Tool call received:', event.tool_name, event.parameters);
                         if (onToolCall) {
