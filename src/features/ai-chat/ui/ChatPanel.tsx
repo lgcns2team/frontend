@@ -4,7 +4,6 @@ import { sendCharacterMessage } from '../../../shared/api/aichat-api';
 import { ERAS } from '../../../shared/config/era-theme';
 import { CallPanel } from '../../ai-call';
 import './ChatPanel.css';
-import { getFormLabelUtilityClasses } from '@mui/material';
 
 interface ChatMessage {
     id: number;
