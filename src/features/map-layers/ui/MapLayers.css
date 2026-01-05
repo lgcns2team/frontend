@@ -101,5 +101,11 @@
     color: #c49f64;
     text-shadow:
         0 1px 3px rgba(0, 0, 0, 0.8),
+
         0 0 8px rgba(196, 159, 100, 0.5);
+}
+
+/* Person button specific alignment */
+.tab-btn.religion {
+    background-position: top center;
 }

@@ -147,7 +147,7 @@ export const sendCharacterMessage = async (
                     const event: AIChatStreamEvent = JSON.parse(dataStr);
                     parsed = true;
                     console.log('📦 [sendCharacterMessage] Parsed event:', event.type);
-                    if (event.type === 'content' && event.text) {
+                    if (event.type === 'content' && typeof event.text === 'string') {
                         onChunk(event.text);
                         hasReceivedContent = true;
                     } else if (event.type === 'error') {
@@ -268,6 +268,7 @@ export const sendGeneralMessage = async (
         console.log('📨 [sendGeneralMessage] Received chunk:', chunk.substring(0, 200));
         buffer += chunk;
         fullResponse += chunk;
+        console.log('📨 [sendGeneralMessage] Raw chunk received:', JSON.stringify(chunk));
 
         const lines = buffer.split('\n');
         buffer = lines.pop() || '';
@@ -283,7 +284,7 @@ export const sendGeneralMessage = async (
                 try {
                     const event: AIChatStreamEvent = JSON.parse(dataStr);
 
-                    if (event.type === 'content' && event.text) {
+                    if (event.type === 'content' && typeof event.text === 'string') {
                         onChunk(event.text);
                     } else if (event.type === 'tool_call' && event.tool_name && event.parameters) {
                         console.log('🔧 Tool call received:', event.tool_name, event.parameters);

@@ -5,6 +5,10 @@
     background: linear-gradient(180deg, #e8f4f3 0%, #f5f5f5 100%);
     padding: 20px;
     justify-content: center;
+    box-sizing: border-box;
+    /* Include padding in height */
+    overflow: hidden;
+    /* Prevent scrollbars */
 }
 
 /* 프로필 영역 */
@@ -17,9 +21,7 @@
     transition: transform 0.3s ease;
 }
 
-.call-profile-section.chatlog-open {
-    transform: translateY(-3em);
-}
+/* .call-profile-section.chatlog-open removed */
 
 .call-profile-image-container {
     width: 12em;
@@ -105,6 +107,35 @@
     color: #666;
     text-align: center;
     white-space: nowrap;
+}
+
+.call-control-btn.disabled-diagonal {
+    cursor: default;
+    position: relative;
+}
+
+.call-control-btn.disabled-diagonal::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 80%;
+    height: 1px;
+    background-color: #999;
+    transform: translate(-50%, -50%) rotate(45deg);
+    pointer-events: none;
+    border-radius: 2px;
+}
+
+.call-control-btn.disabled-diagonal:hover {
+    background: #fff;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+    /* Keep original shadow, no hover effect */
+}
+
+.call-control-btn.disabled-diagonal:active {
+    transform: none;
+    /* No shrink effect */
 }
 
 /* 통화 종료 버튼 */
@@ -265,4 +296,56 @@
     background: #496b6e;
     align-self: flex-end;
     color: white;
+}
+
+/* 채팅 입력 영역 */
+.call-chatlog-input-area {
+    padding: 0.8em;
+    border-top: 1px solid #eee;
+    display: flex;
+    gap: 0.5em;
+    background: white;
+}
+
+.call-chatlog-input {
+    flex: 1;
+    padding: 0.6em 1em;
+    border: 1px solid #ddd;
+    border-radius: 20px;
+    font-size: 0.9em;
+    outline: none;
+    transition: border-color 0.2s;
+}
+
+.call-chatlog-input:focus {
+    border-color: #496b6e;
+}
+
+.call-chatlog-send-btn {
+    width: 2.2em;
+    height: 2.2em;
+    border-radius: 50%;
+    border: none;
+    background: #496b6e;
+    color: white;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.2s;
+}
+
+.call-chatlog-send-btn:hover {
+    background: #3a5658;
+}
+
+.call-chatlog-send-btn:disabled {
+    background: #ccc;
+    cursor: not-allowed;
+}
+
+.dot-typing {
+    color: #999;
+    font-weight: bold;
+    letter-spacing: 2px;
 }
