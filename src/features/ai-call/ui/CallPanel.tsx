@@ -24,9 +24,7 @@ export const CallPanel = ({ characterName, characterImage, promptId, initialMess
     const [isCallAccepted, setIsCallAccepted] = useState(false);
     const [isMuted, setIsMuted] = useState(false);
     const [isSpeaker, setIsSpeaker] = useState(true); // 기본 ON 상태
-    const [isVoiceFilter, setIsVoiceFilter] = useState(false);
     const [isChatLogOpen, setIsChatLogOpen] = useState(false);
-    const [isFaceTalk, setIsFaceTalk] = useState(false);
     const [callDuration, setCallDuration] = useState(0);
 
     const [input, setInput] = useState('');
@@ -43,6 +41,18 @@ export const CallPanel = ({ characterName, characterImage, promptId, initialMess
     const waitAudioRef = useRef<HTMLAudioElement | null>(null);
     const startAudioRef = useRef<HTMLAudioElement | null>(null);
     const endAudioRef = useRef<HTMLAudioElement | null>(null);
+    const ttsAudioRef = useRef<HTMLAudioElement | null>(null);
+
+    // Component Mounted State
+    const isMountedRef = useRef(true);
+    const abortControllerRef = useRef<AbortController | null>(null);
+
+    useEffect(() => {
+        isMountedRef.current = true;
+        return () => {
+            isMountedRef.current = false;
+        };
+    }, []);
 
     // Initialize Audio
     useEffect(() => {
@@ -65,6 +75,18 @@ export const CallPanel = ({ characterName, characterImage, promptId, initialMess
                 startAudioRef.current.pause();
                 startAudioRef.current.currentTime = 0;
             }
+
+            // Abort any pending TTS request
+            if (abortControllerRef.current) {
+                abortControllerRef.current.abort();
+            }
+
+            // Stop TTS if playing
+            if (ttsAudioRef.current) {
+                ttsAudioRef.current.pause();
+                ttsAudioRef.current = null;
+            }
+
             // Deliberately NOT pausing endAudioRef to let it finish playing after unmount
         };
     }, []);
@@ -90,6 +112,10 @@ export const CallPanel = ({ characterName, characterImage, promptId, initialMess
         if (waitAudioRef.current) {
             waitAudioRef.current.pause();
         }
+        if (ttsAudioRef.current) {
+            ttsAudioRef.current.pause();
+            ttsAudioRef.current = null;
+        }
 
         if (endAudioRef.current) {
             endAudioRef.current.play().catch(e => console.log('End audio play failed:', e));
@@ -98,38 +124,82 @@ export const CallPanel = ({ characterName, characterImage, promptId, initialMess
     };
 
     // 음성 재생 함수
-    const playVoice = async (text: string) => {
+    const playVoice = async (text: string, onPlay?: () => void) => {
         // 스피커가 꺼져있으면 재생 안함
         if (!isSpeaker) {
             console.log('🔊 [CallPanel] Speaker is OFF, skipping TTS');
+            if (onPlay) onPlay(); // Fallback
             return;
         }
 
         if (!promptId) {
             console.warn('⚠️ [CallPanel] No promptId provided for TTS');
+            if (onPlay) onPlay(); // Fallback
             return;
         }
 
         try {
-            const response = await fetch('http://127.00.1:8000/api/prompt/speak/', {
+            // Stop previous TTS
+            if (ttsAudioRef.current) {
+                ttsAudioRef.current.pause();
+                ttsAudioRef.current = null;
+            }
+
+            // Cancel previous request if any
+            if (abortControllerRef.current) {
+                abortControllerRef.current.abort();
+            }
+
+            // Create new controller
+            abortControllerRef.current = new AbortController();
+
+            const response = await fetch('http://127.0.0.1:8000/api/prompt/speak/', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
-                    text: text,
+                    text: text.replace(/\([^)]*\)/g, ''),
                     promptId: promptId
-                })
+                }),
+                signal: abortControllerRef.current.signal
             });
+
+            if (!isMountedRef.current) return;
 
             if (response.ok) {
                 const blob = await response.blob();
+
+                if (!isMountedRef.current) return;
+
                 const url = window.URL.createObjectURL(blob);
                 const audio = new Audio(url);
-                audio.play();
+                ttsAudioRef.current = audio;
+
+                audio.onended = () => {
+                    window.URL.revokeObjectURL(url);
+                };
+
+                if (onPlay) onPlay();
+
+                // Play only if mounted
+                if (isMountedRef.current) {
+                    await audio.play();
+                }
+            } else {
+                if (onPlay) onPlay();
             }
         } catch (error) {
+            if (error instanceof Error && error.name === 'AbortError') {
+                console.log('TTS fetch aborted');
+                return;
+            }
             console.error("TTS 재생 실패:", error);
+            if (onPlay) onPlay();
+        } finally {
+            abortControllerRef.current = null;
         }
     };
+
+    const [currentGreeting, setCurrentGreeting] = useState(initialMessage);
 
     // 초기 인사말 설정
     useEffect(() => {
@@ -151,6 +221,7 @@ export const CallPanel = ({ characterName, characterImage, promptId, initialMess
             }
 
             if (isMounted) {
+                setCurrentGreeting(greeting);
                 setMessages([{
                     id: Date.now(),
                     text: greeting,
@@ -168,9 +239,10 @@ export const CallPanel = ({ characterName, characterImage, promptId, initialMess
     useEffect(() => {
         if (isCallAccepted) {
             // 초기 인사말 재생 (약간의 딜레이 후)
-            setTimeout(() => playVoice(initialMessage), 500);
+            // initialMessage가 아닌 fetch된 currentGreeting을 재생
+            setTimeout(() => playVoice(currentGreeting), 500);
         }
-    }, [isCallAccepted]);
+    }, [isCallAccepted, currentGreeting]);
 
     // 메시지 추가 시 스크롤 하단 이동
     useEffect(() => {
@@ -238,12 +310,19 @@ export const CallPanel = ({ characterName, characterImage, promptId, initialMess
             await sendCharacterMessage(promptId, msgToSend, (text) => {
                 fullResponse += text;
                 typingBufferRef.current += text;
-                startTypingLoop();
+
+                // 스피커가 꺼져있으면 즉시 타이핑, 켜져있으면 음성 대기
+                if (!isSpeaker) {
+                    startTypingLoop();
+                }
             });
 
             // 답변 완료 후 음성 재생
             if (fullResponse) {
-                setTimeout(() => playVoice(fullResponse), 500);
+                if (isSpeaker) {
+                    // 음성 재생 시점에 타이핑 시작
+                    await playVoice(fullResponse, () => startTypingLoop());
+                }
             }
         } catch (error) {
             console.error('Send error:', error);
@@ -393,7 +472,7 @@ export const CallPanel = ({ characterName, characterImage, promptId, initialMess
     return (
         <div className="call-panel">
             {/* 프로필 영역 */}
-            <div className={`call-profile-section ${isChatLogOpen ? 'chatlog-open' : ''}`}>
+            <div className="call-profile-section">
                 <div className="call-profile-image-container">
                     <img src={characterImage} alt={characterName} className="call-profile-image" />
                 </div>
@@ -427,10 +506,22 @@ export const CallPanel = ({ characterName, characterImage, promptId, initialMess
                     <div className="call-button-wrapper">
                         <button
                             className="call-control-btn"
-                            onClick={() => setIsSpeaker(!isSpeaker)}
+                            onClick={() => {
+                                if (isSpeaker) {
+                                    // Turning OFF: Stop current TTS
+                                    if (ttsAudioRef.current) {
+                                        ttsAudioRef.current.pause();
+                                        ttsAudioRef.current = null;
+                                    }
+                                }
+                                setIsSpeaker(!isSpeaker);
+                            }}
                         >
                             <svg width="28" height="28" viewBox="0 0 24 24" fill={isSpeaker ? '#333' : '#999'}>
                                 <path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z" />
+                                {!isSpeaker && (
+                                    <path d="M4 4L20 20" stroke="#999" strokeWidth="1" strokeLinecap="round" />
+                                )}
                             </svg>
                         </button>
                         <span className="call-button-label">스피커</span>
@@ -438,14 +529,14 @@ export const CallPanel = ({ characterName, characterImage, promptId, initialMess
 
                     <div className="call-button-wrapper">
                         <button
-                            className="call-control-btn"
-                            onClick={() => setIsVoiceFilter(!isVoiceFilter)}
+                            className="call-control-btn disabled-diagonal"
+                            onClick={() => { }}
                         >
-                            <svg width="28" height="28" viewBox="0 0 24 24" fill={isVoiceFilter ? '#333' : '#999'}>
+                            <svg width="28" height="28" viewBox="0 0 24 24" fill="#999">
                                 <path d="M12 3v10.55c-.59-.34-1.27-.55-2-.55-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4V7h4V3h-6z" />
                             </svg>
                         </button>
-                        <span className="call-button-label">음성필터</span>
+                        <span className="call-button-label" style={{ color: '#999' }}>음성필터</span>
                     </div>
                 </div>
 
@@ -481,14 +572,14 @@ export const CallPanel = ({ characterName, characterImage, promptId, initialMess
 
                     <div className="call-button-wrapper">
                         <button
-                            className="call-control-btn"
-                            onClick={() => setIsFaceTalk(!isFaceTalk)}
+                            className="call-control-btn disabled-diagonal"
+                            onClick={() => { }}
                         >
-                            <svg width="28" height="28" viewBox="0 0 24 24" fill={isFaceTalk ? '#333' : '#999'}>
+                            <svg width="28" height="28" viewBox="0 0 24 24" fill="#999">
                                 <path d="M17 10.5V7c0-.55-.45-1-1-1H4c-.55 0-1 .45-1 1v10c0 .55.45 1 1 1h12c.55 0 1-.45 1-1v-3.5l4 4v-11l-4 4z" />
                             </svg>
                         </button>
-                        <span className="call-button-label">페이스톡</span>
+                        <span className="call-button-label" style={{ color: '#999' }}>페이스톡</span>
                     </div>
                 </div>
             </div>
@@ -517,11 +608,14 @@ export const CallPanel = ({ characterName, characterImage, promptId, initialMess
                         <input
                             type="text"
                             className="call-chatlog-input"
-                            placeholder={isMuted ? "음소거 상태입니다." : "메시지를 입력하세요..."}
+                            placeholder={isMuted ? "음소거 상태입니다. (클릭 시 해제)" : "메시지를 입력하세요..."}
                             value={input}
                             onChange={(e) => setInput(e.target.value)}
+                            onClick={() => {
+                                if (isMuted) setIsMuted(false);
+                            }}
                             onKeyDown={handleKeyDown}
-                            disabled={isLoading || isMuted} // 로딩중이거나 음소거 상태면 입력 불가
+                            disabled={isLoading} // 로딩중일 때만 입력 불가 (음소거는 클릭으로 해제)
                         />
                         <button
                             className="call-chatlog-send-btn"

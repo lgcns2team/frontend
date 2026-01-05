@@ -3,7 +3,6 @@ import { type ParsedCharacter, fetchCharacterDetail } from '../../../shared/api/
 import { sendCharacterMessage } from '../../../shared/api/aichat-api';
 import { ERAS } from '../../../shared/config/era-theme';
 import './ChatPanel.css';
-import { getFormLabelUtilityClasses } from '@mui/material';
 
 interface ChatMessage {
     id: number;
@@ -21,8 +20,8 @@ export const ChatPanel = ({ character, onCallStart }: ChatPanelProps) => {
     const [input, setInput] = useState('');
     const [messages, setMessages] = useState<ChatMessage[]>([]);
     const [isLoading, setIsLoading] = useState(false);
-    const [isTTSEnabled, setIsTTSEnabled] = useState(true);
-    const [isCallPanelOpen, setIsCallPanelOpen] = useState(false);
+    const [isTTSEnabled, setIsTTSEnabled] = useState(false);
+    const [currentGreeting, setCurrentGreeting] = useState('');
 
     {/* Call Panel Overlay removed */ }
     const typingBufferRef = useRef<string>('');
@@ -75,10 +74,11 @@ export const ChatPanel = ({ character, onCallStart }: ChatPanelProps) => {
     const audioRef = useRef<HTMLAudioElement | null>(null);
 
     // 🆕 음성 재생 함수 (handleSend보다 위에 있어야 함)
-    const playVoice = async (text: string) => {
+    const playVoice = async (text: string, onPlay?: () => void) => {
         console.log("TTS 함수 호출됨 현재 스위치 상태:", isTTSEnabled);
-        if(!isTTSEnabled) {
+        if (!isTTSEnabled) {
             console.warn("TTS가 비활성화 상태라 종료합니다.");
+            if (onPlay) onPlay(); // Fallback for safety
             return;
         }
 
@@ -94,7 +94,7 @@ export const ChatPanel = ({ character, onCallStart }: ChatPanelProps) => {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
-                    text: text,
+                    text: text.replace(/\([^)]*\)/g, ''),
                     promptId: character.promptId
                 })
             });
@@ -108,10 +108,15 @@ export const ChatPanel = ({ character, onCallStart }: ChatPanelProps) => {
                 audio.onended = () => {
                     window.URL.revokeObjectURL(url); // 메모리 해제
                 };
+
+                if (onPlay) onPlay(); // Trigger actions (text display) right before playing
                 await audio.play();
+            } else {
+                if (onPlay) onPlay(); // Fallback on error
             }
         } catch (error) {
             console.error("TTS 재생 실패:", error);
+            if (onPlay) onPlay(); // Fallback based error
         }
     };
 
@@ -162,13 +167,21 @@ export const ChatPanel = ({ character, onCallStart }: ChatPanelProps) => {
             await sendCharacterMessage(character.promptId!, msgToSend, (text) => {
                 fullResponse += text;
                 typingBufferRef.current += text;
-                startTypingLoop();
+                // TTS가 켜져있으면 타이핑 효과를 여기서 시작하지 않고, 음성 재생 시점에 시작함
+                if (!isTTSEnabled) {
+                    startTypingLoop();
+                }
             });
-            setIsLoading(false);
+            // setIsLoading(false); // Removed immediate call, rely on finally or playVoice logic
 
             // ✅ 정상 답변 완료 후 음성 재생
             if (fullResponse.trim()) {
-                playVoice(fullResponse);
+                if (isTTSEnabled) {
+                    await playVoice(fullResponse, () => {
+                        // 음성 준비 완료 시점에 타이핑 시작
+                        startTypingLoop();
+                    });
+                }
             }
         } catch (error) {
             console.error('Send error:', error);
@@ -223,6 +236,13 @@ export const ChatPanel = ({ character, onCallStart }: ChatPanelProps) => {
                         <button
                             className={`tts-btn ${isTTSEnabled ? 'tts-active' : ''}`}
                             onClick={() => {
+                                if (isTTSEnabled) {
+                                    // 끄는 순간 재생 중인 오디오 정지
+                                    if (audioRef.current) {
+                                        audioRef.current.pause();
+                                        audioRef.current = null;
+                                    }
+                                }
                                 setIsTTSEnabled(!isTTSEnabled);
                             }}
                             title={isTTSEnabled ? 'TTS 끄기' : 'TTS 켜기'}

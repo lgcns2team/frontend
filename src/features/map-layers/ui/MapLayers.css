@@ -71,3 +71,8 @@
         0 1px 3px rgba(0, 0, 0, 0.8),
         0 0 8px rgba(76, 175, 80, 0.5);
 }
+
+/* Person button specific alignment */
+.tab-btn.religion {
+    background-position: top center;
+}

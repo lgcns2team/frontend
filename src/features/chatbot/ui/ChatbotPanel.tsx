@@ -198,15 +198,25 @@ export const ChatbotPanel = ({ onClose, initialPosition, initialSize, onStateCha
     // TODO: TTS 기능은 나중에 백엔드 API로 연결 예정
 
     // 🆕 음성 재생 함수 (handleSend보다 위에 있어야 함)
+    // Audio Ref for controlling playback
+    const audioRef = useRef<HTMLAudioElement | null>(null);
+
+    // 🆕 음성 재생 함수 (handleSend보다 위에 있어야 함)
     const playVoice = async (text: string) => {
         if (!isTTSEnabled) return;
 
         try {
+            // 이전 재생 중인 음성이 있다면 정지
+            if (audioRef.current) {
+                audioRef.current.pause();
+                audioRef.current = null;
+            }
+
             const response = await fetch('http://127.0.0.1:8000/api/prompt/speak/', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
-                    text: text,
+                    text: text.replace(/\([^)]*\)/g, ''),
                     promptId: 'J791UNXAHE'
                 })
             });
@@ -215,6 +225,12 @@ export const ChatbotPanel = ({ onClose, initialPosition, initialSize, onStateCha
                 const blob = await response.blob();
                 const url = window.URL.createObjectURL(blob);
                 const audio = new Audio(url);
+                audioRef.current = audio;
+
+                audio.onended = () => {
+                    window.URL.revokeObjectURL(url);
+                };
+
                 audio.play();
             }
         } catch (error) {
@@ -323,11 +339,19 @@ export const ChatbotPanel = ({ onClose, initialPosition, initialSize, onStateCha
                 }
 
                 // Add text to typing buffer
-                typingBufferRef.current += text;
-                fullResponse += text;
-                console.log('✍️ [DEBUG] Added to typing buffer. Buffer now:', typingBufferRef.current.length, 'chars');
-                // Start typing loop (if not already running)
-                startTypingLoop();
+                let newText = text;
+                // If this is the start of the message (buffer empty) or just after loading removed
+                if (typingBufferRef.current.length === 0 && fullResponse.length === 0) {
+                    newText = newText.trimStart();
+                }
+
+                if (newText) {
+                    typingBufferRef.current += newText;
+                    fullResponse += newText;
+                    console.log('✍️ [DEBUG] Added to typing buffer. Buffer now:', typingBufferRef.current.length, 'chars');
+                    // Start typing loop (if not already running)
+                    startTypingLoop();
+                }
             }, (toolCall: ToolCallEvent) => {
                 // Handle tool calls from AI
                 console.log('🔧 [DEBUG] Tool call received:', toolCall);
@@ -427,8 +451,14 @@ export const ChatbotPanel = ({ onClose, initialPosition, initialSize, onStateCha
                         className={`tts-btn ${isTTSEnabled ? 'tts-active' : ''}`}
                         onClick={(e) => {
                             e.stopPropagation();
+                            if (isTTSEnabled) {
+                                // 끄는 순간 재생 중인 오디오 정지
+                                if (audioRef.current) {
+                                    audioRef.current.pause();
+                                    audioRef.current = null;
+                                }
+                            }
                             setIsTTSEnabled(!isTTSEnabled);
-                            // TODO: 백엔드 API 연결 시 여기에 TTS 호출 로직 추가
                         }}
                         onMouseDown={(e) => e.stopPropagation()}
                         title={isTTSEnabled ? 'TTS 끄기' : 'TTS 켜기'}
