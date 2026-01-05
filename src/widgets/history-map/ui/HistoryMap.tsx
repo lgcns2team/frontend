@@ -210,7 +210,8 @@ export default function HistoryMap() {
         map: map.current,
         isActive: isKoreanWarMode && layerType === 'battles',
         currentDate: currentKoreanWarDate,
-        animationSpeed: koreanWarSpeed
+        animationSpeed: koreanWarSpeed,
+        currentZoom: currentMapZoom
     });
 
     // Update frontlines when Korean War data loads
