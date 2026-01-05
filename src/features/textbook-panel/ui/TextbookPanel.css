@@ -218,9 +218,15 @@
 }
 
 .person-hotspot:hover {
-    border-color: var(--color-main, #496b6e);
-    background: rgba(73, 107, 110, 0.15);
-    box-shadow: 0 0 20px rgba(73, 107, 110, 0.3);
+    background-color: rgba(255, 255, 255, 0.2);
+    box-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
+    transform: scale(1.02);
+}
+
+.map-hotspot:hover {
+    background-color: rgba(0, 123, 255, 0.1);
+    /* Light blue tint on hover */
+    box-shadow: 0 0 10px rgba(0, 123, 255, 0.3);
 }
 
 .person-hotspot .hotspot-label {

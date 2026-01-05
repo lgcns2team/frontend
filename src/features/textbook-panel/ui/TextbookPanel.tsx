@@ -31,6 +31,38 @@ const PERSON_HOTSPOTS: Record<number, PersonHotspot[]> = {
     180: [{ name: '김구', x: 77, y: 15, width: 13, height: 14 }]       // 181페이지 - 오른쪽 상단
 };
 
+// 지도 핫스팟 데이터 구조
+interface MapHotspot {
+    year: number;        // 이동할 연도
+    x: number;           // 왼쪽 위치 (%)
+    y: number;           // 위쪽 위치 (%)
+    width: number;       // 너비 (%)
+    height: number;      // 높이 (%)
+    description: string; // 설명 (툴팁용)
+}
+
+// 페이지별 지도 핫스팟 매핑 (좌표는 임시)
+const MAP_HOTSPOTS: Record<number, MapHotspot[]> = {
+    13: [{ year: -108, x: 4, y: 7, width: 32, height: 22, description: '고조선-한 전쟁' }], // 14p
+    23: [{ year: 413, x: 5, y: 3, width: 22, height: 24, description: '고구려 전성기' }],   // 24p
+    25: [{ year: 371, x: 4, y: 33, width: 23, height: 16, description: '백제 전성기' }],     // 26p
+    28: [{ year: 554, x: 38, y: 48, width: 30, height: 30, description: '신라 전성기' }],     // 29p
+    46: [{ year: 612, x: 66, y: 19, width: 30, height: 20, description: '고구려 vs 수-당 전쟁' }], // 47p
+    48: [{ year: 675, x: 66, y: 3, width: 30, height: 24, description: '나당 전쟁' }],       // 49p
+    50: [{ year: 698, x: 62, y: 26, width: 28, height: 16, description: '발해 건국 전쟁' }],  // 51p
+    57: [{ year: 822, x: 4, y: 47, width: 22, height: 23, description: '통일신라 반란' }],   // 58p
+    73: [{ year: 936, x: 10, y: 34, width: 21, height: 19, description: '후삼국 전쟁' }],     // 74p
+    80: [{ year: 1176, x: 17, y: 56, width: 24, height: 21, description: '망이·망소이의 난' }], // 81p
+    81: [{ year: 993, x: 10, y: 66, width: 30, height: 23, description: '거란의 침입 (서희)' }], // 82p
+    85: [{ year: 1231, x: 32, y: 20, width: 33, height: 33, description: '여몽전쟁' }],       // 86p
+    90: [{ year: 1380, x: 70, y: 29, width: 30, height: 28, description: '홍건적/왜구 침입' }], // 91p
+    125: [{ year: 1592, x: 6, y: 61, width: 30, height: 28, description: '임진왜란' }],      // 126p
+    130: [{ year: 1636, x: 72, y: 9, width: 24, height: 24, description: '병자호란' }],      // 131p
+    160: [{ year: 1811, x: 70, y: 20, width: 28, height: 30, description: '홍경래의 난/민란' }], // 161p
+    178: [{ year: 1920, x: 74, y: 3, width: 25, height: 20, description: '독립 전쟁 (청산리/봉오동)' }], // 179p
+    182: [{ year: 1950, x: 70, y: 3, width: 28, height: 29, description: '6.25 전쟁' }],     // 183p
+};
+
 interface TextbookPanelProps {
     currentPage: number;
     viewMode: 'single' | 'double';
@@ -39,6 +71,9 @@ interface TextbookPanelProps {
     onVoiceChat?: () => void;
     isConversationMode?: boolean;
     onPersonClick?: (personName: string) => void;
+    isPinsetEnabled?: boolean;
+    onTogglePinset?: () => void;
+    onJumpToYear?: (year: number) => void;
 }
 
 const S3_BUCKET_URL = "https://khistorybook.s3.ap-northeast-2.amazonaws.com";
@@ -50,32 +85,70 @@ export const TextbookPanel = ({
     onViewModeChange,
     onVoiceChat,
     isConversationMode = false,
-    onPersonClick
+    onPersonClick,
+    isPinsetEnabled = false,
+    onTogglePinset,
+    onJumpToYear
 }: TextbookPanelProps) => {
     // 인물 핫스팟 렌더링 함수
     const renderHotspots = (page: number) => {
-        const hotspots = PERSON_HOTSPOTS[page];
-        if (!hotspots || !onPersonClick) return null;
+        const personHotspots = PERSON_HOTSPOTS[page] || [];
+        const mapHotspots = MAP_HOTSPOTS[page] || [];
 
-        return hotspots.map((hotspot, index) => (
-            <div
-                key={`${page}-${hotspot.name}-${index}`}
-                className="person-hotspot"
-                style={{
-                    left: `${hotspot.x}%`,
-                    top: `${hotspot.y}%`,
-                    width: `${hotspot.width}%`,
-                    height: `${hotspot.height}%`
-                }}
-                onClick={(e) => {
-                    e.stopPropagation();
-                    onPersonClick(hotspot.name);
-                }}
-                title={`${hotspot.name} - 클릭하여 대화하기`}
-            >
-                <span className="hotspot-label">{hotspot.name}</span>
-            </div>
-        ));
+        if ((!personHotspots.length && !mapHotspots.length)) return null;
+
+        return (
+            <>
+                {/* Person Hotspots */}
+                {onPersonClick && personHotspots.map((hotspot, index) => (
+                    <div
+                        key={`person-${page}-${hotspot.name}-${index}`}
+                        className="person-hotspot"
+                        style={{
+                            left: `${hotspot.x}%`,
+                            top: `${hotspot.y}%`,
+                            width: `${hotspot.width}%`,
+                            height: `${hotspot.height}%`
+                        }}
+                        onClick={(e) => {
+                            e.stopPropagation();
+                            onPersonClick(hotspot.name);
+                        }}
+                        title={`${hotspot.name} - 클릭하여 대화하기`}
+                    >
+                        <span className="hotspot-label">{hotspot.name}</span>
+                    </div>
+                ))}
+
+                {/* Map Hotspots */}
+                {onJumpToYear && mapHotspots.map((hotspot, index) => (
+                    <div
+                        key={`map-${page}-${hotspot.year}-${index}`}
+                        className="map-hotspot"
+                        style={{
+                            position: 'absolute',
+                            left: `${hotspot.x}%`,
+                            top: `${hotspot.y}%`,
+                            width: `${hotspot.width}%`,
+                            height: `${hotspot.height}%`,
+                            cursor: 'pointer',
+                            // border: '2px dashed rgba(0, 0, 255, 0.3)', // Debug visualization
+                            zIndex: 10
+                        }}
+                        onClick={(e) => {
+                            e.stopPropagation();
+                            const confirmMsg = `'${hotspot.description}' 관련 연도(${Math.abs(hotspot.year)}${hotspot.year < 0 ? 'BC' : '년'})로 이동하시겠습니까?`;
+                            if (window.confirm(confirmMsg)) {
+                                onJumpToYear(hotspot.year);
+                            }
+                        }}
+                        title={`${hotspot.description} - 클릭하여 지도로 이동 (${Math.abs(hotspot.year)}${hotspot.year < 0 ? 'BC' : '년'})`}
+                    >
+                        {/* Optional: Add visual indicator on hover via CSS or a small icon */}
+                    </div>
+                ))}
+            </>
+        );
     };
     const getImageUrl = (page: number) => {
         // return `/historybook/${page}.png`;
@@ -230,6 +303,35 @@ export const TextbookPanel = ({
                     >
                         ▶
                     </button>
+
+                    <div className="nav-divider"></div>
+
+                    {/* Pinset (Sync) Toggle */}
+                    {onTogglePinset && (
+                        <button
+                            className={`nav-btn ${isPinsetEnabled ? 'active' : ''}`}
+                            onClick={onTogglePinset}
+                            title={isPinsetEnabled ? "지도 연동 끄기" : "지도 연동 켜기"}
+                            style={{
+                                color: isPinsetEnabled ? '#ef4444' : 'inherit',
+                                position: 'relative'
+                            }}
+                        >
+                            📌
+                            {isPinsetEnabled && (
+                                <span style={{
+                                    position: 'absolute',
+                                    top: '2px',
+                                    right: '2px',
+                                    width: '6px',
+                                    height: '6px',
+                                    borderRadius: '50%',
+                                    backgroundColor: '#ef4444',
+                                    border: '1px solid white'
+                                }}></span>
+                            )}
+                        </button>
+                    )}
 
                     <div className="nav-divider"></div>
 

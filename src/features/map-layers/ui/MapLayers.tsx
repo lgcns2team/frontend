@@ -23,34 +23,34 @@ export const MapLayers = ({ activeLayer, onLayerChange, currentYear }: MapLayers
     // Construct image paths based on current era
     const warImage = `/assets/images/${eraFolder}/war.png`;
     const tradeImage = `/assets/images/${eraFolder}/trade.png`;
-    const cultureImage = `/assets/images/${eraFolder}/culture.png`;
+    const personImage = `/assets/images/${eraFolder}/person.png`;
 
     return (
         <div className="layer-tabs">
-            <button
-                className={`tab-btn battles ${activeLayer === 'battles' ? 'active' : ''}`}
-                onClick={() => toggleLayer('battles')}
-                aria-label="전쟁/동맹"
-                style={{ backgroundImage: `url(${warImage})` }}
-            >
+            <div className="tab-item" onClick={() => toggleLayer('battles')}>
+                <button
+                    className={`tab-btn battles ${activeLayer === 'battles' ? 'active' : ''}`}
+                    aria-label="전쟁/동맹"
+                    style={{ backgroundImage: `url(${warImage})` }}
+                />
                 <span className="tab-label">전쟁/동맹</span>
-            </button>
-            <button
-                className={`tab-btn trade ${activeLayer === 'trade' ? 'active' : ''}`}
-                onClick={() => toggleLayer('trade')}
-                aria-label="무역"
-                style={{ backgroundImage: `url(${tradeImage})` }}
-            >
+            </div>
+            <div className="tab-item" onClick={() => toggleLayer('trade')}>
+                <button
+                    className={`tab-btn trade ${activeLayer === 'trade' ? 'active' : ''}`}
+                    aria-label="무역"
+                    style={{ backgroundImage: `url(${tradeImage})` }}
+                />
                 <span className="tab-label">무역</span>
-            </button>
-            <button
-                className={`tab-btn religion ${activeLayer === 'people' ? 'active' : ''}`}
-                onClick={() => toggleLayer('people')}
-                aria-label="인물"
-                style={{ backgroundImage: `url(${cultureImage})` }}
-            >
+            </div>
+            <div className="tab-item" onClick={() => toggleLayer('people')}>
+                <button
+                    className={`tab-btn religion ${activeLayer === 'people' ? 'active' : ''}`}
+                    aria-label="인물"
+                    style={{ backgroundImage: `url(${personImage})` }}
+                />
                 <span className="tab-label">인물</span>
-            </button>
+            </div>
         </div>
     );
 };

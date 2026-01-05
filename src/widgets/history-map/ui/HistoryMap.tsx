@@ -5,7 +5,7 @@ import './HistoryMap.css';
 import '../../../shared/config/era-theme.css';
 import { getEraForYear } from '../../../shared/config/era-theme';
 import { loadHistoricalBorders } from '../lib/boundary-utils';
-import { loadTradeRoutes } from '../lib/trade-route';
+import { loadTradeRoutes, loadSupportRoutes } from '../lib/trade-route';
 import type { TradeRouteWithColor } from '../lib/trade-route';
 import { useTradeAnimation } from '../lib/useTradeAnimation';
 import { useWarLayer } from '../lib/useWarLayer';
@@ -28,6 +28,7 @@ import { CharactersPanel } from '../../../features/ai-character';
 import { ChatPanel } from '../../../features/ai-chat';
 import type { ParsedCharacter } from '../../../shared/api/characters-api';
 import { fetchCountryByCode, type CountryData } from '../../../shared/api/country-api';
+import { getEraForPage } from '../../../shared/lib/k-history-data/textbook-data';
 import type { ParsedMainEvent } from '../../../shared/api/main-events-api';
 import { ProfileButton } from '../../../features/profile-button';
 import { NukeExplosion } from '../../../features/nuke-explosion';
@@ -120,6 +121,22 @@ export default function HistoryMap() {
     // My Page State
     const [showMyPage, setShowMyPage] = useState(false);
 
+    // Textbook Sync State
+    const [isPinsetEnabled, setIsPinsetEnabled] = useState(false);
+
+    // Sync Map Year with Textbook Page
+    useEffect(() => {
+        if (isPinsetEnabled && activePanel === 'textbook') {
+            const eraYear = getEraForPage(textbookPage);
+            if (eraYear !== null && eraYear !== currentYear) {
+                console.log(`[TextbookSync] Page ${textbookPage + 1} -> Year ${eraYear}`);
+                // Use a small timeout or direct call depending on existing logic
+                handleYearChange(eraYear);
+            }
+        }
+    }, [textbookPage, isPinsetEnabled, activePanel]);
+
+    // Refs
     // Korean War Mode State (Day-based timeline)
     const [isKoreanWarMode, setIsKoreanWarMode] = useState(false);
     const [currentKoreanWarDate, setCurrentKoreanWarDate] = useState(KOREAN_WAR_START);
@@ -187,7 +204,8 @@ export default function HistoryMap() {
         map: map.current,
         isActive: isKoreanWarMode && layerType === 'battles',
         currentDate: currentKoreanWarDate,
-        animationSpeed: koreanWarSpeed
+        animationSpeed: koreanWarSpeed,
+        currentZoom: currentMapZoom
     });
 
     // Update frontlines when Korean War data loads
@@ -382,7 +400,7 @@ export default function HistoryMap() {
         updateMarkers(currentYear);
     }, [layerType, capitalData, personData, currentMapZoom]);
 
-    // Update Trade Routes
+    // Update Trade Routes (and Support Routes in War Mode)
     useEffect(() => {
         let isMounted = true;
 
@@ -392,13 +410,17 @@ export default function HistoryMap() {
             // Clear existing layers first
             tradeLayer.current.clearLayers();
 
-            // Only load trade routes if the trade layer is active
-            if (layerType !== 'trade') {
+            let routesWithColor: TradeRouteWithColor[] = [];
+
+            if (layerType === 'trade') {
+                routesWithColor = await loadTradeRoutes(currentYear);
+            } else if (layerType === 'battles' && isKoreanWarMode) {
+                // In Korean War mode, show UN support routes (stored as 1950 data)
+                routesWithColor = await loadSupportRoutes(1950);
+            } else {
                 setActiveTradeRoutes([]);
                 return;
             }
-
-            const routesWithColor = await loadTradeRoutes(currentYear);
 
             if (!isMounted) return;
 
@@ -434,14 +456,14 @@ export default function HistoryMap() {
         return () => {
             isMounted = false;
         };
-    }, [currentYear, layerType]);
+    }, [currentYear, layerType, isKoreanWarMode]);
 
     // Trade Animation Hook
     useTradeAnimation({
         map: map.current,
         routes: activeTradeRoutes,
         historicalLayer: historicalLayer.current,
-        isActive: layerType === 'trade',
+        isActive: layerType === 'trade' || (layerType === 'battles' && isKoreanWarMode),
         speed: speed,
         currentYear: currentYear
     });
@@ -1141,6 +1163,9 @@ export default function HistoryMap() {
                         onVoiceChat={handleVoiceChat}
                         isConversationMode={isConversationMode}
                         onPersonClick={handlePersonClickFromTextbook}
+                        isPinsetEnabled={isPinsetEnabled}
+                        onTogglePinset={() => setIsPinsetEnabled(prev => !prev)}
+                        onJumpToYear={handleYearChange}
                     />
                 ) : activePanel === 'search' ? (
                     <MajorEventsPanel

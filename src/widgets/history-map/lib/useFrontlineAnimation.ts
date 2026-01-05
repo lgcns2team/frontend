@@ -30,6 +30,7 @@ interface UseFrontlineAnimationProps {
     isActive: boolean;
     currentDate: string; // "1950-06-25" format
     animationSpeed: number; // 1 = normal speed
+    currentZoom?: number;
 }
 
 // Korean peninsula polygon (simplified)
@@ -98,7 +99,8 @@ export const useFrontlineAnimation = ({
     map,
     isActive,
     currentDate,
-    animationSpeed = 1
+    animationSpeed = 1,
+    currentZoom = 6
 }: UseFrontlineAnimationProps) => {
     const frontlineLayer = useRef<L.LayerGroup | null>(null);
     const territoryLayer = useRef<L.LayerGroup | null>(null);
@@ -126,12 +128,7 @@ export const useFrontlineAnimation = ({
         iconAnchor: [16, 32]
     });
 
-    // Tank icon definition (Animated North)
-    const tankIconNorth = L.divIcon({
-        className: 'tank-icon-north-anim',
-        iconSize: [48, 48],
-        iconAnchor: [24, 24] // More anchor for larger icon
-    });
+
 
     // Soldier icon definition (Animated South)
     const soldierIconSouth = L.divIcon({
@@ -142,8 +139,8 @@ export const useFrontlineAnimation = ({
 
 
     // --- Configuration Constants ---
-    const JET_SIZE: L.PointTuple = [38, 38];
-    const BOMBER_SIZE: L.PointTuple = [50, 50];
+    const JET_SIZE: L.PointTuple = [70, 70];
+    const BOMBER_SIZE: L.PointTuple = [150, 150];
     const DOGFIGHT_SIZE: L.PointTuple = [50, 50];
     const BATTLESHIP_SIZE: L.PointTuple = [120, 120];
 
@@ -190,6 +187,38 @@ export const useFrontlineAnimation = ({
             airRaidLayer.current?.remove();
         };
     }, [map]);
+
+    // Control layer visibility based on zoom level
+    useEffect(() => {
+        if (!map) return;
+
+        const layers = [
+            frontlineLayer.current,
+            territoryLayer.current,
+            soldierLayer.current,
+            battleLayer.current,
+            movementLayer.current,
+            airRaidLayer.current
+        ];
+
+        // Show/hide based on isActive AND zoom level > 4
+        // (Same logic as useWarAnimation)
+        const shouldShow = isActive && currentZoom > 4;
+
+        layers.forEach(layer => {
+            if (!layer) return;
+
+            if (shouldShow) {
+                if (!map.hasLayer(layer)) {
+                    map.addLayer(layer);
+                }
+            } else {
+                if (map.hasLayer(layer)) {
+                    map.removeLayer(layer);
+                }
+            }
+        });
+    }, [map, isActive, currentZoom]);
 
     // Clip peninsula polygon by frontline for north/south territories
     const clipTerritoryByFrontline = useCallback((
@@ -307,9 +336,9 @@ export const useFrontlineAnimation = ({
             const line = turf.lineString(smoothedCoords);
             const length = turf.length(line, { units: 'kilometers' });
 
-            // Interval for soldiers
-            const SOLDIER_INTERVAL = 40; // km
-            // Offset from the center line - Increased to separate forces visually
+            // Interval for flags (decreased for dense line, but not too dense)
+            const SOLDIER_INTERVAL = 20; // km (was 2, originally 40)
+            // Offset from the center line
             const OFFSET_DIST = 15; // km
 
             const count = Math.floor(length / SOLDIER_INTERVAL);
@@ -360,23 +389,18 @@ export const useFrontlineAnimation = ({
                     }
                 }
 
-                // Render North Soldier/Tank if on land
+                // Render North Flag if on land
                 const nPos = pNorth.geometry.coordinates;
                 // Check if point is inside peninsula polygon
                 if (!peninsula || turf.booleanPointInPolygon(pNorth, peninsula)) {
-                    // Randomly choose Tank (20%) or Soldier (80%)
-                    // Use deterministic hash based on index and position to prevent flickering
-                    // Use 1337 seed and position to keep it consistent for the same localized spot/index
-                    const hash = (i * 1337 + Math.floor(nPos[0] * 100)) % 100;
-                    const isTank = hash < 20;
-
+                    // Always use soldierIconNorth (Flag) - Removed Tank logic
                     L.marker([nPos[1], nPos[0]], {
-                        icon: isTank ? tankIconNorth : soldierIconNorth,
+                        icon: soldierIconNorth,
                         pane: 'soldierPane'
                     }).addTo(soldierLayer.current);
                 }
 
-                // Render South Soldier if on land
+                // Render South Flag if on land
                 const sPos = pSouth.geometry.coordinates;
                 if (!peninsula || turf.booleanPointInPolygon(pSouth, peninsula)) {
                     L.marker([sPos[1], sPos[0]], {
@@ -424,51 +448,97 @@ export const useFrontlineAnimation = ({
         }
     }, [map, peninsula, clipTerritoryByFrontline, soldierIconNorth, soldierIconSouth]);
 
+    // Track shown battle IDs to prevent duplicate popups
+    const shownBattleIdsRef = useRef<Set<string>>(new Set());
+    // Track active battle markers to prevent re-creation
+    const activeBattleMarkersRef = useRef<Map<string, L.Marker>>(new Map());
+
+    // Reset shown battles when date resets significantly (e.g. user scrubs back)
+    useEffect(() => {
+        if (currentDate < "1950-06-25") {
+            shownBattleIdsRef.current.clear();
+            activeBattleMarkersRef.current.forEach(marker => marker.remove());
+            activeBattleMarkersRef.current.clear();
+        }
+    }, [currentDate]);
+
     // Draw battle markers
     const drawBattles = useCallback((battles: KoreanWarBattle[]) => {
         if (!map || !battleLayer.current) return;
-        battleLayer.current.clearLayers();
+
+        // Key set of currently visible battles
+        const currentBattleKeys = new Set<string>();
 
         battles.forEach(battle => {
-            const icon = L.divIcon({
-                className: 'korean-war-battle-marker',
-                html: `
-                    <div style="
-                        width: 24px;
-                        height: 24px;
-                        background: ${battle.winner === '북한' || battle.winner === '중국' || battle.winner === '중국/북한' ? '#ef4444' : '#3b82f6'};
-                        border: 3px solid white;
-                        border-radius: 50%;
-                        box-shadow: 0 2px 8px rgba(0,0,0,0.4);
-                        display: flex;
-                        align-items: center;
-                        justify-content: center;
-                    ">
-                        <span style="color: white; font-size: 12px; font-weight: bold;">⚔</span>
+            const uniqueKey = `${battle.name}-${battle.date}`;
+            currentBattleKeys.add(uniqueKey);
+
+            // If marker doesn't exist, create it
+            if (!activeBattleMarkersRef.current.has(uniqueKey)) {
+                const icon = L.divIcon({
+                    className: 'korean-war-battle-marker',
+                    html: `
+                        <div style="
+                            width: 24px;
+                            height: 24px;
+                            background: ${battle.winner === '북한' || battle.winner === '중국' || battle.winner === '중국/북한' ? '#ef4444' : '#3b82f6'};
+                            border: 3px solid white;
+                            border-radius: 50%;
+                            box-shadow: 0 2px 8px rgba(0,0,0,0.4);
+                            display: flex;
+                            align-items: center;
+                            justify-content: center;
+                        ">
+                            <span style="color: white; font-size: 12px; font-weight: bold;">⚔</span>
+                        </div>
+                    `,
+                    iconSize: [24, 24],
+                    iconAnchor: [12, 12]
+                });
+
+                const marker = L.marker(
+                    [battle.coordinates[1], battle.coordinates[0]],
+                    { icon, pane: 'koreanWarBattlePane' }
+                );
+
+                marker.bindPopup(`
+                    <div style="min-width: 220px;">
+                        <h3 style="margin: 0 0 8px 0; font-size: 16px; font-weight: bold;">${battle.name}</h3>
+                        <p style="margin: 4px 0; font-size: 14px;"><strong>날짜:</strong> ${battle.date}</p>
+                        <div style="margin-top: 8px; padding-top: 8px; border-top: 1px solid #eee;">
+                            <p style="margin: 4px 0;"><strong>승리:</strong> ${battle.winner}</p>
+                            <p style="margin: 4px 0;"><strong>패배:</strong> ${battle.loser}</p>
+                        </div>
+                        <p style="margin-top: 8px; font-size: 13px; color: #666;">${battle.description}</p>
                     </div>
-                `,
-                iconSize: [24, 24],
-                iconAnchor: [12, 12]
-            });
+                `);
 
-            const marker = L.marker(
-                [battle.coordinates[1], battle.coordinates[0]],
-                { icon, pane: 'koreanWarBattlePane' }
-            );
+                marker.addTo(battleLayer.current!);
+                activeBattleMarkersRef.current.set(uniqueKey, marker);
 
-            marker.bindPopup(`
-                <div style="min-width: 220px;">
-                    <h3 style="margin: 0 0 8px 0; font-size: 16px; font-weight: bold;">${battle.name}</h3>
-                    <p style="margin: 4px 0; font-size: 14px;"><strong>날짜:</strong> ${battle.date}</p>
-                    <div style="margin-top: 8px; padding-top: 8px; border-top: 1px solid #eee;">
-                        <p style="margin: 4px 0;"><strong>승리:</strong> ${battle.winner}</p>
-                        <p style="margin: 4px 0;"><strong>패배:</strong> ${battle.loser}</p>
-                    </div>
-                    <p style="margin-top: 8px; font-size: 13px; color: #666;">${battle.description}</p>
-                </div>
-            `);
+                // Auto-open logic (only once per battle unique key)
+                if (!shownBattleIdsRef.current.has(uniqueKey)) {
+                    shownBattleIdsRef.current.add(uniqueKey);
 
-            marker.addTo(battleLayer.current!);
+                    // Open popup after short delay
+                    setTimeout(() => {
+                        marker.openPopup();
+                    }, 100);
+
+                    // Auto-close after 5 seconds
+                    setTimeout(() => {
+                        marker.closePopup();
+                    }, 3000);
+                }
+            }
+        });
+
+        // Remove markers that remain in the Map but serve no battle in the current list
+        activeBattleMarkersRef.current.forEach((marker, key) => {
+            if (!currentBattleKeys.has(key)) {
+                marker.remove();
+                activeBattleMarkersRef.current.delete(key);
+            }
         });
     }, [map]);
 
@@ -494,16 +564,28 @@ export const useFrontlineAnimation = ({
                 dashArray: '8, 4'
             }).addTo(movementLayer.current!);
 
-            const iconHtml = movement.unit_type === 'navy'
-                ? '🚢'
-                : movement.side === 'south' ? '🔵' : '🔴';
+            let unitIcon;
 
-            const unitIcon = L.divIcon({
-                className: 'korean-war-unit-marker',
-                html: `<div style="font-size: 20px; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.5));">${iconHtml}</div>`,
-                iconSize: [24, 24],
-                iconAnchor: [12, 12]
-            });
+            // Check if this is the Incheon Landing Operation movement
+            if (movement.name && movement.name.includes('인천')) {
+                unitIcon = L.divIcon({
+                    className: '', // Container class
+                    html: `<div class="landing-craft-anim" style="width:100%; height:100%; transform: rotate(0deg);"></div>`,
+                    iconSize: [80, 40], // 2x size for landing craft
+                    iconAnchor: [40, 20]
+                });
+            } else {
+                const iconHtml = movement.unit_type === 'navy'
+                    ? '🚢'
+                    : movement.side === 'south' ? '🔵' : '🔴';
+
+                unitIcon = L.divIcon({
+                    className: 'korean-war-unit-marker',
+                    html: `<div style="font-size: 20px; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.5));">${iconHtml}</div>`,
+                    iconSize: [24, 24],
+                    iconAnchor: [12, 12]
+                });
+            }
 
             const unitMarker = L.marker(smoothedLatLngs[0], { icon: unitIcon });
             unitMarker.bindTooltip(movement.name, {
@@ -670,8 +752,8 @@ export const useFrontlineAnimation = ({
                     // Let's use same factor.
 
                     let baseDuration = (1500 + (totalDist / 100) * 1500);
-                    // Apply 3x speed factor
-                    baseDuration = baseDuration / 6;
+                    // Apply speed factor (Higher divisor = Faster)
+                    baseDuration = baseDuration / 2;
 
                     if (type === 'bomber') {
                         // User asked for fast bombers. We'll keep them fast.
@@ -704,7 +786,7 @@ export const useFrontlineAnimation = ({
 
             const INCHEON_POS = [126.35, 37.45];
             const BATTLESHIP_START_DATE = "1950-09-15";
-            const BATTLESHIP_END_DATE = "1950-09-28"; // Seoul Retaken
+            const BATTLESHIP_END_DATE = "1950-10-05"; // Extended to cover post-Seoul reclamation support
 
             // Check if we should have a battleship
             const shouldHaveBattleship = currentDate >= BATTLESHIP_START_DATE && currentDate <= BATTLESHIP_END_DATE;
@@ -778,9 +860,14 @@ export const useFrontlineAnimation = ({
                                 size = BATTLESHIP_SIZE;
                             }
 
+                            // Calculate bearing directly from path vector for value precision
+                            const vectorBearing = turf.bearing(turf.point(raid.startPos), turf.point(raid.endPos));
+                            const rotationOffset = 0; // Image points Up (North) by default, so +0 to align with bearing
+
                             const icon = L.divIcon({
-                                className: className,
-                                html: `<div style="width:100%; height:100%; transform: rotate(${raid.rotation}deg);"></div>`,
+                                className: 'korean-war-air-raid-marker', // Generic class for container
+                                // Apply specific class to inner div so it rotates with the transform
+                                html: `<div class="${className}" style="width:100%; height:100%; transform: rotate(${vectorBearing + rotationOffset}deg);"></div>`,
                                 iconSize: size as L.PointTuple,
                                 iconAnchor: [size[0] / 2, size[1] / 2] as L.PointTuple
                             });
@@ -791,6 +878,7 @@ export const useFrontlineAnimation = ({
                             }).addTo(airRaidLayer.current);
                         }
 
+
                         // Update Marker Position & Animation State
                         if (raid.marker) {
                             raid.marker.setLatLng([lat, lng]);
@@ -798,7 +886,9 @@ export const useFrontlineAnimation = ({
 
                             // Handle Animation State (Static -> Flying -> Static)
                             if (raid.type === 'jet' || raid.type === 'bomber') {
-                                const el = raid.marker.getElement();
+                                const wrapper = raid.marker.getElement();
+                                const el = wrapper?.firstElementChild as HTMLElement;
+
                                 if (el) {
                                     const isFlying = progress > 0.1 && progress < 0.9;
                                     const baseClass = raid.type === 'jet' ? 'usaf-jet' : 'usaf-bomber';
