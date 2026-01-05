@@ -83,14 +83,20 @@ export const sendCharacterMessage = async (
     onChunk: StreamCallback
 ): Promise<void> => {
     const userId = getUserId();
-    const url = `/api/ai/ai-person/${promptId}/chat?userId=${userId}`;
+
+    // URL을 단순하게 - Query parameter 제거
+    const url = `/api/ai/character/${promptId}/chat`;
 
     console.log('🚀 [sendCharacterMessage] Starting request:', { url, promptId, userId });
 
     const response = await fetch(url, {
         method: 'POST',
         headers: getStreamingHeaders(),
-        body: JSON.stringify({ message }),
+        body: JSON.stringify({
+            message,
+            userId,      // body에 포함
+            promptId     // body에도 포함 (중복이지만 안전)
+        }),
     });
 
     console.log('📥 [sendCharacterMessage] Response received:', {
@@ -216,7 +222,7 @@ export const sendGeneralMessage = async (
     onChunk: StreamCallback,
     onToolCall?: ToolCallCallback
 ): Promise<void> => {
-    const url = '/api/ai/agent-chat';
+    const url = '${ALB_URL}/api/ai/agent-chat';
     console.log('🚀 [sendGeneralMessage] Starting request:', { url, message: message.substring(0, 50) });
 
     const response = await fetch(url, {
