@@ -150,6 +150,21 @@ export default function HistoryMap() {
     const [koreanWarSpeed, setKoreanWarSpeed] = useState(1);
     const [koreanWarFrontlines, setKoreanWarFrontlines] = useState<any[]>([]);
 
+    // DayTimeline Open State (sync with timeline visibility)
+    const [isDayTimelineOpen, setIsDayTimelineOpen] = useState(false);
+    const prevIsDayTimelineOpen = useRef(false);
+
+    // Sync DayTimeline open state with Main Timeline visibility
+    useEffect(() => {
+        if (isDayTimelineOpen) {
+            setTimelineVisibility('hidden');
+        } else if (prevIsDayTimelineOpen.current) {
+            // Only restore if it was previously open (prevent overriding on initial mount)
+            setTimelineVisibility('full');
+        }
+        prevIsDayTimelineOpen.current = isDayTimelineOpen;
+    }, [isDayTimelineOpen]);
+
     const handleTransitionComplete = () => {
         setIsCloudTransitionActive(false);
     };
@@ -234,6 +249,7 @@ export default function HistoryMap() {
         } else if (!shouldBeKoreanWarMode && isKoreanWarMode) {
             setIsKoreanWarMode(false);
             setIsKoreanWarPlaying(false);
+            setIsDayTimelineOpen(false); // Reset timeline toggle
         }
     }, [currentYear, layerType, isKoreanWarMode]);
 
@@ -1349,6 +1365,8 @@ export default function HistoryMap() {
                     onPlayPause={() => setIsKoreanWarPlaying(prev => !prev)}
                     speed={koreanWarSpeed}
                     onSpeedChange={setKoreanWarSpeed}
+                    isOpen={isDayTimelineOpen}
+                    onToggle={setIsDayTimelineOpen}
                 />
             )}
 
