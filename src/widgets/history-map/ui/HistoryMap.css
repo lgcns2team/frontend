@@ -119,31 +119,31 @@
 /* USAF Jet Animation */
 /* USAF Jet Animation - Split States */
 .usaf-jet-static {
-    width: 64px;
-    height: 64px;
+    width: 100px;
+    height: 100px;
     background-size: contain;
     background-repeat: no-repeat;
     background-position: center;
-    background-image: url('/assets/images/korean-war/usaf_jet_0.png');
+    background-image: url('/assets/images/korean-war/usaf_jet_.png');
     filter: drop-shadow(0 15px 15px rgba(0, 0, 0, 0.4));
     transform-origin: center center;
 }
 
 @keyframes usafJetFlyingAnim {
     0% {
-        background-image: url('/assets/images/korean-war/usaf_jet_1.png');
+        background-image: url('/assets/images/korean-war/usaf_jet_.png');
     }
 
     33% {
-        background-image: url('/assets/images/korean-war/usaf_jet_2.png');
+        background-image: url('/assets/images/korean-war/usaf_jet_.png');
     }
 
     66% {
-        background-image: url('/assets/images/korean-war/usaf_jet_3.png');
+        background-image: url('/assets/images/korean-war/usaf_jet_.png');
     }
 
     100% {
-        background-image: url('/assets/images/korean-war/usaf_jet_1.png');
+        background-image: url('/assets/images/korean-war/usaf_jet_.png');
     }
 }
 
@@ -161,31 +161,31 @@
 /* USAF Bomber Animation */
 /* USAF Bomber Animation - Split States */
 .usaf-bomber-static {
-    width: 96px;
-    height: 96px;
+    width: 150px;
+    height: 150px;
     background-size: contain;
     background-repeat: no-repeat;
     background-position: center;
-    background-image: url('/assets/images/korean-war/usaf_bomber_0.png');
+    background-image: url('/assets/images/korean-war/usaf_bomber_.png');
     filter: drop-shadow(0 20px 20px rgba(0, 0, 0, 0.6));
     transform-origin: center center;
 }
 
 @keyframes usafBomberFlyingAnim {
     0% {
-        background-image: url('/assets/images/korean-war/usaf_bomber_1.png');
+        background-image: url('/assets/images/korean-war/usaf_bomber_.png');
     }
 
     33% {
-        background-image: url('/assets/images/korean-war/usaf_bomber_2.png');
+        background-image: url('/assets/images/korean-war/usaf_bomber_.png');
     }
 
     66% {
-        background-image: url('/assets/images/korean-war/usaf_bomber_3.png');
+        background-image: url('/assets/images/korean-war/usaf_bomber_.png');
     }
 
     100% {
-        background-image: url('/assets/images/korean-war/usaf_bomber_1.png');
+        background-image: url('/assets/images/korean-war/usaf_bomber_.png');
     }
 }
 
