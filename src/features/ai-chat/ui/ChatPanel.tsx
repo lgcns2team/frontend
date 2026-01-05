@@ -3,6 +3,8 @@ import { type ParsedCharacter, fetchCharacterDetail } from '../../../shared/api/
 import { sendCharacterMessage } from '../../../shared/api/aichat-api';
 import { ERAS } from '../../../shared/config/era-theme';
 import './ChatPanel.css';
+import { createBrowserStt } from "../../../shared/api/browseStt"; // ✅ STT 추가
+
 
 interface ChatMessage {
     id: number;
@@ -16,7 +18,31 @@ interface ChatPanelProps {
     onCallStart: () => void;
 }
 
-export const ChatPanel = ({ character, onCallStart }: ChatPanelProps) => {
+export const ChatPanel = ({ character }: ChatPanelProps) => {
+
+    const [isListening, setIsListening] = useState(false);
+    const [interimText, setInterimText] = useState(""); // (선택) 실시간 자막 표시용
+
+    const sttRef = useRef<ReturnType<typeof createBrowserStt> | null>(null);
+
+    useEffect(() => {
+    sttRef.current = createBrowserStt("ko-KR", {
+        onStart: () => { setIsListening(true); },
+        onEnd: () => { setIsListening(false); setInterimText(""); },
+        onInterim: (t) => { setInterimText(t); },
+        onFinal: (t) => {
+        // 확정 텍스트를 input에 채움 (기존 입력 뒤에 붙이기)
+        setInput(prev => (prev ? `${prev} ${t}` : t));
+        },
+        onError: (e) => {
+        setIsListening(false);
+        setInterimText("");
+        console.error("[STT] error:", e);
+        alert("STT 오류/미지원 브라우저일 수 있어요: " + e);
+        }
+    });
+    }, []);
+
     const [input, setInput] = useState('');
     const [messages, setMessages] = useState<ChatMessage[]>([]);
     const [isLoading, setIsLoading] = useState(false);
@@ -301,6 +327,11 @@ export const ChatPanel = ({ character, onCallStart }: ChatPanelProps) => {
             </div>
 
             {/* 입력 영역 */}
+            {interimText && (
+            <div style={{ fontSize: 12, color: "#666", margin: "6px 0" }}>
+                (인식중) {interimText}
+            </div>
+            )}
             <div className="chat-input-area">
                 <input
                     type="text"
@@ -320,6 +351,27 @@ export const ChatPanel = ({ character, onCallStart }: ChatPanelProps) => {
                 >
                     ➤
                 </button>
+                <button
+                    className="chat-send-btn"
+                    onClick={() => {
+                        const stt = sttRef.current;
+                        if (!stt) return;
+
+                        if (!stt.isSupported) {
+                        alert("이 브라우저는 Web Speech STT를 지원하지 않습니다. (iOS Safari/Chrome일 수 있어요)");
+                        return;
+                        }
+
+                        if (!isListening) stt.start();
+                        else stt.stop();
+                    }}
+                    disabled={isLoading}
+                    style={{ backgroundColor: isListening ? "#999" : eraColor, marginLeft: 8 }}
+                    title={isListening ? "음성 인식 종료" : "음성 인식 시작"}
+                    >
+                    🎙️
+                    </button>
+
             </div>
 
         </div >
