@@ -4,6 +4,7 @@ import { sendCharacterMessage } from '../../../shared/api/aichat-api';
 import { ERAS } from '../../../shared/config/era-theme';
 import { CallPanel } from '../../ai-call';
 import './ChatPanel.css';
+import { getFormLabelUtilityClasses } from '@mui/material';
 
 interface ChatMessage {
     id: number;
@@ -20,7 +21,7 @@ export const ChatPanel = ({ character }: ChatPanelProps) => {
     const [input, setInput] = useState('');
     const [messages, setMessages] = useState<ChatMessage[]>([]);
     const [isLoading, setIsLoading] = useState(false);
-    const [isTTSEnabled, setIsTTSEnabled] = useState(false);
+    const [isTTSEnabled, setIsTTSEnabled] = useState(true);
     const [isCallPanelOpen, setIsCallPanelOpen] = useState(false);
 
     // TODO: TTS 기능은 나중에 백엔드 API로 연결 예정
@@ -68,10 +69,24 @@ export const ChatPanel = ({ character }: ChatPanelProps) => {
             chatBodyRef.current.scrollTop = chatBodyRef.current.scrollHeight;
         }
     }, [messages]);
+    const audioRef = useRef<HTMLAudioElement | null>(null);
 
     // 🆕 음성 재생 함수 (handleSend보다 위에 있어야 함)
     const playVoice = async (text: string) => {
+        console.log("TTS 함수 호출됨 현재 스위치 상태:", isTTSEnabled);
+        if(!isTTSEnabled) {
+            console.warn("TTS가 비활성화 상태라 종료합니다.");
+            return;
+        }
+
         try {
+
+            // 이전 재생 중인 음성이 있다면 정지
+            if (audioRef.current) {
+                audioRef.current.pause();
+                audioRef.current = null;
+            }
+
             const response = await fetch('http://127.0.0.1:8000/api/prompt/speak/', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -85,7 +100,12 @@ export const ChatPanel = ({ character }: ChatPanelProps) => {
                 const blob = await response.blob();
                 const url = window.URL.createObjectURL(blob);
                 const audio = new Audio(url);
-                audio.play();
+                audioRef.current = audio;
+
+                audio.onended = () => {
+                    window.URL.revokeObjectURL(url); // 메모리 해제
+                };
+                await audio.play();
             }
         } catch (error) {
             console.error("TTS 재생 실패:", error);
@@ -144,22 +164,21 @@ export const ChatPanel = ({ character }: ChatPanelProps) => {
             setIsLoading(false);
 
             // ✅ 정상 답변 완료 후 음성 재생
-            if (fullResponse) {
-                setTimeout(() => playVoice(fullResponse), 500);
+            if (fullResponse.trim()) {
+                playVoice(fullResponse);
             }
         } catch (error) {
             console.error('Send error:', error);
             const errorMsg = '오류가 발생했습니다. 다시 시도해주세요.';
             setMessages(prev => prev.map(msg =>
                 msg.id === botMsgId
-                    ? { ...msg, text: '죄송합니다. 오류가 발생했습니다..\n잠시 후 다시 시도해주세요.', isError: true }
+                    ? { ...msg, text: errorMsg, isError: true }
                     : msg
             ));
 
-            setIsLoading(false);
-
+            // 에러 상황에서도 사용자에게 알림 음성 제공 여부 결정
+            if (isTTSEnabled) playVoice("오류가 발생했습니다.");
             // ✅ 에러 메시지 음성 재생
-            playVoice(errorMsg);
         } finally {
             setIsLoading(false);
         }
