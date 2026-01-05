@@ -1235,12 +1235,11 @@ export default function HistoryMap() {
             {/* Characters Panel */}
             {activePanel === 'characters' && (
                 <CharactersPanel
-                    onCharacterSelect={(char) => {
+                    onCharacterClick={(char: any) => {
                         // Open chat only
                         setChatCharacter(char);
                         setActivePanel('character-chat');
                     }}
-                    onClose={() => setActivePanel(null)}
                 />
             )}
 
@@ -1283,11 +1282,11 @@ export default function HistoryMap() {
             {/* Character Chat Panel */}
             {activePanel === 'character-chat' && chatCharacter && (
                 <FloatingPanel
+                    isOpen={true}
                     title={`${chatCharacter.characterName}와의 대화`}
                     onClose={() => setActivePanel(null)}
                     width={400}
-                    height={600}
-                    position={{ x: 100, y: 100 }}
+                    currentYear={currentYear}
                 >
                     <ChatPanel
                         character={chatCharacter}
@@ -1317,6 +1316,12 @@ export default function HistoryMap() {
                     {chatCharacter ? (
                         <ChatPanel
                             character={chatCharacter}
+                            onCallStart={() => {
+                                setCallCharacter(chatCharacter);
+                                setIsCallPanelOpen(true);
+                                setIsConversationMode(false);
+                                setChatCharacter(null);
+                            }}
                         />
                     ) : (
                         <CharactersPanel

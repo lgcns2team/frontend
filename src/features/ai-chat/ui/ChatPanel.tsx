@@ -21,7 +21,6 @@ export const ChatPanel = ({ character, onCallStart }: ChatPanelProps) => {
     const [messages, setMessages] = useState<ChatMessage[]>([]);
     const [isLoading, setIsLoading] = useState(false);
     const [isTTSEnabled, setIsTTSEnabled] = useState(false);
-    const [currentGreeting, setCurrentGreeting] = useState('');
 
     {/* Call Panel Overlay removed */ }
     const typingBufferRef = useRef<string>('');
@@ -50,7 +49,6 @@ export const ChatPanel = ({ character, onCallStart }: ChatPanelProps) => {
             const finalGreeting = greeting || `안녕하세요. ${character.characterName}입니다. 무엇이 궁금하신가요?`;
 
             if (isMounted) {
-                setCurrentGreeting(finalGreeting);
                 setMessages([{
                     id: Date.now(),
                     text: finalGreeting,

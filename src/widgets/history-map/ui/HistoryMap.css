@@ -5,6 +5,7 @@
     overflow: hidden;
     font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, system-ui, Roboto, sans-serif;
     transition: all 0.5s ease;
+    background-color: #f9f7f1;
 }
 
 /* --- Dynamic Themes are now imported from shared/config/era-theme.css --- */
