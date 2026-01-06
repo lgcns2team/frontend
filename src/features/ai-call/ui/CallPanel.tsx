@@ -410,8 +410,8 @@ export const CallPanel = ({ characterName, characterImage, promptId, initialMess
         let fullResponse = '';
 
         // 🆕 스트리밍 TTS 시작 (스피커 ON일 때만)
-        const ttsController = isSpeaker 
-            ? startStreamingTts(() => startTypingLoop()) 
+        const ttsController = isSpeaker
+            ? startStreamingTts(() => startTypingLoop())
             : null;
 
         try {
@@ -634,12 +634,21 @@ export const CallPanel = ({ characterName, characterImage, promptId, initialMess
                                 setIsSpeaker(nextSpeaker);
 
                                 if (!nextSpeaker) {
-                                    // Turning OFF (Speaker Only) -> Stop current TTS
+                                    // Turning OFF (Speaker Only) -> Stop all audio immediately
+                                    console.log('🔇 [CallPanel] Speaker OFF -> Stopping TTS');
+
+                                    // 1. Stop Standard TTS
                                     if (ttsAudioRef.current) {
                                         ttsAudioRef.current.pause();
                                         ttsAudioRef.current = null;
-                                        setIsPlaying(false);
                                     }
+
+                                    // 2. Stop Streaming TTS (Clears queue and aborts fetches)
+                                    if (streamingTtsRef.current) {
+                                        streamingTtsRef.current.stop();
+                                    }
+
+                                    setIsPlaying(false);
                                 } else {
                                     // Turning ON -> Start STT ONLY if not muted
                                     if (!isMuted) {

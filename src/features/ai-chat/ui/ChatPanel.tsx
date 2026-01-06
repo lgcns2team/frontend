@@ -98,7 +98,7 @@ export const ChatPanel = ({ character, onCallStart }: ChatPanelProps) => {
         };
         initChat();
 
-        return () => { 
+        return () => {
             isMounted = false;
             // 🆕 캐릭터 변경 시 스트리밍 TTS 정리
             if (streamingTtsRef.current) {
@@ -259,10 +259,10 @@ export const ChatPanel = ({ character, onCallStart }: ChatPanelProps) => {
         setMessages(prev => [...prev, loadingMsg]);
 
         // 🆕 스트리밍 TTS 시작 (TTS가 켜져있을 때만)
-        const ttsController = isTTSEnabled 
+        const ttsController = isTTSEnabled
             ? startStreamingTts(() => {
                 // 첫 문장 재생 시작 시 타이핑 시작하지 않음 (이미 스트리밍 중 타이핑됨)
-            }) 
+            })
             : null;
 
         try {
@@ -377,7 +377,20 @@ export const ChatPanel = ({ character, onCallStart }: ChatPanelProps) => {
                         <button
                             className={`tts-btn ${isTTSEnabled ? 'tts-active' : ''}`}
                             onClick={() => {
-                                setIsTTSEnabled(!isTTSEnabled);
+                                const nextState = !isTTSEnabled;
+                                setIsTTSEnabled(nextState);
+                                if (!nextState) {
+                                    console.log('🔇 [ChatPanel] Speaker OFF -> Stopping TTS');
+                                    // 1. 일반 TTS 오디오 중단
+                                    if (audioRef.current) {
+                                        audioRef.current.pause();
+                                        audioRef.current = null;
+                                    }
+                                    // 2. 스트리밍 TTS 중단
+                                    if (streamingTtsRef.current) {
+                                        streamingTtsRef.current.stop();
+                                    }
+                                }
                             }}
                             title={isTTSEnabled ? 'TTS 끄기' : 'TTS 켜기'}
                         >
