@@ -199,6 +199,16 @@ export const ChatbotPanel = ({ onClose, initialPosition, initialSize, onStateCha
 
     // Audio Ref for controlling playback
     const audioRef = useRef<HTMLAudioElement | null>(null);
+    const ttsEnabledRef = useRef(isTTSEnabled);
+
+    // Sync ref and handle stop on disable
+    useEffect(() => {
+        ttsEnabledRef.current = isTTSEnabled;
+        if (!isTTSEnabled && audioRef.current) {
+            audioRef.current.pause();
+            audioRef.current = null;
+        }
+    }, [isTTSEnabled]);
 
     // 🆕 음성 재생 함수 (handleSend보다 위에 있어야 함)
     const playVoice = async (text: string) => {
@@ -229,7 +239,12 @@ export const ChatbotPanel = ({ onClose, initialPosition, initialSize, onStateCha
                     window.URL.revokeObjectURL(url);
                 };
 
-                audio.play();
+                // Play only if still enabled
+                if (ttsEnabledRef.current) {
+                    audio.play();
+                } else {
+                    window.URL.revokeObjectURL(url);
+                }
             }
         } catch (error) {
             console.error("TTS 재생 실패:", error);
@@ -279,6 +294,11 @@ export const ChatbotPanel = ({ onClose, initialPosition, initialSize, onStateCha
             if (typingIntervalRef.current !== null) {
                 window.clearInterval(typingIntervalRef.current);
             }
+            // ✅ Unmount 시 오디오 정지
+            if (audioRef.current) {
+                audioRef.current.pause();
+                audioRef.current = null;
+            }
         };
     }, []);
 
@@ -318,24 +338,6 @@ export const ChatbotPanel = ({ onClose, initialPosition, initialSize, onStateCha
             console.log('🚀 [DEBUG] Sending message to AI chat');
 
             await sendGeneralMessage(input, (text) => {
-                // Remove loading message and create bot message on first chunk
-                if (!botMessageCreated) {
-                    // Remove loading message
-                    setMessages(prev => prev.filter(msg => msg.id !== loadingMsgId));
-
-                    // Create new bot message
-                    const botMsgId = Date.now() + 2;
-                    currentBotMsgIdRef.current = botMsgId;
-
-                    const initialBotMsg: ChatMessage = {
-                        id: botMsgId,
-                        text: '',
-                        sender: 'bot'
-                    };
-                    setMessages(prev => [...prev, initialBotMsg]);
-                    botMessageCreated = true;
-                }
-
                 // Add text to typing buffer
                 let newText = text;
                 // If this is the start of the message (buffer empty) or just after loading removed
@@ -344,6 +346,24 @@ export const ChatbotPanel = ({ onClose, initialPosition, initialSize, onStateCha
                 }
 
                 if (newText) {
+                    // Create bot message only when we have actual text
+                    if (!botMessageCreated) {
+                        // Remove loading message
+                        setMessages(prev => prev.filter(msg => msg.id !== loadingMsgId));
+
+                        // Create new bot message
+                        const botMsgId = Date.now() + 2;
+                        currentBotMsgIdRef.current = botMsgId;
+
+                        const initialBotMsg: ChatMessage = {
+                            id: botMsgId,
+                            text: '',
+                            sender: 'bot'
+                        };
+                        setMessages(prev => [...prev, initialBotMsg]);
+                        botMessageCreated = true;
+                    }
+
                     typingBufferRef.current += newText;
                     fullResponse += newText;
                     console.log('✍️ [DEBUG] Added to typing buffer. Buffer now:', typingBufferRef.current.length, 'chars');
@@ -449,13 +469,6 @@ export const ChatbotPanel = ({ onClose, initialPosition, initialSize, onStateCha
                         className={`tts-btn ${isTTSEnabled ? 'tts-active' : ''}`}
                         onClick={(e) => {
                             e.stopPropagation();
-                            if (isTTSEnabled) {
-                                // 끄는 순간 재생 중인 오디오 정지
-                                if (audioRef.current) {
-                                    audioRef.current.pause();
-                                    audioRef.current = null;
-                                }
-                            }
                             setIsTTSEnabled(!isTTSEnabled);
                         }}
                         onMouseDown={(e) => e.stopPropagation()}

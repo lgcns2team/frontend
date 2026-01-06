@@ -285,93 +285,77 @@ export const useDiscussion = (roomId: string | undefined) => {
         // Fallback to message.sender if userId is missing (which seems to be the case for STATUS messages)
         const userKey = message.userId || message.sender;
 
-        if (userKey && (message.status || message.type === 'STATUS')) {
-            let voteSide: 'agree' | 'disagree' | null = null;
-            if (message.status === 'PRO') voteSide = 'agree';
-            else if (message.status === 'CON') voteSide = 'disagree';
-
-            if (voteSide) {
-                setParticipantVotes(prev => {
-                    if (prev[userKey] === voteSide) return prev;
-                    console.log(`🗳️ Updating vote for ${userKey}: ${voteSide}`);
-                    return { ...prev, [userKey]: voteSide! };
-                });
-            }
-        }
-
-        if (message.type === 'JOIN' || message.type === 'LEAVE') {
-            console.log('⏭️ Skipping JOIN/LEAVE message');
-            return;
-        }
-
-        // Handle END_SESSION messages - navigate students to map page
-        if (message.type === 'END_SESSION') {
-            console.log('🚪 END_SESSION received');
-            const userRole = localStorage.getItem('userRole');
-            if (userRole !== 'TEACHER') {
-                console.log('👨‍🎓 Student: navigating to map page');
-                localStorage.setItem('openPanel', 'discussion');
-                window.location.href = '/map';
-            }
-            return;
-        }
-
-        // Check for special mode change message sent via chat
-        if (message.content && typeof message.content === 'string' && message.content.startsWith('__MODE_CHANGE__:')) {
-            const nextMode = message.content.replace('__MODE_CHANGE__:', '');
-            console.log('📢 MODE_CHANGE detected via chat:', nextMode);
-            setViewMode(nextMode as any);
-
-            // Auto-vote logic for students when moving past 'vote' stage
-            if (nextMode !== 'vote') {
-                setVote(prevVote => {
-                    if (prevVote === null) {
-                        const randomVote = Math.random() < 0.5 ? 'agree' : 'disagree';
-                        console.log(`🔄 Auto-voting as '${randomVote}' for user who hadn't voted yet.`);
-                        return randomVote;
-                    }
-                    return prevVote;
-                });
-            }
-            return; // Don't display this as a chat message
-        }
-
-        // Check for VOTE message via chat
-        if (message.content && typeof message.content === 'string' && message.content.startsWith('__VOTE__:')) {
-            const voteSideStr = message.content.replace('__VOTE__:', '');
-            console.log('🗳️ VOTE detected via chat:', voteSideStr, 'from:', message.sender);
-
-            const userKey = message.userId || message.sender;
-            if (userKey) {
+        // Unified Status Handling
+        if (message.status) {
+            if (message.status === 'CANCEL') {
+                console.log(`🗳️ Vote cancelled for ${userKey}`);
                 setParticipantVotes(prev => {
                     const newVotes = { ...prev };
-                    if (voteSideStr === 'cancel') {
-                        delete newVotes[userKey];
-                        return newVotes;
-                    }
-
-                    if (voteSideStr === 'agree' || voteSideStr === 'disagree') {
-                        newVotes[userKey] = voteSideStr as 'agree' | 'disagree';
-                        return newVotes;
-                    }
-                    return prev;
+                    delete newVotes[userKey];
+                    return newVotes;
                 });
+                return;
             }
-            return; // Don't display
+
+            if (message.status === 'MODE_CHANGE') {
+                const nextMode = message.content;
+                console.log('📢 MODE_CHANGE detected from status:', nextMode);
+                setViewMode(nextMode as any);
+                // Auto-vote logic for students when moving past 'vote' stage
+                if (nextMode !== 'vote') {
+                    setVote(prevVote => {
+                        if (prevVote === null) {
+                            const randomVote = Math.random() < 0.5 ? 'agree' : 'disagree';
+                            console.log(`🔄 Auto-voting as '${randomVote}'`);
+                            return randomVote;
+                        }
+                        return prevVote;
+                    });
+                }
+                return;
+            }
+
+            if (message.status === 'ANONYMOUS') {
+                const anonSignal = message.content; // "ON" or "OFF"
+                console.log('🕵️ ANONYMOUS status detected:', anonSignal);
+                setIsAnonymous(anonSignal === 'ON');
+                return;
+            }
+
+            if (message.status === 'END_SESSION') {
+                console.log('🚪 END_SESSION status received');
+                const userRole = localStorage.getItem('userRole');
+                if (userRole !== 'TEACHER') {
+                    localStorage.setItem('openPanel', 'discussion');
+                    window.location.href = '/map';
+                }
+                return;
+            }
+
+            if (message.status === 'PRO' || message.status === 'CON') {
+                const voteSide = message.status === 'PRO' ? 'agree' : 'disagree';
+                if (userKey) {
+                    setParticipantVotes(prev => {
+                        if (prev[userKey] === voteSide) return prev;
+                        console.log(`🗳️ Updating vote for ${userKey}: ${voteSide}`);
+                        return { ...prev, [userKey]: voteSide };
+                    });
+                }
+                // Don't return, let it fall through to chat processing if it has content (though usually status msgs don't have chat content)
+                if (!message.content || message.type !== 'CHAT') return;
+            }
         }
 
-        // Check for ANONYMOUS message via chat
-        if (message.content && typeof message.content === 'string' && message.content.startsWith('__ANONYMOUS__:')) {
-            const anonSignal = message.content.replace('__ANONYMOUS__:', '');
-            console.log('🕵️ ANONYMOUS signal detected:', anonSignal);
-            if (anonSignal === 'ON') setIsAnonymous(true);
-            else if (anonSignal === 'OFF') setIsAnonymous(false);
-            return; // Don't display
+        // Backward compatibility checks (Cleaned up as we use status now, but keeping minimal safety if needed, or remove)
+        // ... (Removing legacy magic string checks as requested for full refactor)
+
+        if (message.type === 'JOIN' || message.type === 'LEAVE') {
+            // ...
+            return;
         }
 
-        // Skip STATUS messages (they're for internal state management)
-        if (message.type === 'STATUS') {
-            console.log('⏭️ Skipping STATUS message');
+        // Skip pure STATUS messages (already handled above)
+        if (message.type === 'STATUS' && !message.content) {
             return;
         }
 
@@ -501,17 +485,16 @@ export const useDiscussion = (roomId: string | undefined) => {
         );
     };
 
-    // Non-persisting system signal (no type: 'CHAT')
-    const sendSystemSignal = (signalContent: string) => {
+    // Send anonymous status
+    const sendAnonymousStatus = (enabled: boolean) => {
         if (!roomId || !isConnected) return;
-        console.log('📤 Sending system signal (no persist):', signalContent);
+        console.log('📤 Sending ANONYMOUS status:', enabled);
         sendMessage(
-            "/app/room/" + roomId + "/chat",
+            "/app/room/" + roomId + "/status",
             {
-                content: signalContent,
-                status: 'PRO',
+                status: 'ANONYMOUS',
+                content: enabled ? 'ON' : 'OFF',
                 userId: userId,
-                sender: username,
             }
         );
     };
@@ -542,17 +525,16 @@ export const useDiscussion = (roomId: string | undefined) => {
         setViewMode(nextMode as any);
         console.log('✅ Local viewMode updated to:', nextMode);
 
-        // Send as CHAT message with special format for students to detect
-        console.log('📤 Sending MODE_CHANGE message with userId:', userId);
+        // Send to dedicated status endpoint
+        console.log('📤 Sending MODE_CHANGE status with userId:', userId);
         sendMessage(
-            "/app/room/" + roomId + "/chat",
+            "/app/room/" + roomId + "/status",
             {
-                content: `__MODE_CHANGE__:${nextMode}`,
-                status: 'PRO',
+                status: 'MODE_CHANGE',
+                content: nextMode,
                 userId: userId,
             }
         );
-        console.log('✅ Mode change message sent via chat:', nextMode);
     };
 
     const sendEndSession = () => {
@@ -562,18 +544,15 @@ export const useDiscussion = (roomId: string | undefined) => {
             return;
         }
 
-        console.log('📤 Sending END_SESSION message (no persist)');
-        // Omit type to prevent DB save
+        console.log('📤 Sending END_SESSION status');
         sendMessage(
-            "/app/room/" + roomId + "/chat",
+            "/app/room/" + roomId + "/status",
             {
-                content: '__END_SESSION__',
-                status: 'PRO',
+                status: 'END_SESSION',
                 userId: userId,
-                sender: username,
             }
         );
-        console.log('✅ End session message sent');
+        console.log('✅ End session status sent');
     };
 
     const setVoteLocal = (v: 'agree' | 'disagree' | null) => {
@@ -588,28 +567,22 @@ export const useDiscussion = (roomId: string | undefined) => {
     const broadcastVote = (selectedVote: 'agree' | 'disagree' | null) => {
         if (!roomId || !isConnected) return;
 
-        let content = '';
-        let status = 'PRO'; // Default fallback, backend might require one of PRO/CON
+        console.log('📤 Broadcasting vote:', selectedVote || 'CANCEL');
 
         if (selectedVote === null) {
-            content = '__VOTE__:cancel';
+            // Cancel via status endpoint (Works before discussion start)
+            sendMessage(
+                "/app/room/" + roomId + "/status",
+                { status: 'CANCEL', userId: userId }
+            );
         } else {
-            content = `__VOTE__:${selectedVote}`;
-            status = selectedVote === 'agree' ? 'PRO' : 'CON';
+            // Send PRO/CON status to /status endpoint (Works before discussion start)
+            const status = selectedVote === 'agree' ? 'PRO' : 'CON';
+            sendMessage(
+                "/app/room/" + roomId + "/status",
+                { status: status, userId: userId }
+            );
         }
-
-        console.log('📤 Broadcasting vote (no persist):', selectedVote || 'CANCEL');
-
-        // Omit type: 'CHAT' to prevent DB save (same as sendModeChange)
-        sendMessage(
-            "/app/room/" + roomId + "/chat",
-            {
-                content: content,
-                status: status,
-                userId: userId,
-                sender: username
-            }
-        );
     };
 
     return {
@@ -630,7 +603,7 @@ export const useDiscussion = (roomId: string | undefined) => {
         broadcastVote,
         setViewMode,
         sendChat,
-        sendSystemSignal,
+        sendAnonymousStatus,
         sendVoteStatus, // This combines setting vote (if needed) and sending status
         sendModeChange,
         sendEndSession,

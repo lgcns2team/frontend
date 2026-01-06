@@ -106,10 +106,23 @@ export const ChatPanel = ({ character, onCallStart }: ChatPanelProps) => {
         }
     }, [messages]);
     const audioRef = useRef<HTMLAudioElement | null>(null);
+    const ttsEnabledRef = useRef(isTTSEnabled);
+    const isMountedRef = useRef(true); // ✅ 마운트 상태 추적
+
+    useEffect(() => {
+        ttsEnabledRef.current = isTTSEnabled;
+        if (!isTTSEnabled && audioRef.current) {
+            audioRef.current.pause();
+            audioRef.current = null;
+        }
+    }, [isTTSEnabled]);
 
     // 🆕 음성 재생 함수 (handleSend보다 위에 있어야 함)
     const playVoice = async (text: string) => {
-        console.log("TTS 함수 호출됨 현재 스위치 상태:", isTTSEnabled); 
+        // Unmounted check
+        if (!isMountedRef.current) return;
+
+        console.log("TTS 함수 호출됨 현재 스위치 상태:", isTTSEnabled);
         if (!isTTSEnabled) {
             // TTS가 꺼져있을 때는 바로 타이핑 시작
             startTypingLoop();
@@ -117,7 +130,7 @@ export const ChatPanel = ({ character, onCallStart }: ChatPanelProps) => {
         }
 
         try {
-            if(isTTSEnabled) {
+            if (isTTSEnabled) {
                 const response = await fetch('http://127.0.0.1:8000/api/prompt/speak/', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
@@ -131,11 +144,17 @@ export const ChatPanel = ({ character, onCallStart }: ChatPanelProps) => {
                     const blob = await response.blob();
                     const url = window.URL.createObjectURL(blob);
                     const audio = new Audio(url);
-                    // audio.play();
+                    audioRef.current = audio; // ✅ 참조에 할당해야 stop 가능
+
                     audio.onplay = () => {
                         startTypingLoop();
                     }
-                    audio.play();
+                    if (ttsEnabledRef.current) {
+                        audio.play();
+                    } else {
+                        // Playback disabled while fetching
+                        startTypingLoop();
+                    }
                 }
             } else {
                 console.log("TTS 스위치가 꺼져 있어 음성을 생성하지 않고 로직을 계속합니다.");
@@ -181,33 +200,69 @@ export const ChatPanel = ({ character, onCallStart }: ChatPanelProps) => {
         setInput('');
         setIsLoading(true);
 
-        const botMsgId = Date.now() + 1;
-        const initialBotMsg: ChatMessage = { id: botMsgId, text: '', sender: 'bot' };
-        setMessages(prev => [...prev, initialBotMsg]);
-
-        currentBotMsgIdRef.current = botMsgId;
+        // Buffer initialization
         typingBufferRef.current = '';
         let fullResponse = '';
+        let botMessageCreated = false;
+
+        // Add loading indicator message
+        const loadingMsgId = Date.now() + 1;
+        const loadingMsg: ChatMessage = { id: loadingMsgId, text: 'loading', sender: 'bot' };
+        setMessages(prev => [...prev, loadingMsg]);
 
         try {
             await sendCharacterMessage(character.promptId!, msgToSend, (text) => {
-                fullResponse += text;
-                typingBufferRef.current += text;
+                let newText = text;
+
+                // If this is the start and we have text, initiate bot message
+                if (newText) {
+                    if (!botMessageCreated) {
+                        // Remove loading message
+                        setMessages(prev => prev.filter(msg => msg.id !== loadingMsgId));
+
+                        // Create new bot message
+                        const botMsgId = Date.now() + 2;
+                        currentBotMsgIdRef.current = botMsgId;
+                        const initialBotMsg: ChatMessage = { id: botMsgId, text: '', sender: 'bot' };
+                        setMessages(prev => [...prev, initialBotMsg]);
+
+                        botMessageCreated = true;
+
+                        // Trim leading whitespace if it's the very first chunk
+                        if (fullResponse.length === 0) {
+                            newText = newText.trimStart();
+                        }
+                    }
+
+                    fullResponse += newText;
+                    typingBufferRef.current += newText;
+
+                    // Start typing loop if not running
+                    startTypingLoop();
+                }
             });
-            // setIsLoading(false); // Removed immediate call, rely on finally or playVoice logic
+            // setIsLoading(false); // Rely on finally
 
             // ✅ 정상 답변 완료 후 음성 재생
             if (fullResponse) {
-                setTimeout(() => playVoice(fullResponse), 500);
+                setTimeout(() => {
+                    if (isMountedRef.current) {
+                        playVoice(fullResponse);
+                    }
+                }, 500);
             }
         } catch (error) {
             console.error('Send error:', error);
             const errorMsg = '오류가 발생했습니다. 다시 시도해주세요.';
-            setMessages(prev => prev.map(msg =>
-                msg.id === botMsgId
-                    ? { ...msg, text: errorMsg, isError: true }
-                    : msg
-            ));
+
+            const targetId = currentBotMsgIdRef.current;
+            if (targetId) {
+                setMessages(prev => prev.map(msg =>
+                    msg.id === targetId
+                        ? { ...msg, text: errorMsg, isError: true }
+                        : msg
+                ));
+            }
 
             // 에러 상황에서도 사용자에게 알림 음성 제공 여부 결정
             if (isTTSEnabled) playVoice("오류가 발생했습니다.");
@@ -225,8 +280,22 @@ export const ChatPanel = ({ character, onCallStart }: ChatPanelProps) => {
     };
 
     useEffect(() => {
+        console.log('🏁 [ChatPanel] Mounted');
+        isMountedRef.current = true;
+
         return () => {
+            console.log('📉 [ChatPanel] Unmounting... Clean up audio');
+            isMountedRef.current = false;
+
             if (typingIntervalRef.current !== null) window.clearInterval(typingIntervalRef.current);
+            // ✅ Unmount 시 오디오 정지
+            if (audioRef.current) {
+                console.log('🔇 [ChatPanel] Stopping audio on unmount');
+                audioRef.current.pause();
+                audioRef.current = null;
+            } else {
+                console.log('⚠️ [ChatPanel] No active audio to stop');
+            }
         };
     }, []);
 
@@ -253,13 +322,6 @@ export const ChatPanel = ({ character, onCallStart }: ChatPanelProps) => {
                         <button
                             className={`tts-btn ${isTTSEnabled ? 'tts-active' : ''}`}
                             onClick={() => {
-                                if (isTTSEnabled) {
-                                    // 끄는 순간 재생 중인 오디오 정지
-                                    if (audioRef.current) {
-                                        audioRef.current.pause();
-                                        audioRef.current = null;
-                                    }
-                                }
                                 setIsTTSEnabled(!isTTSEnabled);
                             }}
                             title={isTTSEnabled ? 'TTS 끄기' : 'TTS 켜기'}
@@ -305,7 +367,7 @@ export const ChatPanel = ({ character, onCallStart }: ChatPanelProps) => {
                             key={msg.id}
                             className={`chat-message ${msg.sender}`}
                         >
-                            {msg.sender === 'bot' && msg.text === '' && isLoading ? (
+                            {(msg.text === 'loading' || (msg.sender === 'bot' && msg.text === '' && isLoading)) ? (
                                 <div className="chat-typing">
                                     <span className="dot"></span>
                                     <span className="dot"></span>
