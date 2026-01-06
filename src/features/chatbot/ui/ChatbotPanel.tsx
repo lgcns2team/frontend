@@ -197,7 +197,6 @@ export const ChatbotPanel = ({ onClose, initialPosition, initialSize, onStateCha
 
     // TODO: TTS 기능은 나중에 백엔드 API로 연결 예정
 
-    // 🆕 음성 재생 함수 (handleSend보다 위에 있어야 함)
     // Audio Ref for controlling playback
     const audioRef = useRef<HTMLAudioElement | null>(null);
 
@@ -212,12 +211,11 @@ export const ChatbotPanel = ({ onClose, initialPosition, initialSize, onStateCha
                 audioRef.current = null;
             }
 
-            const response = await fetch('http://127.0.0.1:8000/api/prompt/speak/', {
+            const response = await fetch('http://127.0.0.1:8000/api/knowledge/speak/', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
-                    text: text.replace(/\([^)]*\)/g, ''),
-                    promptId: 'J791UNXAHE'
+                    text: text.replace(/\([^)]*\)/g, '')
                 })
             });
 
