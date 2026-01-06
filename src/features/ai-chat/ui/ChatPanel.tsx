@@ -71,6 +71,7 @@ export const ChatPanel = ({ character }: ChatPanelProps) => {
 
     // 🆕 음성 재생 함수 (handleSend보다 위에 있어야 함)
     const playVoice = async (text: string) => {
+        console.log("TTS 함수 호출됨 현재 스위치 상태:", isTTSEnabled); 
         try {
             const response = await fetch('http://127.0.0.1:8000/api/prompt/speak/', {
                 method: 'POST',
