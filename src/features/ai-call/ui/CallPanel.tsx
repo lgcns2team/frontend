@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import { sendCharacterMessage } from '../../../shared/api/aichat-api';
 import { fetchCharacterDetail } from '../../../shared/api/characters-api';
 import { createBrowserStt } from "../../../shared/api/browseStt";
+import { createStreamingTts, type StreamingTtsController } from '../../../shared/api/streamingTts';
 import './CallPanel.css';
 
 
@@ -46,6 +47,9 @@ export const CallPanel = ({ characterName, characterImage, promptId, initialMess
     const startAudioRef = useRef<HTMLAudioElement | null>(null);
     const endAudioRef = useRef<HTMLAudioElement | null>(null);
     const ttsAudioRef = useRef<HTMLAudioElement | null>(null);
+
+    // Streaming TTS Controller Ref
+    const streamingTtsRef = useRef<StreamingTtsController | null>(null);
 
     // Component Mounted State
     const isMountedRef = useRef(true);
@@ -123,6 +127,12 @@ export const CallPanel = ({ characterName, characterImage, promptId, initialMess
                 ttsAudioRef.current = null;
             }
 
+            // 🆕 Cleanup streaming TTS
+            if (streamingTtsRef.current) {
+                streamingTtsRef.current.destroy();
+                streamingTtsRef.current = null;
+            }
+
             // Deliberately NOT pausing endAudioRef to let it finish playing after unmount
         };
     }, []);
@@ -159,7 +169,7 @@ export const CallPanel = ({ characterName, characterImage, promptId, initialMess
         onClose();
     };
 
-    // 음성 재생 함수
+    // 음성 재생 함수 (단일 텍스트용 - 인사말 등)
     const playVoice = async (text: string, onPlay?: () => void) => {
         // 스피커가 꺼져있으면 재생 안함
         if (!isSpeaker) {
@@ -248,11 +258,53 @@ export const CallPanel = ({ characterName, characterImage, promptId, initialMess
         }
     };
 
+    // 🆕 스트리밍 TTS 시작 함수 (AI 응답용)
+    const startStreamingTts = (onFirstPlay?: () => void, onAllDone?: () => void): StreamingTtsController | null => {
+        if (!isSpeaker || !promptId) {
+            onFirstPlay?.();
+            return null;
+        }
+
+        // 이전 스트리밍 TTS 정리
+        if (streamingTtsRef.current) {
+            streamingTtsRef.current.destroy();
+        }
+
+        // Speaking -> Stop Listening
+        sttRef.current?.stop();
+        setIsPlaying(true);
+
+        const controller = createStreamingTts({
+            promptId: promptId,
+            ttsApiUrl: 'http://127.0.0.1:8000/api/prompt/speak/',
+            onFirstPlay: () => {
+                console.log('🎵 [CallPanel] First sentence playing');
+                onFirstPlay?.();
+            },
+            onAllDone: () => {
+                console.log('✅ [CallPanel] All TTS done');
+                setIsPlaying(false);
+                // Bot finished -> Auto Start STT
+                if (isMountedRef.current && !isMuted) {
+                    sttRef.current?.start();
+                }
+                onAllDone?.();
+            },
+            onError: (error) => {
+                console.error('❌ [CallPanel] Streaming TTS error:', error);
+            }
+        });
+
+        streamingTtsRef.current = controller;
+        return controller;
+    };
+
     const [currentGreeting, setCurrentGreeting] = useState(initialMessage);
 
     // 초기 인사말 설정
     useEffect(() => {
         let isMounted = true;
+
 
         const setupGreeting = async () => {
             let greeting = initialMessage;
@@ -357,23 +409,30 @@ export const CallPanel = ({ characterName, characterImage, promptId, initialMess
 
         let fullResponse = '';
 
+        // 🆕 스트리밍 TTS 시작 (스피커 ON일 때만)
+        const ttsController = isSpeaker 
+            ? startStreamingTts(() => startTypingLoop()) 
+            : null;
+
         try {
             await sendCharacterMessage(promptId, msgToSend, (text) => {
                 fullResponse += text;
                 typingBufferRef.current += text;
 
-                // 스피커가 꺼져있으면 즉시 타이핑, 켜져있으면 음성 대기
+                // 🆕 스트리밍 TTS: 문장 단위로 TTS 큐에 추가
+                if (ttsController) {
+                    ttsController.addSentence(text);
+                }
+
+                // 스피커가 꺼져있으면 즉시 타이핑
                 if (!isSpeaker) {
                     startTypingLoop();
                 }
             });
 
-            // 답변 완료 후 음성 재생
-            if (fullResponse) {
-                if (isSpeaker) {
-                    // 음성 재생 시점에 타이핑 시작
-                    await playVoice(fullResponse, () => startTypingLoop());
-                }
+            // 🆕 스트리밍 완료 - 남은 버퍼 처리
+            if (ttsController) {
+                ttsController.flush();
             }
         } catch (error) {
             console.error('Send error:', error);

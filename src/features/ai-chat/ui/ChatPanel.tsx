@@ -4,6 +4,7 @@ import { sendCharacterMessage } from '../../../shared/api/aichat-api';
 import { ERAS } from '../../../shared/config/era-theme';
 import './ChatPanel.css';
 import { createBrowserStt } from "../../../shared/api/browseStt"; // ✅ STT 추가
+import { createStreamingTts, type StreamingTtsController } from '../../../shared/api/streamingTts'; // ✅ 스트리밍 TTS 추가
 
 
 interface ChatMessage {
@@ -64,6 +65,9 @@ export const ChatPanel = ({ character, onCallStart }: ChatPanelProps) => {
     const currentBotMsgIdRef = useRef<number | null>(null);
     const chatBodyRef = useRef<HTMLDivElement>(null);
 
+    // 🆕 Streaming TTS Controller Ref
+    const streamingTtsRef = useRef<StreamingTtsController | null>(null);
+
     // 캐릭터 변경 시 초기화
     useEffect(() => {
         let isMounted = true;
@@ -94,9 +98,15 @@ export const ChatPanel = ({ character, onCallStart }: ChatPanelProps) => {
         };
         initChat();
 
-        return () => { isMounted = false; };
+        return () => { 
+            isMounted = false;
+            // 🆕 캐릭터 변경 시 스트리밍 TTS 정리
+            if (streamingTtsRef.current) {
+                streamingTtsRef.current.destroy();
+                streamingTtsRef.current = null;
+            }
+        };
     }, [character.characterId, character.characterName, character.promptId]);
-
 
 
     // 메시지 추가 시 스크롤 하단 이동
@@ -111,13 +121,51 @@ export const ChatPanel = ({ character, onCallStart }: ChatPanelProps) => {
 
     useEffect(() => {
         ttsEnabledRef.current = isTTSEnabled;
-        if (!isTTSEnabled && audioRef.current) {
-            audioRef.current.pause();
-            audioRef.current = null;
+        if (!isTTSEnabled) {
+            // TTS 꺼지면 기존 오디오 정지
+            if (audioRef.current) {
+                audioRef.current.pause();
+                audioRef.current = null;
+            }
+            // 스트리밍 TTS도 정지
+            if (streamingTtsRef.current) {
+                streamingTtsRef.current.stop();
+            }
         }
     }, [isTTSEnabled]);
 
-    // 🆕 음성 재생 함수 (handleSend보다 위에 있어야 함)
+    // 🆕 스트리밍 TTS 시작 함수
+    const startStreamingTts = (onFirstPlay?: () => void): StreamingTtsController | null => {
+        if (!isTTSEnabled || !character.promptId) {
+            onFirstPlay?.();
+            return null;
+        }
+
+        // 이전 스트리밍 TTS 정리
+        if (streamingTtsRef.current) {
+            streamingTtsRef.current.destroy();
+        }
+
+        const controller = createStreamingTts({
+            promptId: character.promptId,
+            ttsApiUrl: 'http://127.0.0.1:8000/api/prompt/speak/',
+            onFirstPlay: () => {
+                console.log('🎵 [ChatPanel] First sentence playing');
+                onFirstPlay?.();
+            },
+            onAllDone: () => {
+                console.log('✅ [ChatPanel] All TTS done');
+            },
+            onError: (error) => {
+                console.error('❌ [ChatPanel] Streaming TTS error:', error);
+            }
+        });
+
+        streamingTtsRef.current = controller;
+        return controller;
+    };
+
+    // 🆕 음성 재생 함수 (단일 텍스트용 - 인사말 등에 사용)
     const playVoice = async (text: string) => {
         // Unmounted check
         if (!isMountedRef.current) return;
@@ -210,6 +258,13 @@ export const ChatPanel = ({ character, onCallStart }: ChatPanelProps) => {
         const loadingMsg: ChatMessage = { id: loadingMsgId, text: 'loading', sender: 'bot' };
         setMessages(prev => [...prev, loadingMsg]);
 
+        // 🆕 스트리밍 TTS 시작 (TTS가 켜져있을 때만)
+        const ttsController = isTTSEnabled 
+            ? startStreamingTts(() => {
+                // 첫 문장 재생 시작 시 타이핑 시작하지 않음 (이미 스트리밍 중 타이핑됨)
+            }) 
+            : null;
+
         try {
             await sendCharacterMessage(character.promptId!, msgToSend, (text) => {
                 let newText = text;
@@ -237,19 +292,19 @@ export const ChatPanel = ({ character, onCallStart }: ChatPanelProps) => {
                     fullResponse += newText;
                     typingBufferRef.current += newText;
 
+                    // 🆕 스트리밍 TTS: 문장 단위로 TTS 큐에 추가
+                    if (ttsController) {
+                        ttsController.addSentence(newText);
+                    }
+
                     // Start typing loop if not running
                     startTypingLoop();
                 }
             });
-            // setIsLoading(false); // Rely on finally
 
-            // ✅ 정상 답변 완료 후 음성 재생
-            if (fullResponse) {
-                setTimeout(() => {
-                    if (isMountedRef.current) {
-                        playVoice(fullResponse);
-                    }
-                }, 500);
+            // 🆕 스트리밍 완료 - 남은 버퍼 처리
+            if (ttsController) {
+                ttsController.flush();
             }
         } catch (error) {
             console.error('Send error:', error);
