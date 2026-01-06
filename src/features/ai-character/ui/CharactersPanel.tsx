@@ -19,6 +19,8 @@ export const CharactersPanel = ({ onYearChange, onCharacterClick, currentYear = 
     const fetchedDetailsRef = useRef<Set<string>>(new Set());
 
     useEffect(() => {
+        if (isGuestUser()) return;
+
         const loadCharacters = async () => {
             try {
                 console.log("Fetching characters...");

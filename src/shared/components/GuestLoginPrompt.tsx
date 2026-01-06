@@ -8,7 +8,7 @@ interface GuestLoginPromptProps {
 /**
  * 게스트 사용자에게 로그인 유도 화면을 표시하는 컴포넌트
  * - "로그인 시에만 사용 가능한 기능입니다" 메시지
- * - "로그인 하기" 버튼 (게스트 로그인 버튼과 같은 스타일)
+ * - "로그인 하기" 버튼 (게스트 로그인 버튼과 같은 스타일)  
  */
 export const GuestLoginPrompt = ({ featureName }: GuestLoginPromptProps) => {
     const navigate = useNavigate();
@@ -17,7 +17,7 @@ export const GuestLoginPrompt = ({ featureName }: GuestLoginPromptProps) => {
         // 로그아웃 처리 (userRole 제거)
         localStorage.removeItem('userRole');
         localStorage.removeItem('userName');
-        navigate('/');
+        navigate('/login');
     };
 
     return (
