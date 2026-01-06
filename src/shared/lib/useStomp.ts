@@ -411,6 +411,23 @@ export const useDiscussion = (roomId: string | undefined) => {
             console.log('🔗 onConnect callback triggered, roomId:', roomId);
             if (!roomId) return;
 
+            // moderation 알림 구독 추가
+            subscribe('/user/queue/moderation', (msg) => {
+                try {
+                const payload = JSON.parse(msg.body);
+                console.log('Moderation event:', payload);
+
+                if (payload.type === 'warning') {
+                    alert(payload.notice);
+                } else if (payload.type === 'blocked') {
+                    alert(payload.notice);
+                    // TODO: 입력창 잠금 + 카운트다운
+                }
+                } catch (e) {
+                console.warn('Moderation message parse failed:', msg.body);
+                }
+            });
+
             const subscription = subscribe('/topic/room/' + roomId, (chatMessage) => {
                 console.log('📨 Raw WebSocket message received:', chatMessage);
                 const parsed = JSON.parse(chatMessage.body);
