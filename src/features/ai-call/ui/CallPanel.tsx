@@ -410,8 +410,13 @@ export const CallPanel = ({ characterName, characterImage, promptId, initialMess
         let fullResponse = '';
 
         // 🆕 스트리밍 TTS 시작 (스피커 ON일 때만)
+        let audioStarted = false; // 오디오 재생 시작 여부 추적
+
         const ttsController = isSpeaker
-            ? startStreamingTts(() => startTypingLoop())
+            ? startStreamingTts(() => {
+                audioStarted = true;
+                startTypingLoop();
+            })
             : null;
 
         try {
@@ -422,6 +427,11 @@ export const CallPanel = ({ characterName, characterImage, promptId, initialMess
                 // 🆕 스트리밍 TTS: 문장 단위로 TTS 큐에 추가
                 if (ttsController) {
                     ttsController.addSentence(text);
+
+                    // 오디오가 이미 시작된 상태라면, 버퍼가 비어서 루프가 꺼졌을 수 있으므로 다시 시작
+                    if (audioStarted) {
+                        startTypingLoop();
+                    }
                 }
 
                 // 스피커가 꺼져있으면 즉시 타이핑
