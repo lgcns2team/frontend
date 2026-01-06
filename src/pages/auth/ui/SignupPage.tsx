@@ -128,7 +128,7 @@ const SignupPage = () => {
 
             await authApi.signup(signupData);
             alert('회원가입이 완료되었습니다. 로그인해주세요.');
-            navigate('/');
+            navigate('/login');
         } catch (err: any) {
             console.error('Signup failed:', err);
             setError(err.message || '회원가입에 실패했습니다.');
@@ -285,7 +285,7 @@ const SignupPage = () => {
                             <Box sx={{ textAlign: 'center' }}>
                                 <Typography variant="body2" color="text.secondary">
                                     이미 계정이 있으신가요?{' '}
-                                    <Link component={RouterLink} to="/" variant="body2" underline="hover" fontWeight="600" sx={{ color: colors.accent }}>
+                                    <Link component={RouterLink} to="/login" variant="body2" underline="hover" fontWeight="600" sx={{ color: colors.accent }}>
                                         로그인
                                     </Link>
                                 </Typography>
