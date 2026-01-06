@@ -15,7 +15,7 @@ export const PrivateRoute = ({ children }: PrivateRouteProps) => {
 
     // userRole이 없으면 로그인 페이지로 리다이렉트
     if (!userRole) {
-        return <Navigate to="/" state={{ from: location }} replace />;
+        return <Navigate to="/login" state={{ from: location }} replace />;
     }
 
     return <>{children}</>;

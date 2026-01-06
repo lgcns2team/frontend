@@ -16,7 +16,7 @@ body {
     /* 진한 갈색 */
     --ui-border: #D7C0AE;
     --ui-accent: #8d6e63;
-    background-color: #f5f0eb;
+    --ui-accent: #8d6e63;
 }
 
 /* 2. 원삼국 (Light Olive Green) #E2E8F0 -> 약간 흙빛 섞인 올리브로 조정 */
@@ -28,7 +28,8 @@ body {
     --ui-border: #cbd5e1;
     --ui-accent: #64748b;
     /* 차분한 슬레이트 블루/그레이 */
-    background-color: #f1f5f1;
+    --ui-accent: #64748b;
+    /* 차분한 슬레이트 블루/그레이 */
 }
 
 /* 3. 삼국시대 (Coral Red) #FDA4AF - 활기찬 느낌 */
@@ -40,7 +41,7 @@ body {
     /* 깊은 레드 와인 */
     --ui-border: #FDA4AF;
     --ui-accent: #e11d48;
-    background-color: #fff1f2;
+    --ui-accent: #e11d48;
 }
 
 /* 4. 남북국시대 (Amber Gold) #FCD34D - 화려함 */
@@ -52,7 +53,7 @@ body {
     /* 짙은 앰버 브라운 */
     --ui-border: #FCD34D;
     --ui-accent: #d97706;
-    background-color: #fffbeb;
+    --ui-accent: #d97706;
 }
 
 /* 5. 고려시대 (Celadon Green) #5EEAD4 - 청자색 */
@@ -64,7 +65,7 @@ body {
     /* 깊은 청록색 */
     --ui-border: #5EEAD4;
     --ui-accent: #0d9488;
-    background-color: #f0fdfa;
+    --ui-accent: #0d9488;
 }
 
 /* 6. 조선시대 (Sky Blue/Indigo) #93C5FD - 청렴함 */
@@ -76,7 +77,7 @@ body {
     /* 짙은 쪽빛 */
     --ui-border: #93C5FD;
     --ui-accent: #2563eb;
-    background-color: #eff6ff;
+    --ui-accent: #2563eb;
 }
 
 /* 7. 대한제국 (Royal Purple) #C084FC - 황실 */
@@ -88,7 +89,7 @@ body {
     /* 로얄 퍼플 텍스트 */
     --ui-border: #C084FC;
     --ui-accent: #9333ea;
-    background-color: #faf5ff;
+    --ui-accent: #9333ea;
 }
 
 /* 8. 일제강점기 (Grayscale) #94A3B8 - 무채색 -> 암흑기 디자인 적용 */
@@ -108,8 +109,10 @@ body {
     /* --colonial-shadow: inset 0 0 60px rgba(0, 0, 0, 0.7), 15px 15px 30px rgba(0, 0, 0, 0.6);
     --colonial-outline: 12px solid #242020; */
 
-    background-color: #f1f5f9;
-    /* Map background remains neutral/gray */
+    /* Custom variables for the framed look */
+    /* --colonial-shadow: inset 0 0 60px rgba(0, 0, 0, 0.7), 15px 15px 30px rgba(0, 0, 0, 0.6);
+    --colonial-outline: 12px solid #242020; */
+
     /* Map background remains neutral/gray */
     filter: grayscale(0.4);
 }
@@ -126,7 +129,8 @@ body {
     /* 에메랄드 */
     --ui-accent: #059669;
     /* 진한 에메랄드 */
-    background-color: #ecfdf5;
+    --ui-accent: #059669;
+    /* 진한 에메랄드 */
 }
 
 /* 9. 6.25 전쟁 (War-torn Dark Red) #7f1d1d */
@@ -141,7 +145,8 @@ body {
     /* 핏빛 레드 */
     --ui-accent: #b91c1c;
     /* 강렬한 레드 */
-    background-color: #2a1a1a;
+    --ui-accent: #b91c1c;
+    /* 강렬한 레드 */
 }
 
 /* 9. 대한민국 (Deep Blue) #3B82F6 - 현대 */
@@ -153,6 +158,6 @@ body {
     /* 아주 짙은 네이비 */
     --ui-border: #3B82F6;
     --ui-accent: #2563eb;
-    background-color: #ffffff;
+    --ui-accent: #2563eb;
     --ui-text-timecontrol: #2b2b2b;
 }

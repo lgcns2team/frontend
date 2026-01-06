@@ -26,6 +26,7 @@ import { TextbookPanel } from '../../../features/textbook-panel';
 import { MajorEventsPanel, EventModal } from '../../../features/major-events';
 import { CharactersPanel } from '../../../features/ai-character';
 import { ChatPanel } from '../../../features/ai-chat';
+import { CallPanel } from '../../../features/ai-call';
 import type { ParsedCharacter } from '../../../shared/api/characters-api';
 import { fetchCountryByCode, type CountryData } from '../../../shared/api/country-api';
 import { getEraForPage } from '../../../shared/lib/k-history-data/textbook-data';
@@ -106,6 +107,11 @@ export default function HistoryMap() {
     const [isConversationMode, setIsConversationMode] = useState(false);
     const [chatCharacter, setChatCharacter] = useState<ParsedCharacter | null>(null);
 
+    // Call Panel State
+    const [isCallPanelOpen, setIsCallPanelOpen] = useState(false);
+    const [isCallMinimized, setIsCallMinimized] = useState(false);
+    const [callCharacter, setCallCharacter] = useState<ParsedCharacter | null>(null);
+
     // Event Popup State
     const [selectedEvent, setSelectedEvent] = useState<ParsedMainEvent | null>(null);
 
@@ -143,6 +149,21 @@ export default function HistoryMap() {
     const [isKoreanWarPlaying, setIsKoreanWarPlaying] = useState(false);
     const [koreanWarSpeed, setKoreanWarSpeed] = useState(1);
     const [koreanWarFrontlines, setKoreanWarFrontlines] = useState<any[]>([]);
+
+    // DayTimeline Open State (sync with timeline visibility)
+    const [isDayTimelineOpen, setIsDayTimelineOpen] = useState(false);
+    const prevIsDayTimelineOpen = useRef(false);
+
+    // Sync DayTimeline open state with Main Timeline visibility
+    useEffect(() => {
+        if (isDayTimelineOpen) {
+            setTimelineVisibility('hidden');
+        } else if (prevIsDayTimelineOpen.current) {
+            // Only restore if it was previously open (prevent overriding on initial mount)
+            setTimelineVisibility('full');
+        }
+        prevIsDayTimelineOpen.current = isDayTimelineOpen;
+    }, [isDayTimelineOpen]);
 
     const handleTransitionComplete = () => {
         setIsCloudTransitionActive(false);
@@ -204,7 +225,8 @@ export default function HistoryMap() {
         map: map.current,
         isActive: isKoreanWarMode && layerType === 'battles',
         currentDate: currentKoreanWarDate,
-        animationSpeed: koreanWarSpeed
+        animationSpeed: koreanWarSpeed,
+        currentZoom: currentMapZoom
     });
 
     // Update frontlines when Korean War data loads
@@ -227,6 +249,7 @@ export default function HistoryMap() {
         } else if (!shouldBeKoreanWarMode && isKoreanWarMode) {
             setIsKoreanWarMode(false);
             setIsKoreanWarPlaying(false);
+            setIsDayTimelineOpen(false); // Reset timeline toggle
         }
     }, [currentYear, layerType, isKoreanWarMode]);
 
@@ -912,6 +935,12 @@ export default function HistoryMap() {
 
     // Panel Handlers
     const handleSidebarClick = (id: string) => {
+        // Special handling for 'people' button when call is active but minimized
+        if (id === 'people' && isCallPanelOpen && isCallMinimized) {
+            setIsCallMinimized(false);
+            return;
+        }
+
         setActivePanel(prev => prev === id ? null : id);
 
         if (id === 'textbook') {
@@ -1177,6 +1206,13 @@ export default function HistoryMap() {
                     chatCharacter ? (
                         <ChatPanel
                             character={chatCharacter}
+                            onCallStart={() => {
+                                // Start call logic: open call panel with this character, close chat panel
+                                setCallCharacter(chatCharacter);
+                                setIsCallPanelOpen(true);
+                                setActivePanel(null); // Close ChatPanel
+                                setChatCharacter(null); // Reset chat character so next time list opens
+                            }}
                         />
                     ) : (
                         <CharactersPanel
@@ -1196,6 +1232,75 @@ export default function HistoryMap() {
                 )}
             </DockingPanel>
 
+            {/* Characters Panel */}
+            {activePanel === 'characters' && (
+                <CharactersPanel
+                    onCharacterClick={(char: any) => {
+                        // Open chat only
+                        setChatCharacter(char);
+                        setActivePanel('character-chat');
+                    }}
+                />
+            )}
+
+            {/* AI Call Panel */}
+            {isCallPanelOpen && callCharacter && (
+                <DockingPanel
+                    isOpen={true}
+                    onClose={() => setIsCallPanelOpen(false)}
+                    title={callCharacter.characterName}
+                    width={450}
+                    hideHeader={true}
+                    hideCloseButton={true}
+                    style={isCallMinimized ? {
+                        background: 'transparent',
+                        border: 'none',
+                        boxShadow: 'none',
+                        pointerEvents: 'none',
+                        width: '0px',
+                        minWidth: '0px',
+                        overflow: 'visible',
+                        transform: 'none', // Critical for fixed positioning of child
+                        transition: 'none'
+                    } : undefined}
+                >
+                    <CallPanel
+                        characterName={callCharacter.characterName}
+                        characterImage={callCharacter.imagePath || ''}
+                        promptId={callCharacter.promptId || ''}
+                        initialMessage={callCharacter.greetingMessage || `안녕하세요. ${callCharacter.characterName}입니다.`}
+                        onClose={() => {
+                            setIsCallPanelOpen(false);
+                            setIsCallMinimized(false);
+                        }}
+                        isMinimized={isCallMinimized}
+                        onMinimize={setIsCallMinimized}
+                    />
+                </DockingPanel>
+            )}
+
+            {/* Character Chat Panel */}
+            {activePanel === 'character-chat' && chatCharacter && (
+                <FloatingPanel
+                    isOpen={true}
+                    title={`${chatCharacter.characterName}와의 대화`}
+                    onClose={() => setActivePanel(null)}
+                    width={400}
+                    currentYear={currentYear}
+                >
+                    <ChatPanel
+                        character={chatCharacter}
+                        onCallStart={() => {
+                            // Start call logic: open call panel with this character, close chat panel
+                            setCallCharacter(chatCharacter);
+                            setIsCallPanelOpen(true);
+                            setActivePanel(null); // Close ChatPanel
+                            setChatCharacter(null); // Reset chat character so next time list opens
+                        }}
+                    />
+                </FloatingPanel>
+            )}
+
             {(activePanel === 'textbook' && isConversationMode) && (
                 <DockingPanel
                     isOpen={true}
@@ -1211,6 +1316,12 @@ export default function HistoryMap() {
                     {chatCharacter ? (
                         <ChatPanel
                             character={chatCharacter}
+                            onCallStart={() => {
+                                setCallCharacter(chatCharacter);
+                                setIsCallPanelOpen(true);
+                                setIsConversationMode(false);
+                                setChatCharacter(null);
+                            }}
                         />
                     ) : (
                         <CharactersPanel
@@ -1259,6 +1370,8 @@ export default function HistoryMap() {
                     onPlayPause={() => setIsKoreanWarPlaying(prev => !prev)}
                     speed={koreanWarSpeed}
                     onSpeedChange={setKoreanWarSpeed}
+                    isOpen={isDayTimelineOpen}
+                    onToggle={setIsDayTimelineOpen}
                 />
             )}
 

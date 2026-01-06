@@ -1,4 +1,4 @@
-import { useEffect, useState, type ReactNode } from 'react';
+import { useEffect, useState, useRef, type ReactNode } from 'react';
 import { fetchCharacters, fetchCharacterDetail, type ParsedCharacter } from '../../../shared/api/characters-api';
 import { getEraForYear, ERAS } from '../../../shared/config/era-theme';
 import { GuestLoginPrompt, isGuestUser } from '../../../shared/components/GuestLoginPrompt';
@@ -16,6 +16,7 @@ export const CharactersPanel = ({ onYearChange, onCharacterClick, currentYear = 
     const [showAll, setShowAll] = useState(false); // true: 전체, false: 현재 시대만
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
+    const fetchedDetailsRef = useRef<Set<string>>(new Set());
 
     useEffect(() => {
         const loadCharacters = async () => {
@@ -44,20 +45,33 @@ export const CharactersPanel = ({ onYearChange, onCharacterClick, currentYear = 
     // 상세 정보(summary) 로딩 - 이름이 뜬 후에 백그라운드에서 로딩
     useEffect(() => {
         const fetchDetails = async () => {
-            // summary가 없고 promptId가 있는 캐릭터들만 대상
-            const charsToFetch = characters.filter(c => c.promptId && !c.summary);
+            // summary가 없고 promptId가 있는 캐릭터들 중, 아직 시도해보지 않은 캐릭터만 대상
+            const charsToFetch = characters.filter(c =>
+                c.promptId &&
+                !c.summary &&
+                !fetchedDetailsRef.current.has(c.characterId)
+            );
 
             if (charsToFetch.length === 0) return;
 
             console.log("Fetching details for:", charsToFetch.length, "characters");
 
+            // Fetch 시도한 ID들을 먼저 기록하여 중복 시도 방지
+            charsToFetch.forEach(c => fetchedDetailsRef.current.add(c.characterId));
+
             // 한 번에 모든 상세 정보를 요청 (병렬 처리)
             const updates = await Promise.all(
                 charsToFetch.map(async (char) => {
                     if (!char.promptId) return null;
-                    const detail = await fetchCharacterDetail(char.promptId);
-                    if (detail.summary) {
-                        return { characterId: char.characterId, summary: detail.summary };
+                    try {
+                        const detail = await fetchCharacterDetail(char.promptId);
+                        // summary가 비어있어도 업데이트하여 다시 fetch하지 않도록 함 (이미 fetchedDetailsRef에 추가됨)
+                        // 하지만 화면 표시를 위해 데이터가 있을 때만 state update
+                        if (detail.summary) {
+                            return { characterId: char.characterId, summary: detail.summary };
+                        }
+                    } catch (e) {
+                        console.error("Detail fetch failed for", char.characterName);
                     }
                     return null;
                 })

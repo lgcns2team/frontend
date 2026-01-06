@@ -2,8 +2,9 @@ import { useState, useRef, useEffect } from 'react';
 import { type ParsedCharacter, fetchCharacterDetail } from '../../../shared/api/characters-api';
 import { sendCharacterMessage } from '../../../shared/api/aichat-api';
 import { ERAS } from '../../../shared/config/era-theme';
-import { CallPanel } from '../../ai-call';
 import './ChatPanel.css';
+import { createBrowserStt } from "../../../shared/api/browseStt"; // ✅ STT 추가
+
 
 interface ChatMessage {
     id: number;
@@ -14,18 +15,50 @@ interface ChatMessage {
 
 interface ChatPanelProps {
     character: ParsedCharacter;
+    onCallStart: () => void;
 }
 
-export const ChatPanel = ({ character }: ChatPanelProps) => {
+export const ChatPanel = ({ character, onCallStart }: ChatPanelProps) => {
+
+    const [isListening, setIsListening] = useState(false);
+    const [interimText, setInterimText] = useState(""); // (선택) 실시간 자막 표시용
+
+    const sttRef = useRef<ReturnType<typeof createBrowserStt> | null>(null);
+
+    useEffect(() => {
+        sttRef.current = createBrowserStt("ko-KR", {
+            onStart: () => {
+                setIsListening(true);
+            },
+            onEnd: () => {
+                setIsListening(false);
+                setInterimText("");
+            },
+            onInterim: (t) => {
+                setInterimText(t);
+            },
+            onFinal: (t) => {
+                // 확정 텍스트를 input에 채움 (기존 입력 뒤에 붙이기)
+                setInput(prev => (prev ? `${prev} ${t}` : t));
+                // 텍스트 입력 후 즉시 STT 종료
+                sttRef.current?.stop();
+            },
+            onError: (e) => {
+                setIsListening(false);
+                setInterimText("");
+                console.error("[STT] error:", e);
+                // alert("STT 오류/미지원 브라우저일 수 있어요: " + e);
+            }
+        });
+
+    }, []);
+
     const [input, setInput] = useState('');
     const [messages, setMessages] = useState<ChatMessage[]>([]);
     const [isLoading, setIsLoading] = useState(false);
     const [isTTSEnabled, setIsTTSEnabled] = useState(false);
-    const [isCallPanelOpen, setIsCallPanelOpen] = useState(false);
 
-    // TODO: TTS 기능은 나중에 백엔드 API로 연결 예정
-
-    // 타이핑 효과 관련 Ref
+    // Call Panel Overlay removed
     const typingBufferRef = useRef<string>('');
     const typingIntervalRef = useRef<number | null>(null);
     const currentBotMsgIdRef = useRef<number | null>(null);
@@ -49,10 +82,12 @@ export const ChatPanel = ({ character }: ChatPanelProps) => {
                 }
             }
 
+            const finalGreeting = greeting || `안녕하세요. ${character.characterName}입니다. 무엇이 궁금하신가요?`;
+
             if (isMounted) {
                 setMessages([{
                     id: Date.now(),
-                    text: greeting || `안녕하세요. ${character.characterName}입니다. 무엇이 궁금하신가요?`,
+                    text: finalGreeting,
                     sender: 'bot'
                 }]);
             }
@@ -62,12 +97,15 @@ export const ChatPanel = ({ character }: ChatPanelProps) => {
         return () => { isMounted = false; };
     }, [character.characterId, character.characterName, character.promptId]);
 
+
+
     // 메시지 추가 시 스크롤 하단 이동
     useEffect(() => {
         if (chatBodyRef.current) {
             chatBodyRef.current.scrollTop = chatBodyRef.current.scrollHeight;
         }
     }, [messages]);
+    const audioRef = useRef<HTMLAudioElement | null>(null);
 
     // 🆕 음성 재생 함수 (handleSend보다 위에 있어야 함)
     const playVoice = async (text: string) => {
@@ -140,9 +178,12 @@ export const ChatPanel = ({ character }: ChatPanelProps) => {
             await sendCharacterMessage(character.promptId!, msgToSend, (text) => {
                 fullResponse += text;
                 typingBufferRef.current += text;
-                startTypingLoop();
+                // TTS가 켜져있으면 타이핑 효과를 여기서 시작하지 않고, 음성 재생 시점에 시작함
+                if (!isTTSEnabled) {
+                    startTypingLoop();
+                }
             });
-            setIsLoading(false);
+            // setIsLoading(false); // Removed immediate call, rely on finally or playVoice logic
 
             // ✅ 정상 답변 완료 후 음성 재생
             if (fullResponse) {
@@ -153,14 +194,13 @@ export const ChatPanel = ({ character }: ChatPanelProps) => {
             const errorMsg = '오류가 발생했습니다. 다시 시도해주세요.';
             setMessages(prev => prev.map(msg =>
                 msg.id === botMsgId
-                    ? { ...msg, text: '죄송합니다. 오류가 발생했습니다..\n잠시 후 다시 시도해주세요.', isError: true }
+                    ? { ...msg, text: errorMsg, isError: true }
                     : msg
             ));
 
-            setIsLoading(false);
-
+            // 에러 상황에서도 사용자에게 알림 음성 제공 여부 결정
+            if (isTTSEnabled) playVoice("오류가 발생했습니다.");
             // ✅ 에러 메시지 음성 재생
-            playVoice(errorMsg);
         } finally {
             setIsLoading(false);
         }
@@ -202,8 +242,14 @@ export const ChatPanel = ({ character }: ChatPanelProps) => {
                         <button
                             className={`tts-btn ${isTTSEnabled ? 'tts-active' : ''}`}
                             onClick={() => {
+                                if (isTTSEnabled) {
+                                    // 끄는 순간 재생 중인 오디오 정지
+                                    if (audioRef.current) {
+                                        audioRef.current.pause();
+                                        audioRef.current = null;
+                                    }
+                                }
                                 setIsTTSEnabled(!isTTSEnabled);
-                                // TODO: 백엔드 API 연결 시 여기에 TTS 호출 로직 추가
                             }}
                             title={isTTSEnabled ? 'TTS 끄기' : 'TTS 켜기'}
                         >
@@ -215,7 +261,7 @@ export const ChatPanel = ({ character }: ChatPanelProps) => {
                         </button>
                         <button
                             className="call-btn"
-                            onClick={() => setIsCallPanelOpen(true)}
+                            onClick={onCallStart}
                             title="통화 시작"
                         >
                             <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
@@ -263,6 +309,11 @@ export const ChatPanel = ({ character }: ChatPanelProps) => {
             </div>
 
             {/* 입력 영역 */}
+            {interimText && (
+                <div style={{ fontSize: 12, color: "#666", margin: "6px 0" }}>
+                    (인식중) {interimText}
+                </div>
+            )}
             <div className="chat-input-area">
                 <input
                     type="text"
@@ -282,18 +333,29 @@ export const ChatPanel = ({ character }: ChatPanelProps) => {
                 >
                     ➤
                 </button>
+                <button
+                    className="chat-send-btn"
+                    onClick={() => {
+                        const stt = sttRef.current;
+                        if (!stt) return;
+
+                        if (!stt.isSupported) {
+                            alert("이 브라우저는 Web Speech STT를 지원하지 않습니다. (iOS Safari/Chrome일 수 있어요)");
+                            return;
+                        }
+
+                        if (!isListening) stt.start();
+                        else stt.stop();
+                    }}
+                    disabled={isLoading}
+                    style={{ backgroundColor: isListening ? "#999" : eraColor, marginLeft: 8 }}
+                    title={isListening ? "음성 인식 종료" : "음성 인식 시작"}
+                >
+                    🎙️
+                </button>
+
             </div>
 
-            {/* Call Panel Overlay */}
-            {isCallPanelOpen && (
-                <div className="call-panel-overlay">
-                    <CallPanel
-                        characterName={character.characterName}
-                        characterImage={character.imagePath || ''}
-                        onClose={() => setIsCallPanelOpen(false)}
-                    />
-                </div>
-            )}
-        </div>
+        </div >
     );
 };
