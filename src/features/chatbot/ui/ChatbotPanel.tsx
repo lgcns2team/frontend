@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { sendGeneralMessage, type ToolCallEvent } from '../../../shared/api/aichat-api';
+import { createStreamingTts, type StreamingTtsController } from '../../../shared/api/streamingTts';
 import './ChatbotPanel.css';
 
 type Sender = 'bot' | 'user';
@@ -40,6 +41,10 @@ export const ChatbotPanel = ({ onClose, initialPosition, initialSize, onStateCha
     const typingIntervalRef = useRef<number | null>(null); // setInterval id
     const currentBotMsgIdRef = useRef<number | null>(null);
     const messagesEndRef = useRef<HTMLDivElement>(null);
+
+    // 🆕 Streaming TTS Controller Ref
+    const streamingTtsRef = useRef<StreamingTtsController | null>(null);
+    const isMountedRef = useRef(true);
 
     // Refs to track latest state for event handlers
     const latestState = useRef({ position, size });
@@ -197,9 +202,56 @@ export const ChatbotPanel = ({ onClose, initialPosition, initialSize, onStateCha
 
     // TODO: TTS 기능은 나중에 백엔드 API로 연결 예정
 
-    // 🆕 음성 재생 함수 (handleSend보다 위에 있어야 함)
     // Audio Ref for controlling playback
     const audioRef = useRef<HTMLAudioElement | null>(null);
+    const ttsEnabledRef = useRef(isTTSEnabled);
+
+    // Sync ref and handle stop on disable
+    useEffect(() => {
+        ttsEnabledRef.current = isTTSEnabled;
+        if (!isTTSEnabled) {
+            // TTS 꺼지면 기존 오디오 정지
+            if (audioRef.current) {
+                audioRef.current.pause();
+                audioRef.current = null;
+            }
+            // 스트리밍 TTS도 정지
+            if (streamingTtsRef.current) {
+                streamingTtsRef.current.stop();
+            }
+        }
+    }, [isTTSEnabled]);
+
+    // 🆕 스트리밍 TTS 시작 함수
+    const startStreamingTts = (onFirstPlay?: () => void): StreamingTtsController | null => {
+        if (!isTTSEnabled) {
+            onFirstPlay?.();
+            return null;
+        }
+
+        // 이전 스트리밍 TTS 정리
+        if (streamingTtsRef.current) {
+            streamingTtsRef.current.destroy();
+        }
+
+        const controller = createStreamingTts({
+            promptId: '', // 일반 챗봇은 promptId 불필요 (knowledge API 사용)
+            ttsApiUrl: 'http://127.0.0.1:8000/api/knowledge/speak/',
+            onFirstPlay: () => {
+                console.log('🎵 [ChatbotPanel] First sentence playing');
+                onFirstPlay?.();
+            },
+            onAllDone: () => {
+                console.log('✅ [ChatbotPanel] All TTS done');
+            },
+            onError: (error) => {
+                console.error('❌ [ChatbotPanel] Streaming TTS error:', error);
+            }
+        });
+
+        streamingTtsRef.current = controller;
+        return controller;
+    };
 
     // 🆕 음성 재생 함수 (handleSend보다 위에 있어야 함)
     const playVoice = async (text: string) => {
@@ -216,8 +268,7 @@ export const ChatbotPanel = ({ onClose, initialPosition, initialSize, onStateCha
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
-                    text: text.replace(/\([^)]*\)/g, ''),
-                    promptId: 'J791UNXAHE'
+                    text: text.replace(/\([^)]*\)/g, '')
                 })
             });
 
@@ -231,7 +282,12 @@ export const ChatbotPanel = ({ onClose, initialPosition, initialSize, onStateCha
                     window.URL.revokeObjectURL(url);
                 };
 
-                audio.play();
+                // Play only if still enabled
+                if (ttsEnabledRef.current) {
+                    audio.play();
+                } else {
+                    window.URL.revokeObjectURL(url);
+                }
             }
         } catch (error) {
             console.error("TTS 재생 실패:", error);
@@ -276,10 +332,23 @@ export const ChatbotPanel = ({ onClose, initialPosition, initialSize, onStateCha
 
     // 컴포넌트 unmount 시 인터벌 정리
     useEffect(() => {
+        isMountedRef.current = true;
         return () => {
             console.log('📉 [ChatbotPanel] Unmounting...');
+            isMountedRef.current = false;
+
             if (typingIntervalRef.current !== null) {
                 window.clearInterval(typingIntervalRef.current);
+            }
+            // ✅ Unmount 시 오디오 정지
+            if (audioRef.current) {
+                audioRef.current.pause();
+                audioRef.current = null;
+            }
+            // 🆕 스트리밍 TTS 정리
+            if (streamingTtsRef.current) {
+                streamingTtsRef.current.destroy();
+                streamingTtsRef.current = null;
             }
         };
     }, []);
@@ -313,31 +382,20 @@ export const ChatbotPanel = ({ onClose, initialPosition, initialSize, onStateCha
         // Flag to track if bot message has been created
         let botMessageCreated = false;
 
-        // Capture full response for TTS
+        // 🆕 스트리밍 TTS 시작 (TTS가 켜져있을 때만)
+        const ttsController = isTTSEnabled
+            ? startStreamingTts(() => {
+                // 첫 문장 재생 시 특별한 동작 필요하면 여기에 추가
+            })
+            : null;
+
+        // Capture full response for TTS (legacy fallback)
         let fullResponse = '';
 
         try {
             console.log('🚀 [DEBUG] Sending message to AI chat');
 
             await sendGeneralMessage(input, (text) => {
-                // Remove loading message and create bot message on first chunk
-                if (!botMessageCreated) {
-                    // Remove loading message
-                    setMessages(prev => prev.filter(msg => msg.id !== loadingMsgId));
-
-                    // Create new bot message
-                    const botMsgId = Date.now() + 2;
-                    currentBotMsgIdRef.current = botMsgId;
-
-                    const initialBotMsg: ChatMessage = {
-                        id: botMsgId,
-                        text: '',
-                        sender: 'bot'
-                    };
-                    setMessages(prev => [...prev, initialBotMsg]);
-                    botMessageCreated = true;
-                }
-
                 // Add text to typing buffer
                 let newText = text;
                 // If this is the start of the message (buffer empty) or just after loading removed
@@ -346,8 +404,32 @@ export const ChatbotPanel = ({ onClose, initialPosition, initialSize, onStateCha
                 }
 
                 if (newText) {
+                    // Create bot message only when we have actual text
+                    if (!botMessageCreated) {
+                        // Remove loading message
+                        setMessages(prev => prev.filter(msg => msg.id !== loadingMsgId));
+
+                        // Create new bot message
+                        const botMsgId = Date.now() + 2;
+                        currentBotMsgIdRef.current = botMsgId;
+
+                        const initialBotMsg: ChatMessage = {
+                            id: botMsgId,
+                            text: '',
+                            sender: 'bot'
+                        };
+                        setMessages(prev => [...prev, initialBotMsg]);
+                        botMessageCreated = true;
+                    }
+
                     typingBufferRef.current += newText;
                     fullResponse += newText;
+
+                    // 🆕 스트리밍 TTS: 문장 단위로 TTS 큐에 추가
+                    if (ttsController) {
+                        ttsController.addSentence(newText);
+                    }
+
                     console.log('✍️ [DEBUG] Added to typing buffer. Buffer now:', typingBufferRef.current.length, 'chars');
                     // Start typing loop (if not already running)
                     startTypingLoop();
@@ -400,10 +482,13 @@ export const ChatbotPanel = ({ onClose, initialPosition, initialSize, onStateCha
 
             console.log('✅ [DEBUG] Message sent successfully');
 
-            // ✅ 정상 답변 완료 후 음성 재생
-            if (fullResponse) {
-                setTimeout(() => playVoice(fullResponse), 500);
+            // 🆕 스트리밍 완료 - 남은 버퍼 처리
+            if (ttsController) {
+                ttsController.flush();
             }
+
+            // (구형 단일 파일 재생 로직은 제거하거나 주석 처리)
+            // if (fullResponse) { ... }
         } catch (error) {
             console.error('Error sending message:', error);
 
@@ -451,14 +536,20 @@ export const ChatbotPanel = ({ onClose, initialPosition, initialSize, onStateCha
                         className={`tts-btn ${isTTSEnabled ? 'tts-active' : ''}`}
                         onClick={(e) => {
                             e.stopPropagation();
-                            if (isTTSEnabled) {
-                                // 끄는 순간 재생 중인 오디오 정지
+                            const nextState = !isTTSEnabled;
+                            setIsTTSEnabled(nextState);
+                            if (!nextState) {
+                                console.log('🔇 [ChatbotPanel] Speaker OFF -> Stopping TTS');
+                                // 1. 일반 TTS 오디오 중단
                                 if (audioRef.current) {
                                     audioRef.current.pause();
                                     audioRef.current = null;
                                 }
+                                // 2. 스트리밍 TTS 중단
+                                if (streamingTtsRef.current) {
+                                    streamingTtsRef.current.stop();
+                                }
                             }
-                            setIsTTSEnabled(!isTTSEnabled);
                         }}
                         onMouseDown={(e) => e.stopPropagation()}
                         title={isTTSEnabled ? 'TTS 끄기' : 'TTS 켜기'}

@@ -47,7 +47,8 @@ const DiscussionRoomPage: React.FC = () => {
         disagreeCount,
         broadcastVote,
         isAnonymous,
-        sendSystemSignal
+        // sendSystemSignal removed
+        sendAnonymousStatus
     } = useDiscussion(id);
 
     // Debug: Log messages changes
@@ -74,10 +75,13 @@ const DiscussionRoomPage: React.FC = () => {
 
     const toggleAnonymous = () => {
         const nextState = !isAnonymous;
+        console.log('🕵️ Toggling Anonymous to:', nextState);
         // Broadcast state via non-persisting message (like sendModeChange)
         if (isConnected && localStorage.getItem('userRole') === 'TEACHER') {
-            sendSystemSignal(`__ANONYMOUS__:${nextState ? 'ON' : 'OFF'}`);
+            sendAnonymousStatus(nextState);
             // State will be updated via message interception in useDiscussion hook
+        } else {
+            console.warn('⚠️ Cannot toggle anonymous: Not connected or not teacher');
         }
     };
 
