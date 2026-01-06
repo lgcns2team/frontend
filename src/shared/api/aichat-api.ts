@@ -85,7 +85,7 @@ export const sendCharacterMessage = async (
     const userId = getUserId();
 
     // URL을 단순하게 - Query parameter 제거
-    const url = `/api/ai/character/${promptId}/chat`;
+    const url = `/api/ai/character/${promptId}/chat?userId=${userId}`;
 
     console.log('🚀 [sendCharacterMessage] Starting request:', { url, promptId, userId });
 
