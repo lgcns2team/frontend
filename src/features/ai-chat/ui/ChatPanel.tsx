@@ -110,21 +110,36 @@ export const ChatPanel = ({ character, onCallStart }: ChatPanelProps) => {
     // 🆕 음성 재생 함수 (handleSend보다 위에 있어야 함)
     const playVoice = async (text: string) => {
         console.log("TTS 함수 호출됨 현재 스위치 상태:", isTTSEnabled); 
-        try {
-            const response = await fetch('http://127.0.0.1:8000/api/prompt/speak/', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    text: text,
-                    promptId: character.promptId
-                })
-            });
+        if (!isTTSEnabled) {
+            // TTS가 꺼져있을 때는 바로 타이핑 시작
+            startTypingLoop();
+            return;
+        }
 
-            if (response.ok) {
-                const blob = await response.blob();
-                const url = window.URL.createObjectURL(blob);
-                const audio = new Audio(url);
-                audio.play();
+        try {
+            if(isTTSEnabled) {
+                const response = await fetch('http://127.0.0.1:8000/api/prompt/speak/', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        text: text,
+                        promptId: character.promptId
+                    })
+                });
+
+                if (response.ok) {
+                    const blob = await response.blob();
+                    const url = window.URL.createObjectURL(blob);
+                    const audio = new Audio(url);
+                    // audio.play();
+                    audio.onplay = () => {
+                        startTypingLoop();
+                    }
+                    audio.play();
+                }
+            } else {
+                console.log("TTS 스위치가 꺼져 있어 음성을 생성하지 않고 로직을 계속합니다.");
+                startTypingLoop();
             }
         } catch (error) {
             console.error("TTS 재생 실패:", error);
@@ -178,10 +193,6 @@ export const ChatPanel = ({ character, onCallStart }: ChatPanelProps) => {
             await sendCharacterMessage(character.promptId!, msgToSend, (text) => {
                 fullResponse += text;
                 typingBufferRef.current += text;
-                // TTS가 켜져있으면 타이핑 효과를 여기서 시작하지 않고, 음성 재생 시점에 시작함
-                if (!isTTSEnabled) {
-                    startTypingLoop();
-                }
             });
             // setIsLoading(false); // Removed immediate call, rely on finally or playVoice logic
 
