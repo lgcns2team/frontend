@@ -17,6 +17,13 @@ const DiscussionPanel: React.FC = () => {
   const [classroom, setClassroom] = useState('1');
 
   const [showCreateModal, setShowCreateModal] = useState(false);
+  const [showResultModal, setShowResultModal] = useState(false);
+  const [resultMessage, setResultMessage] = useState('');
+  // const [resultType, setResultType] = useState<'success' | 'error'>('success'); // Not strictly used for styling yet, but good for future.
+
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [deleteTargetId, setDeleteTargetId] = useState<string | null>(null);
+
 
   // 추천 주제 관련 state
   const [recommendedTopics, setRecommendedTopics] = useState<DebateTopic[]>([]);
@@ -71,10 +78,20 @@ const DiscussionPanel: React.FC = () => {
     setShowCreateModal(false);
   };
 
+  const closeResultModal = () => {
+    setShowResultModal(false);
+  };
+
+  const closeDeleteModal = () => {
+    setShowDeleteModal(false);
+    setDeleteTargetId(null);
+  };
+
   // 추천받기 버튼 핸들러
   const handleRecommend = async () => {
     if (!keyword.trim()) {
-      alert('주제 키워드를 입력해주세요.');
+      setResultMessage('주제 키워드를 입력해주세요.');
+      setShowResultModal(true);
       return;
     }
 
@@ -106,18 +123,27 @@ const DiscussionPanel: React.FC = () => {
   // For now, we'll keep the UI deletion but it won't persist to backend unless API exists.
   // Assuming strict requirement update: "Get from Redis". Deletion should probably be ignored or mock for now as backend delete endpoint isn't clarified.
   // I will just remove it from local view for now.
-  const handleDelete = async (e: React.MouseEvent, id: string | undefined) => {
+  const openDeleteModal = (e: React.MouseEvent, id: string | undefined) => {
     e.stopPropagation(); // Prevent navigation
     if (!id) return;
-    if (window.confirm('정말 삭제하시겠습니까?')) {
-      const result = await deleteDiscussionRoom(id);
-      if (result.success) {
-        // Remove from local state and refresh from backend
-        setDiscussions(prev => prev.filter(d => d.id !== id));
-        console.log('Room deleted successfully:', id);
-      } else {
-        alert(`삭제 실패: ${result.error}`);
-      }
+    setDeleteTargetId(id);
+    setShowDeleteModal(true);
+  };
+
+  const executeDelete = async () => {
+    const id = deleteTargetId;
+    if (!id) return;
+
+    closeDeleteModal(); // Close confirmation
+
+    const result = await deleteDiscussionRoom(id);
+    if (result.success) {
+      // Remove from local state and refresh from backend
+      setDiscussions(prev => prev.filter(d => d.id !== id));
+      console.log('Room deleted successfully:', id);
+    } else {
+      setResultMessage(`삭제 실패: ${result.error}`);
+      setShowResultModal(true);
     }
   };
 
@@ -142,13 +168,16 @@ const DiscussionPanel: React.FC = () => {
     const classroomMismatch = userClassroom && roomClassroom && parseInt(userClassroom) !== roomClassroom;
 
     if (gradeMismatch && classroomMismatch) {
-      alert('학년과 반이 다릅니다');
+      setResultMessage('학년과 반이 다릅니다');
+      setShowResultModal(true);
       return;
     } else if (gradeMismatch) {
-      alert('학년이 다릅니다');
+      setResultMessage('학년이 다릅니다');
+      setShowResultModal(true);
       return;
     } else if (classroomMismatch) {
-      alert('반이 다릅니다');
+      setResultMessage('반이 다릅니다');
+      setShowResultModal(true);
       return;
     }
 
@@ -158,7 +187,8 @@ const DiscussionPanel: React.FC = () => {
 
   const handleConfirmCreate = async () => {
     if (!topic) {
-      alert('주제가 입력되지 않았습니다.');
+      setResultMessage('주제가 입력되지 않았습니다.');
+      setShowResultModal(true);
       return;
     }
 
@@ -173,19 +203,22 @@ const DiscussionPanel: React.FC = () => {
 
     const token = localStorage.getItem('accessToken');
     if (!token) {
-      alert("로그인이 필요합니다.");
+      setResultMessage("로그인이 필요합니다.");
+      setShowResultModal(true);
       return;
     }
 
     const result = await createShortDiscussionRoom(payload);
 
     if (result.success) {
-      alert("Room Created! Room ID: " + result.roomId);
+      setResultMessage(`토론 방이 생성되었습니다!\nRoom No : ${discussions.length + 1}`);
       setShowCreateModal(false);
+      setShowResultModal(true);
       // Refresh list from backend
       fetchRooms();
     } else {
-      alert(`Failed to create room: ${result.error}`);
+      setResultMessage(`방 생성에 실패했습니다.\n${result.error}`);
+      setShowResultModal(true);
     }
   };
 
@@ -207,7 +240,7 @@ const DiscussionPanel: React.FC = () => {
             {localStorage.getItem('userRole') === 'TEACHER' && (
               <button
                 className={styles.deleteButton}
-                onClick={(e) => handleDelete(e, discussion.id)}
+                onClick={(e) => openDeleteModal(e, discussion.id)}
               >
                 ×
               </button>
@@ -402,6 +435,40 @@ const DiscussionPanel: React.FC = () => {
           </div>,
           document.body
         )}
+
+      {showResultModal &&
+        createPortal(
+          <div className={styles.modalOverlay} onClick={closeResultModal}>
+            <div className={styles.resultModalContent} onClick={(e) => e.stopPropagation()}>
+              <h3 className={styles.resultModalHeader}>알림</h3>
+              <div className={styles.resultMessage}>{resultMessage}</div>
+              <button className={styles.resultButton} onClick={closeResultModal}>
+                확인
+              </button>
+            </div>
+          </div>,
+          document.body
+        )}
+
+      {showDeleteModal &&
+        createPortal(
+          <div className={styles.modalOverlay} onClick={closeDeleteModal}>
+            <div className={styles.resultModalContent} onClick={(e) => e.stopPropagation()}>
+              <h3 className={styles.resultModalHeader}>삭제 확인</h3>
+              <div className={styles.resultMessage}>정말 삭제하시겠습니까?</div>
+              <div className={styles.confirmButtons}>
+                <button className={styles.yesButton} onClick={executeDelete}>
+                  예
+                </button>
+                <button className={styles.noButton} onClick={closeDeleteModal}>
+                  아니오
+                </button>
+              </div>
+            </div>
+          </div>,
+          document.body
+        )}
+
     </div>
   );
 };
