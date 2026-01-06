@@ -136,21 +136,36 @@ export function createStreamingTts(options: StreamingTtsOptions): StreamingTtsCo
     };
 
     /**
-     * 큐에서 다음 문장 재생 시도
+     * 큐에서 다음 문장 재생 시도 (순서 보장)
      */
     const tryPlayNext = (): void => {
         if (isDestroyed || isCurrentlyPlaying) return;
         
-        // 재생 가능한 다음 아이템 찾기
-        const nextItem = queue.find(item => item.status === 'ready');
-        if (!nextItem || !nextItem.audio) {
-            // 모든 아이템 처리 완료 확인
-            const allDone = queue.every(item => 
-                item.status === 'done' || item.status === 'error'
-            );
-            if (allDone && queue.length > 0) {
+        // 🔧 순서대로 재생: 아직 재생되지 않은 첫 번째 아이템 찾기
+        const nextIndex = queue.findIndex(item => 
+            item.status !== 'done' && item.status !== 'playing'
+        );
+        
+        if (nextIndex === -1) {
+            // 모든 아이템 처리 완료
+            if (queue.length > 0 && queue.every(item => item.status === 'done' || item.status === 'error')) {
                 onAllDone?.();
             }
+            return;
+        }
+        
+        const nextItem = queue[nextIndex];
+        
+        // 에러 상태면 건너뛰기
+        if (nextItem.status === 'error') {
+            nextItem.status = 'done'; // 처리 완료로 표시
+            tryPlayNext(); // 다음 아이템 시도
+            return;
+        }
+        
+        // 아직 준비 안 됐으면 대기 (순서 보장을 위해 기다림)
+        if (nextItem.status !== 'ready' || !nextItem.audio) {
+            // 로딩 중이면 기다림 - fetchTtsAudio 완료 시 다시 tryPlayNext 호출됨
             return;
         }
         
