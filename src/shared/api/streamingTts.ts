@@ -3,6 +3,8 @@
  * AI 응답을 문장 단위로 분리하여 빠르게 첫 음성을 재생합니다.
  */
 
+import { getStreamingHeaders } from './api-utils';
+
 export interface TtsQueueItem {
     text: string;
     audioUrl?: string;
@@ -45,7 +47,7 @@ const MIN_SENTENCE_LENGTH = 5;
  */
 export function createStreamingTts(options: StreamingTtsOptions): StreamingTtsController {
     const { promptId, ttsApiUrl, onFirstPlay, onAllDone, onError } = options;
-    
+
     let queue: TtsQueueItem[] = [];
     let textBuffer = '';
     let isDestroyed = false;
@@ -59,11 +61,11 @@ export function createStreamingTts(options: StreamingTtsOptions): StreamingTtsCo
      */
     const splitIntoSentences = (text: string): string[] => {
         const sentences = text.split(SENTENCE_DELIMITERS).filter(s => s.trim().length > 0);
-        
+
         // 너무 짧은 문장은 다음 문장과 합침
         const result: string[] = [];
         let accumulated = '';
-        
+
         for (const sentence of sentences) {
             accumulated += (accumulated ? ' ' : '') + sentence;
             if (accumulated.length >= MIN_SENTENCE_LENGTH) {
@@ -71,7 +73,7 @@ export function createStreamingTts(options: StreamingTtsOptions): StreamingTtsCo
                 accumulated = '';
             }
         }
-        
+
         // 남은 텍스트가 있으면 마지막 문장에 붙이거나 새로 추가
         if (accumulated.trim()) {
             if (result.length > 0) {
@@ -80,7 +82,7 @@ export function createStreamingTts(options: StreamingTtsOptions): StreamingTtsCo
                 result.push(accumulated.trim());
             }
         }
-        
+
         return result;
     };
 
@@ -89,16 +91,16 @@ export function createStreamingTts(options: StreamingTtsOptions): StreamingTtsCo
      */
     const fetchTtsAudio = async (item: TtsQueueItem): Promise<void> => {
         if (isDestroyed) return;
-        
+
         const controller = new AbortController();
         abortControllers.push(controller);
-        
+
         try {
             item.status = 'loading';
-            
+
             const response = await fetch(ttsApiUrl, {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
+                headers: getStreamingHeaders(),
                 body: JSON.stringify({
                     text: item.text.replace(/\([^)]*\)/g, ''), // 괄호 내용 제거
                     promptId: promptId
@@ -112,14 +114,14 @@ export function createStreamingTts(options: StreamingTtsOptions): StreamingTtsCo
 
             const blob = await response.blob();
             const url = URL.createObjectURL(blob);
-            
+
             item.audioUrl = url;
             item.audio = new Audio(url);
             item.status = 'ready';
-            
+
             // 오디오 준비되면 재생 시도
             tryPlayNext();
-            
+
         } catch (error) {
             if ((error as Error).name === 'AbortError') {
                 item.status = 'error';
@@ -140,12 +142,12 @@ export function createStreamingTts(options: StreamingTtsOptions): StreamingTtsCo
      */
     const tryPlayNext = (): void => {
         if (isDestroyed || isCurrentlyPlaying) return;
-        
+
         // 🔧 순서대로 재생: 아직 재생되지 않은 첫 번째 아이템 찾기
-        const nextIndex = queue.findIndex(item => 
+        const nextIndex = queue.findIndex(item =>
             item.status !== 'done' && item.status !== 'playing'
         );
-        
+
         if (nextIndex === -1) {
             // 모든 아이템 처리 완료
             if (queue.length > 0 && queue.every(item => item.status === 'done' || item.status === 'error')) {
@@ -153,32 +155,32 @@ export function createStreamingTts(options: StreamingTtsOptions): StreamingTtsCo
             }
             return;
         }
-        
+
         const nextItem = queue[nextIndex];
-        
+
         // 에러 상태면 건너뛰기
         if (nextItem.status === 'error') {
             nextItem.status = 'done'; // 처리 완료로 표시
             tryPlayNext(); // 다음 아이템 시도
             return;
         }
-        
+
         // 아직 준비 안 됐으면 대기 (순서 보장을 위해 기다림)
         if (nextItem.status !== 'ready' || !nextItem.audio) {
             // 로딩 중이면 기다림 - fetchTtsAudio 완료 시 다시 tryPlayNext 호출됨
             return;
         }
-        
+
         isCurrentlyPlaying = true;
         nextItem.status = 'playing';
         currentAudio = nextItem.audio;
-        
+
         // 첫 재생 콜백
         if (!firstPlayTriggered) {
             firstPlayTriggered = true;
             onFirstPlay?.();
         }
-        
+
         nextItem.audio.onended = () => {
             if (nextItem.audioUrl) {
                 URL.revokeObjectURL(nextItem.audioUrl);
@@ -188,7 +190,7 @@ export function createStreamingTts(options: StreamingTtsOptions): StreamingTtsCo
             currentAudio = null;
             tryPlayNext();
         };
-        
+
         nextItem.audio.onerror = () => {
             console.error('Audio playback error');
             nextItem.status = 'error';
@@ -196,7 +198,7 @@ export function createStreamingTts(options: StreamingTtsOptions): StreamingTtsCo
             currentAudio = null;
             tryPlayNext();
         };
-        
+
         nextItem.audio.play().catch(err => {
             console.error('Audio play failed:', err);
             nextItem.status = 'error';
@@ -211,17 +213,17 @@ export function createStreamingTts(options: StreamingTtsOptions): StreamingTtsCo
      */
     const addSentence = (sentence: string): void => {
         if (isDestroyed) return;
-        
+
         textBuffer += sentence;
-        
+
         // 문장 구분자가 있으면 분리하여 큐에 추가
         const sentences = splitIntoSentences(textBuffer);
-        
+
         if (sentences.length > 1) {
             // 마지막 문장은 아직 완성되지 않았을 수 있으므로 버퍼에 유지
             const completeSentences = sentences.slice(0, -1);
             textBuffer = sentences[sentences.length - 1];
-            
+
             for (const s of completeSentences) {
                 const item: TtsQueueItem = { text: s, status: 'pending' };
                 queue.push(item);
@@ -239,14 +241,14 @@ export function createStreamingTts(options: StreamingTtsOptions): StreamingTtsCo
      */
     const flush = (): void => {
         if (isDestroyed) return;
-        
+
         if (textBuffer.trim()) {
             const item: TtsQueueItem = { text: textBuffer.trim(), status: 'pending' };
             queue.push(item);
             fetchTtsAudio(item);
             textBuffer = '';
         }
-        
+
         // pending 상태인 아이템들도 요청 시작
         for (const item of queue) {
             if (item.status === 'pending') {
@@ -262,20 +264,20 @@ export function createStreamingTts(options: StreamingTtsOptions): StreamingTtsCo
         // 진행 중인 요청 취소
         abortControllers.forEach(c => c.abort());
         abortControllers = [];
-        
+
         // 현재 재생 중지
         if (currentAudio) {
             currentAudio.pause();
             currentAudio = null;
         }
-        
+
         // URL 해제
         for (const item of queue) {
             if (item.audioUrl) {
                 URL.revokeObjectURL(item.audioUrl);
             }
         }
-        
+
         queue = [];
         textBuffer = '';
         isCurrentlyPlaying = false;

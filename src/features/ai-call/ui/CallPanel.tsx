@@ -3,6 +3,7 @@ import { sendCharacterMessage } from '../../../shared/api/aichat-api';
 import { fetchCharacterDetail } from '../../../shared/api/characters-api';
 import { createBrowserStt } from "../../../shared/api/browseStt";
 import { createStreamingTts, type StreamingTtsController } from '../../../shared/api/streamingTts';
+import { getStreamingHeaders } from '../../../shared/api/api-utils';
 import './CallPanel.css';
 
 
@@ -204,7 +205,7 @@ export const CallPanel = ({ characterName, characterImage, promptId, initialMess
 
             const response = await fetch('/api/prompt/speak/', {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
+                headers: getStreamingHeaders(),
                 body: JSON.stringify({
                     text: text.replace(/\([^)]*\)/g, ''),
                     promptId: promptId
@@ -276,7 +277,7 @@ export const CallPanel = ({ characterName, characterImage, promptId, initialMess
 
         const controller = createStreamingTts({
             promptId: promptId,
-            ttsApiUrl: 'http://127.0.0.1:8000/api/prompt/speak/',
+            ttsApiUrl: '/api/prompt/speak/',
             onFirstPlay: () => {
                 console.log('🎵 [CallPanel] First sentence playing');
                 onFirstPlay?.();
