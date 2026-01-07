@@ -55,6 +55,7 @@ export function createStreamingTts(options: StreamingTtsOptions): StreamingTtsCo
     let isCurrentlyPlaying = false;
     let firstPlayTriggered = false;
     let abortControllers: AbortController[] = [];
+    let isFetching = false; // 🔧 순차 요청을 위한 상태 플래그
 
     /**
      * 텍스트를 문장 단위로 분리
@@ -134,6 +135,22 @@ export function createStreamingTts(options: StreamingTtsOptions): StreamingTtsCo
             tryPlayNext();
         } finally {
             abortControllers = abortControllers.filter(c => c !== controller);
+            // 🔧 현재 요청 완료 후 다음 요청 처리 (순차 처리)
+            isFetching = false;
+            processQueue();
+        }
+    };
+
+    /**
+     * 큐에서 대기 중인 다음 요청 처리 (순차적)
+     */
+    const processQueue = (): void => {
+        if (isDestroyed || isFetching) return;
+
+        const nextItem = queue.find(item => item.status === 'pending');
+        if (nextItem) {
+            isFetching = true;
+            fetchTtsAudio(nextItem);
         }
     };
 
@@ -227,12 +244,9 @@ export function createStreamingTts(options: StreamingTtsOptions): StreamingTtsCo
             for (const s of completeSentences) {
                 const item: TtsQueueItem = { text: s, status: 'pending' };
                 queue.push(item);
-                // 병렬로 TTS 요청 (최대 2개까지)
-                const loadingCount = queue.filter(q => q.status === 'loading').length;
-                if (loadingCount < 2) {
-                    fetchTtsAudio(item);
-                }
             }
+            // 🔧 큐에 추가 후 순차 처리 시작
+            processQueue();
         }
     };
 
@@ -245,16 +259,13 @@ export function createStreamingTts(options: StreamingTtsOptions): StreamingTtsCo
         if (textBuffer.trim()) {
             const item: TtsQueueItem = { text: textBuffer.trim(), status: 'pending' };
             queue.push(item);
-            fetchTtsAudio(item);
             textBuffer = '';
+            // 마지막 아이템 처리 시도
+            processQueue();
         }
 
-        // pending 상태인 아이템들도 요청 시작
-        for (const item of queue) {
-            if (item.status === 'pending') {
-                fetchTtsAudio(item);
-            }
-        }
+        // 혹시 처리되지 않은 pending 아이템이 있다면 처리
+        processQueue();
     };
 
     /**
@@ -281,6 +292,7 @@ export function createStreamingTts(options: StreamingTtsOptions): StreamingTtsCo
         queue = [];
         textBuffer = '';
         isCurrentlyPlaying = false;
+        isFetching = false;
         firstPlayTriggered = false;
     };
 
