@@ -236,7 +236,7 @@ export const ChatbotPanel = ({ onClose, initialPosition, initialSize, onStateCha
 
         const controller = createStreamingTts({
             promptId: '', // 일반 챗봇은 promptId 불필요 (knowledge API 사용)
-            ttsApiUrl: 'http://127.0.0.1:8000/api/knowledge/speak/',
+            ttsApiUrl: '/api/knowledge/speak/',
             onFirstPlay: () => {
                 console.log('🎵 [ChatbotPanel] First sentence playing');
                 onFirstPlay?.();

@@ -148,7 +148,7 @@ export const ChatPanel = ({ character, onCallStart }: ChatPanelProps) => {
 
         const controller = createStreamingTts({
             promptId: character.promptId,
-            ttsApiUrl: 'http://127.0.0.1:8000/api/prompt/speak/',
+            ttsApiUrl: '/api/prompt/speak/',
             onFirstPlay: () => {
                 console.log('🎵 [ChatPanel] First sentence playing');
                 onFirstPlay?.();
@@ -179,7 +179,7 @@ export const ChatPanel = ({ character, onCallStart }: ChatPanelProps) => {
 
         try {
             if (isTTSEnabled) {
-                const response = await fetch('http://127.0.0.1:8000/api/prompt/speak/', {
+                const response = await fetch('/api/prompt/speak/', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
