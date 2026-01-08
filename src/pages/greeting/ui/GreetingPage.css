@@ -17,9 +17,11 @@
     flex-direction: column;
     justify-content: center;
     align-items: center;
-    position: relative;
+    position: absolute;
+    top: 0;
+    left: 0;
     opacity: 0;
-    transition: opacity 1s ease-in-out;
+    transition: opacity 0.8s ease-in-out;
     pointer-events: none;
     /* Interact only when active */
 }
