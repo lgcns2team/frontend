@@ -140,7 +140,7 @@ export const useFrontlineAnimation = ({
 
     // --- Configuration Constants ---
     const JET_SIZE: L.PointTuple = [70, 70];
-    const BOMBER_SIZE: L.PointTuple = [150, 150];
+    const BOMBER_SIZE: L.PointTuple = [100, 100];
     const DOGFIGHT_SIZE: L.PointTuple = [50, 50];
     const BATTLESHIP_SIZE: L.PointTuple = [120, 120];
 
@@ -752,14 +752,14 @@ export const useFrontlineAnimation = ({
 
                     let baseDuration = (1500 + (totalDist / 100) * 1500);
                     // Apply speed factor (Higher divisor = Faster)
-                    baseDuration = baseDuration / 2;
+                    baseDuration = baseDuration / 5;
 
                     if (type === 'bomber') {
                         // User asked for fast bombers. We'll keep them fast.
                         // Optional: slightly slower multiplier if desired, but user said "3x".
                         // We will leave it as is (same as jet).
                         // Or maybe 1.2x of jet duration to give sense of weight but still FAST.
-                        baseDuration = baseDuration * 0.7;
+                        baseDuration = baseDuration * 1.4;
                     }
 
 
@@ -861,7 +861,8 @@ export const useFrontlineAnimation = ({
 
                             // Calculate bearing directly from path vector for value precision
                             const vectorBearing = turf.bearing(turf.point(raid.startPos), turf.point(raid.endPos));
-                            const rotationOffset = 0; // Image points Up (North) by default, so +0 to align with bearing
+                            // 폭격기는 이미지가 오른쪽을 향하므로 -90도 오프셋, 나머지는 0
+                            const rotationOffset = raid.type === 'bomber' ? -90 : 0;
 
                             const icon = L.divIcon({
                                 className: 'korean-war-air-raid-marker', // Generic class for container
