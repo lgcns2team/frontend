@@ -264,7 +264,7 @@ export const ChatbotPanel = ({ onClose, initialPosition, initialSize, onStateCha
                 audioRef.current = null;
             }
 
-            const response = await fetch('/api/prompt/speak/', {
+            const response = await fetch('/api/knowledge/speak/', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
