@@ -77,38 +77,50 @@ export const MajorEventsPanel = ({ onYearChange, onEventClick, currentYear = 124
             {filteredEvents.length === 0 ? (
                 <div className="major-events-loading">해당 시대의 주요사건이 없습니다.</div>
             ) : (
-                <div className="major-events-list">
-                    {filteredEvents.map((event) => {
+                <div className="major-events-timeline">
+                    {filteredEvents.map((event, index) => {
                         const eraConfig = getEraForYear(event.year);
                         const eraFrame = getEraFrameImage(event.year);
+                        // 좌우 번갈아 배치
+                        const side = index % 2 === 0 ? 'left' : 'right';
 
                         return (
                             <div
                                 key={event.eventId}
-                                className="major-event-item"
-                                onClick={() => handleEventClick(event)}
-                                style={{
-                                    cursor: 'pointer',
-                                    borderColor: eraConfig.color,
-                                    backgroundColor: '#FFFEF5', // Very pale yellow
-                                    fontFamily: "'Noto Serif KR', serif", // Fixed font family (Three Kingdoms style)
-                                    ...(eraFrame && {
-                                        '--item-frame-image': `url(${eraFrame})`
-                                    } as React.CSSProperties)
-                                }}
+                                className={`timeline-item ${side}`}
                             >
-                                <div className="event-header">
-                                    <span
-                                        className="event-year"
-                                        style={{ color: '#000000' }} // Black color
-                                    >
-                                        {event.year}년
+                                {/* Center node */}
+                                <div className="timeline-node">
+                                    <span className="timeline-year-label">
+                                        {event.year < 0 ? `BC ${Math.abs(event.year)}` : event.year}
                                     </span>
-                                    <span className="event-era">{event.era}</span>
                                 </div>
-                                <h3 className="event-name">{event.eventName}</h3>
-                                <div className="event-country">{event.countryName}</div>
-                                {/* Detailed description removed for list view */}
+
+                                {/* Event Card */}
+                                <div
+                                    className="major-event-item"
+                                    onClick={() => handleEventClick(event)}
+                                    style={{
+                                        borderColor: eraConfig.color,
+                                        backgroundColor: '#FFFEF5',
+                                        fontFamily: "'Noto Serif KR', serif",
+                                        ...(eraFrame && {
+                                            '--item-frame-image': `url(${eraFrame})`
+                                        } as React.CSSProperties)
+                                    }}
+                                >
+                                    <div className="event-header">
+                                        <span
+                                            className="event-year"
+                                            style={{ color: '#000000' }}
+                                        >
+                                            {event.year < 0 ? `BC ${Math.abs(event.year)}년` : `${event.year}년`}
+                                        </span>
+                                        <span className="event-era">{event.era}</span>
+                                    </div>
+                                    <h3 className="event-name">{event.eventName}</h3>
+                                    <div className="event-country">{event.countryName}</div>
+                                </div>
                             </div>
                         );
                     })}
