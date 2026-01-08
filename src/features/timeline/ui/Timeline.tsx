@@ -264,28 +264,45 @@ export const Timeline = ({ currentYear, onYearChange, onEventClick, isVisible, o
     // Process events for staggering (Vertical Alternation)
     const processedEvents = useMemo(() => {
         const sortedEvents = [...mainEvents].sort((a, b) => a.year - b.year);
+
+        const totalRange = viewEnd - viewStart;
+
+        const reservedPercents = [
+            ...ticks.map(t => t.percent),
+            ...eraLabels.map(e => e.percent),
+        ];
+
+        const NEAR_PCT = 3; // 3% 이내면 아래 금지
+
+        const isReservedX = (eventYear: number) => {
+            const p = ((eventYear - viewStart) / totalRange) * 100;
+            return reservedPercents.some(rp => Math.abs(rp - p) <= NEAR_PCT);
+        };
+
         const GAP = 10; // Years gap to consider as overlap
 
         let lastYear = -9999;
         let lastPosition = 'above'; // 'above' or 'below'
 
-        return sortedEvents.map(event => {
-            let position = 'above';
-
-            if (event.year - lastYear < GAP) {
-                // If within GAP, toggle position relative to last one
-                position = lastPosition === 'above' ? 'below' : 'above';
-            } else {
-                // Reset to default 'above' if no overlap
-                position = 'above';
+        return sortedEvents.map(ev => {
+            // 연도/시대 라벨이 있는 구간이면 below 금지
+            if (isReservedX(ev.year)) {
+                lastYear = ev.year;
+                lastPosition = 'above';
+                return { ...ev, position: 'above' as const };
             }
 
-            lastYear = event.year;
+            let position: 'above' | 'below' = 'above';
+            if (ev.year - lastYear < GAP) {
+                position = lastPosition === 'above' ? 'below' : 'above';
+            } else {
+                position = 'above';
+            }
+            lastYear = ev.year;
             lastPosition = position;
-
-            return { ...event, position };
+            return { ...ev, position };
         });
-    }, [mainEvents]);
+    }, [mainEvents, showEvents, viewStart, viewEnd, ticks, eraLabels]);
 
     return (
         <div className="timeline-component">
