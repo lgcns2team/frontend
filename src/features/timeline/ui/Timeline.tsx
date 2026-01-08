@@ -352,40 +352,35 @@ export const Timeline = ({ currentYear, onYearChange, onEventClick, isVisible, o
 
         const GAP = 10; // Years gap to consider as overlap
 
-        // Track same-year event counts for stacking
-        const yearCounts: { [year: number]: number } = {};
-        sortedEvents.forEach(ev => {
-            yearCounts[ev.year] = (yearCounts[ev.year] || 0) + 1;
-        });
-
-        // Track current index within same-year group
+        // Track same-year event indices for horizontal offsetting
         const yearCurrentIndex: { [year: number]: number } = {};
 
         let lastYear = -9999;
         let lastPosition = 'above'; // 'above' or 'below'
 
         return sortedEvents.map(ev => {
-            // Get index within same-year group
+            // Track same-year index for horizontal offset
             if (yearCurrentIndex[ev.year] === undefined) {
                 yearCurrentIndex[ev.year] = 0;
             } else {
                 yearCurrentIndex[ev.year]++;
             }
             const sameYearIndex = yearCurrentIndex[ev.year];
-            const sameYearTotal = yearCounts[ev.year];
 
-            // Calculate horizontal offset for era label conflicts
+            // Calculate horizontal offset
             let horizontalOffset = 0;
-            if (isNearEraStart(ev.year)) {
-                // Shift event label to the right to avoid era label
-                horizontalOffset = 25; // pixels
+
+            // Same-year events alternate left/right
+            if (sameYearIndex > 0) {
+                // Odd indices go left, even go right
+                const direction = sameYearIndex % 2 === 1 ? -1 : 1;
+                const magnitude = Math.ceil(sameYearIndex / 2) * 35; // 35px spacing
+                horizontalOffset = direction * magnitude;
             }
 
-            // Calculate vertical stacking for same-year events
-            let stackOffset = 0;
-            if (sameYearTotal > 1) {
-                // Multiple events on same year - stack them with different heights
-                stackOffset = sameYearIndex * 35; // 35px spacing between stacked labels
+            // Era label conflicts - push to LEFT (negative offset) to avoid right-side label
+            if (isNearEraStart(ev.year)) {
+                horizontalOffset -= 30; // Push left away from era label
             }
 
             // Determine above/below position
@@ -394,11 +389,8 @@ export const Timeline = ({ currentYear, onYearChange, onEventClick, isVisible, o
             // 연도/시대 라벨이 있는 구간이면 below 금지
             if (isReservedX(ev.year)) {
                 position = 'above';
-            } else if (ev.year === lastYear) {
-                // Same year as previous - alternate
-                position = lastPosition === 'above' ? 'below' : 'above';
-            } else if (ev.year - lastYear < GAP) {
-                // Within GAP years - alternate
+            } else if (ev.year === lastYear || ev.year - lastYear < GAP) {
+                // Same year or within GAP years - alternate above/below
                 position = lastPosition === 'above' ? 'below' : 'above';
             } else {
                 position = 'above';
@@ -410,10 +402,7 @@ export const Timeline = ({ currentYear, onYearChange, onEventClick, isVisible, o
             return {
                 ...ev,
                 position,
-                horizontalOffset,
-                stackOffset,
-                sameYearIndex,
-                sameYearTotal
+                horizontalOffset
             };
         });
     }, [mainEvents, showEvents, viewStart, viewEnd, ticks, eraLabels]);
@@ -540,10 +529,6 @@ export const Timeline = ({ currentYear, onYearChange, onEventClick, isVisible, o
 
                                         const displayName = event.shortName || event.eventName;
 
-                                        // Calculate vertical offset including stack offset for same-year events
-                                        const baseOffset = 15; // Base distance from timeline
-                                        const stackAdjust = event.stackOffset || 0;
-
                                         return (
                                             <div
                                                 key={event.eventId}
@@ -560,8 +545,8 @@ export const Timeline = ({ currentYear, onYearChange, onEventClick, isVisible, o
                                                     className="event-marker-label"
                                                     style={{
                                                         borderColor: getEraColor(event.year),
-                                                        bottom: isBelow ? 'auto' : `${baseOffset + stackAdjust}px`,
-                                                        top: isBelow ? `${25 + stackAdjust}px` : 'auto',
+                                                        bottom: isBelow ? 'auto' : '15px',
+                                                        top: isBelow ? '25px' : 'auto',
                                                         transformOrigin: isBelow ? 'top center' : 'bottom center',
                                                         marginLeft: event.horizontalOffset ? `${event.horizontalOffset}px` : '0'
                                                     }}
