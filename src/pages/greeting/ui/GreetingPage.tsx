@@ -147,10 +147,17 @@ const GreetingPage = () => {
                 </div>
                 <button
                     className="enter-book-btn"
-                    style={{ marginTop: '2rem' }}
+                    style={{
+                        position: 'absolute',
+                        bottom: '2rem',
+                        right: '2rem',
+                        padding: '10px 20px',
+                        fontSize: '1.2rem',
+                        minWidth: 'auto'
+                    }}
                     onClick={() => setActiveSection(2)}
                 >
-                    다음
+                    →
                 </button>
             </div>
 
