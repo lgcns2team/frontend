@@ -98,12 +98,14 @@ export function createStreamingTts(options: StreamingTtsOptions): StreamingTtsCo
 
         try {
             item.status = 'loading';
+            
+            console.log(`🔊 TTS 요청 시작: "${item.text.substring(0, 30)}..."`);
 
             const response = await fetch(ttsApiUrl, {
                 method: 'POST',
                 headers: getStreamingHeaders(),
                 body: JSON.stringify({
-                    text: item.text.replace(/\([^)]*\)/g, ''), // 괄호 내용 제거
+                    text: item.text.replace(/\([^)]*\)/g, ''),
                     promptId: promptId
                 }),
                 signal: controller.signal
@@ -114,6 +116,8 @@ export function createStreamingTts(options: StreamingTtsOptions): StreamingTtsCo
             }
 
             const blob = await response.blob();
+            console.log(`✅ TTS 응답 완료: ${blob.size} bytes`);
+            
             const url = URL.createObjectURL(blob);
 
             item.audioUrl = url;
@@ -125,18 +129,22 @@ export function createStreamingTts(options: StreamingTtsOptions): StreamingTtsCo
 
         } catch (error) {
             if ((error as Error).name === 'AbortError') {
+                console.log('⏹️ TTS 요청 취소됨');
                 item.status = 'error';
                 return;
             }
-            console.error('TTS fetch error:', error);
+            console.error('❌ TTS fetch error:', error);
             item.status = 'error';
             onError?.(error as Error);
-            // 에러 발생해도 다음 문장 시도
             tryPlayNext();
         } finally {
             abortControllers = abortControllers.filter(c => c !== controller);
-            // 🔧 현재 요청 완료 후 다음 요청 처리 (순차 처리)
+            
+            // 🔧 중요: 현재 요청 완료 후에만 다음 요청 처리
             isFetching = false;
+            
+            // 응답 받은 후 다음 문장 요청 시작
+            console.log(`📤 다음 문장 요청 준비 중... (대기 중인 항목: ${queue.filter(q => q.status === 'pending').length}개)`);
             processQueue();
         }
     };
