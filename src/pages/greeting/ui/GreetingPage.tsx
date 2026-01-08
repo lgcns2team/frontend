@@ -1,7 +1,7 @@
-import { useRef, useEffect, useState } from 'react';
+import { useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import './GreetingPage.css';
-import kingSejongImg from '../../../assets/images/joseon/king_sejong_original.png';
+
 
 
 // Portal Animation Video
@@ -10,38 +10,10 @@ import portalVideo from '../../../assets/images/portal/portal.mp4';
 const GreetingPage = () => {
     const navigate = useNavigate();
     const [activeSection, setActiveSection] = useState(0);
-    const [typedText, setTypedText] = useState('');
-    const fullText = "지겨운 암기는 그만,\n역사의 인물들과 직접 대화하세요.";
 
     // Zoom state for button trigger
     const [isZooming, setIsZooming] = useState(false);
     const videoRef = useRef<HTMLVideoElement>(null);
-
-
-
-
-
-    // Typewriter effect logic
-    useEffect(() => {
-        if (activeSection === 1) { // When Dialogue section is active
-            // 페이지 전환 후 0.4초 딜레이 후 타이핑 시작
-            const delayTimer = setTimeout(() => {
-                let index = 0;
-                setTypedText('');
-                const timer = setInterval(() => {
-                    if (index <= fullText.length) {
-                        setTypedText(fullText.slice(0, index));
-                        index++;
-                    } else {
-                        clearInterval(timer);
-                    }
-                }, 100);
-                // 클린업 함수에서 interval도 정리
-                return () => clearInterval(timer);
-            }, 700);
-            return () => clearTimeout(delayTimer);
-        }
-    }, [activeSection]);
 
 
 
@@ -72,6 +44,34 @@ const GreetingPage = () => {
                 className={`section section-paper ${activeSection === 0 ? 'visible' : 'hidden'}`}
                 style={{ overflow: 'hidden' }}
             >
+                {/* Top-right login button */}
+                <button
+                    onClick={handleStart}
+                    style={{
+                        position: 'absolute',
+                        top: '1.5rem',
+                        right: '1.5rem',
+                        padding: '8px 20px',
+                        fontSize: '1rem',
+                        background: 'transparent',
+                        border: '1px solid rgba(255,255,255,0.5)',
+                        color: '#fff',
+                        cursor: 'pointer',
+                        borderRadius: '20px',
+                        zIndex: 10,
+                        transition: 'all 0.3s ease'
+                    }}
+                    onMouseEnter={(e) => {
+                        e.currentTarget.style.background = 'rgba(255,255,255,0.2)';
+                        e.currentTarget.style.borderColor = '#fff';
+                    }}
+                    onMouseLeave={(e) => {
+                        e.currentTarget.style.background = 'transparent';
+                        e.currentTarget.style.borderColor = 'rgba(255,255,255,0.5)';
+                    }}
+                >
+                    로그인
+                </button>
                 {/* Background Video that zooms in on click */}
                 <video
                     ref={videoRef}
@@ -121,55 +121,13 @@ const GreetingPage = () => {
                 </div>
             </div>
 
-            {/* Section 2: Dialogue */}
+            {/* Section 2: Outro */}
             <div
                 data-index="1"
-                className={`section section-chat ${activeSection === 1 ? 'visible' : 'hidden'}`}
-            >
-                <div className="character-card">
-                    {/* Using Sejong image or placeholder */}
-                    <img
-                        src={kingSejongImg}
-                        alt="King Sejong"
-                        className="character-img"
-                        onError={(e) => {
-                            (e.target as HTMLImageElement).src = 'https://via.placeholder.com/300x400/1e293b/ffffff?text=King+Sejong';
-                        }}
-                    />
-                </div>
-                <div className="chat-bubble-container">
-                    <div className="chat-bubble">
-                        <div className="typewriter-text">
-                            {typedText}
-                            <span className="cursor"></span>
-                        </div>
-                    </div>
-                </div>
-                <button
-                    className="enter-book-btn"
-                    style={{
-                        position: 'absolute',
-                        bottom: '2rem',
-                        right: '2rem',
-                        padding: '10px 20px',
-                        fontSize: '1.2rem',
-                        minWidth: 'auto'
-                    }}
-                    onClick={() => setActiveSection(2)}
-                >
-                    →
-                </button>
-            </div>
-
-            {/* Section 3: Outro */}
-            <div
-                data-index="2"
-                className={`section section-outro ${activeSection === 2 ? 'visible' : 'hidden'}`}
+                className={`section section-outro ${activeSection === 1 ? 'visible' : 'hidden'}`}
             >
                 <h2 className="logo-large">H.AI</h2>
-                <p className="book-desc" style={{ marginBottom: '3rem' }}>
-                    지금 바로, 당신만의 역사 여행을 시작하세요.
-                </p>
+
                 <button className="start-btn" onClick={handleStart}>
                     학습 시작하기
                 </button>
