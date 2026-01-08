@@ -137,10 +137,7 @@ export const TextbookPanel = ({
                         }}
                         onClick={(e) => {
                             e.stopPropagation();
-                            const confirmMsg = `'${hotspot.description}' 관련 연도(${Math.abs(hotspot.year)}${hotspot.year < 0 ? 'BC' : '년'})로 이동하시겠습니까?`;
-                            if (window.confirm(confirmMsg)) {
-                                onJumpToYear(hotspot.year);
-                            }
+                            onJumpToYear(hotspot.year);
                         }}
                         title={`${hotspot.description} - 클릭하여 지도로 이동 (${Math.abs(hotspot.year)}${hotspot.year < 0 ? 'BC' : '년'})`}
                     >

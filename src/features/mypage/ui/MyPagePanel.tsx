@@ -67,9 +67,7 @@ export const MyPagePanel = ({ onClose }: MyPagePanelProps) => {
 
     return (
         <div ref={panelRef} className="mypage-panel" onClick={(e) => e.stopPropagation()}>
-            <div className="mypage-header">
-                <span className="mypage-title">마이 페이지</span>
-            </div>
+
 
             <div className="mypage-content">
                 <div className="info-row">

@@ -389,25 +389,24 @@ export const useFrontlineAnimation = ({
                     }
                 }
 
+                // --- 국기 마커 임시 비활성화 (테스트용) ---
                 // Render North Flag if on land
-                const nPos = pNorth.geometry.coordinates;
-                // Check if point is inside peninsula polygon
-                if (!peninsula || turf.booleanPointInPolygon(pNorth, peninsula)) {
-                    // Always use soldierIconNorth (Flag) - Removed Tank logic
-                    L.marker([nPos[1], nPos[0]], {
-                        icon: soldierIconNorth,
-                        pane: 'soldierPane'
-                    }).addTo(soldierLayer.current);
-                }
+                // const nPos = pNorth.geometry.coordinates;
+                // if (!peninsula || turf.booleanPointInPolygon(pNorth, peninsula)) {
+                //     L.marker([nPos[1], nPos[0]], {
+                //         icon: soldierIconNorth,
+                //         pane: 'soldierPane'
+                //     }).addTo(soldierLayer.current);
+                // }
 
                 // Render South Flag if on land
-                const sPos = pSouth.geometry.coordinates;
-                if (!peninsula || turf.booleanPointInPolygon(pSouth, peninsula)) {
-                    L.marker([sPos[1], sPos[0]], {
-                        icon: soldierIconSouth,
-                        pane: 'soldierPane'
-                    }).addTo(soldierLayer.current);
-                }
+                // const sPos = pSouth.geometry.coordinates;
+                // if (!peninsula || turf.booleanPointInPolygon(pSouth, peninsula)) {
+                //     L.marker([sPos[1], sPos[0]], {
+                //         icon: soldierIconSouth,
+                //         pane: 'soldierPane'
+                //     }).addTo(soldierLayer.current);
+                // }
             }
 
         } catch (e) {
