@@ -363,31 +363,32 @@ export const useFrontlineAnimation = ({
 
                 if (!p1 || !p2) continue;
 
+                // --- 국기 마커 임시 비활성화 (테스트용) - 변수 선언도 주석 처리 ---
                 // Heuristic to decide which is "North" (North Korea) vs "South" (South Korea/UN)
                 // Generally, NK is North/West.
-                let pNorth, pSouth;
-                const c1 = p1.geometry.coordinates;
-                const c2 = p2.geometry.coordinates;
+                // let pNorth, pSouth;
+                // const c1 = p1.geometry.coordinates;
+                // const c2 = p2.geometry.coordinates;
 
                 // Check Latitude first
-                if (Math.abs(c1[1] - c2[1]) > 0.005) { // Significant lat diff
-                    if (c1[1] > c2[1]) {
-                        pNorth = p1;
-                        pSouth = p2;
-                    } else {
-                        pNorth = p2;
-                        pSouth = p1;
-                    }
-                } else {
-                    // Lat similar, check Longitude (West is usually NK in this context)
-                    if (c1[0] < c2[0]) {
-                        pNorth = p1; // p1 is West
-                        pSouth = p2;
-                    } else {
-                        pNorth = p2;
-                        pSouth = p1;
-                    }
-                }
+                // if (Math.abs(c1[1] - c2[1]) > 0.005) { // Significant lat diff
+                //     if (c1[1] > c2[1]) {
+                //         pNorth = p1;
+                //         pSouth = p2;
+                //     } else {
+                //         pNorth = p2;
+                //         pSouth = p1;
+                //     }
+                // } else {
+                //     // Lat similar, check Longitude (West is usually NK in this context)
+                //     if (c1[0] < c2[0]) {
+                //         pNorth = p1; // p1 is West
+                //         pSouth = p2;
+                //     } else {
+                //         pNorth = p2;
+                //         pSouth = p1;
+                //     }
+                // }
 
                 // --- 국기 마커 임시 비활성화 (테스트용) ---
                 // Render North Flag if on land
