@@ -13,6 +13,7 @@ interface TimelineProps {
     onDecreaseVisibility: () => void;
     showEvents?: boolean;
     timelineVisibility?: 'full' | 'no-events' | 'hidden' | 'full-hidden';
+    onGameStart?: () => void; // Dino game trigger
 }
 
 
@@ -54,7 +55,7 @@ const calculateDynamicWindowSize = (year: number, events: ParsedMainEvent[]): nu
     return Math.round(windowSize);
 };
 
-export const Timeline = ({ currentYear, onYearChange, onEventClick, isVisible, onIncreaseVisibility, onDecreaseVisibility, showEvents = true, timelineVisibility = 'full' }: TimelineProps) => {
+export const Timeline = ({ currentYear, onYearChange, onEventClick, isVisible, onIncreaseVisibility, onDecreaseVisibility, showEvents = true, timelineVisibility = 'full', onGameStart }: TimelineProps) => {
     const thumbColor = getEraColor(currentYear);
     const [mainEvents, setMainEvents] = useState<ParsedMainEvent[]>([]);
     // const [isVisible, setIsVisible] = useState(true); // Moved to parent
@@ -477,6 +478,7 @@ export const Timeline = ({ currentYear, onYearChange, onEventClick, isVisible, o
                         </svg>
                     </button>
 
+
                     <div className="timeline-wrapper">
                         <div className="timeline-slider-container">
                             {/* Brush Stroke Line */}
@@ -558,6 +560,45 @@ export const Timeline = ({ currentYear, onYearChange, onEventClick, isVisible, o
                                     })}
                                 </div>
                             )}
+
+                            {/* Easter Egg: 역사속으로 Event Marker at BC2333 */}
+                            {showEvents && onGameStart && (() => {
+                                const easterEggYear = GLOBAL_MIN_YEAR; // BC2333
+                                const totalRange = viewEnd - viewStart;
+                                const percent = ((easterEggYear - viewStart) / totalRange) * 100;
+
+                                // Only show if visible in current view
+                                if (percent < -5 || percent > 105) return null;
+
+                                return (
+                                    <div
+                                        className="timeline-event-markers"
+                                        style={{ pointerEvents: 'auto' }}
+                                    >
+                                        <div
+                                            className="event-marker easter-egg-marker"
+                                            style={{ left: `${percent}%` }}
+                                            onClick={(e) => {
+                                                e.stopPropagation();
+                                                onGameStart();
+                                            }}
+                                            title="🎮 숨겨진 게임!"
+                                        >
+                                            <div className="event-marker-dot" style={{ backgroundColor: '#9b59b6' }}></div>
+                                            <div
+                                                className="event-marker-label"
+                                                style={{
+                                                    borderColor: '#9b59b6',
+                                                    bottom: '15px',
+                                                    color: '#9b59b6'
+                                                }}
+                                            >
+                                                역사속으로
+                                            </div>
+                                        </div>
+                                    </div>
+                                );
+                            })()}
 
                             <input
                                 type="range"

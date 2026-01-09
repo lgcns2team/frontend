@@ -39,6 +39,7 @@ import { CloudTransition } from '../../../features/cloud-transition/ui/CloudTran
 import { MyPagePanel } from '../../../features/mypage';
 import { DayTimelineSlider } from '../../../features/day-timeline';
 import { EraNameDisplay } from '../../era-name-display';
+import { DinoGame } from '../../../features/dino-game';
 
 // Fix Leaflet marker icon issue
 import icon from 'leaflet/dist/images/marker-icon.png';
@@ -126,6 +127,9 @@ export default function HistoryMap() {
 
     // My Page State
     const [showMyPage, setShowMyPage] = useState(false);
+
+    // Dino Game State
+    const [isGameOpen, setIsGameOpen] = useState(false);
 
     // Textbook Sync State
     const [isPinsetEnabled, setIsPinsetEnabled] = useState(false);
@@ -1415,6 +1419,7 @@ export default function HistoryMap() {
                     onDecreaseVisibility={handleTimelineDecrease}
                     showEvents={timelineVisibility === 'full'}
                     timelineVisibility={timelineVisibility}
+                    onGameStart={() => setIsGameOpen(true)}
                 />
             </div>
 
@@ -1452,6 +1457,11 @@ export default function HistoryMap() {
                     onComplete={() => removeExplosion(ex.id)}
                 />
             ))}
+
+            {/* Dino Game */}
+            {isGameOpen && (
+                <DinoGame onClose={() => setIsGameOpen(false)} />
+            )}
         </div>
     );
 }
