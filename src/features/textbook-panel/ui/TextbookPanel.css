@@ -17,8 +17,8 @@
     position: absolute;
     display: flex;
     align-items: center;
-    gap: 12px;
-    padding: 10px 20px;
+    gap: 8px;
+    padding: 8px 12px;
     background: rgba(255, 255, 255, 0.95);
     border: 1px solid var(--color-border, #d4d1ca);
     border-radius: 24px;
@@ -34,15 +34,17 @@
 }
 
 .textbook-floating-nav .nav-btn {
-    padding: 8px 14px;
+    padding: 6px 10px;
     background: transparent;
     border: none;
     border-radius: 6px;
     cursor: pointer;
-    font-size: 13px;
+    font-size: 12px;
     color: var(--color-text-primary, #040316);
     transition: background 0.2s, opacity 0.2s;
     white-space: nowrap;
+    text-align: center;
+    line-height: 1.2;
 }
 
 .textbook-floating-nav .nav-btn:hover:not(:disabled) {
@@ -123,8 +125,8 @@
 /* Collapsed Navigation Button */
 .nav-collapsed-btn {
     position: absolute;
-    right: 20px;
-    bottom: 20px;
+    right: 25px;
+    bottom: 25px;
     min-width: 56px;
     height: 56px;
     padding: 8px;

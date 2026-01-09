@@ -171,11 +171,19 @@ export const TextbookPanel = ({
                 // In conversation mode, panel is half width, so center within that
                 const containerWidth = containerRef.current.offsetWidth;
                 const containerHeight = containerRef.current.offsetHeight;
-                const barWidth = 500; // Approximate bar width (updated for wider bar)
-                const barHeight = 50; // Approximate bar height
+                const barWidth = 420; // Compacted bar width
+                const barHeight = 44; // Approximate bar height
+                let newX;
+                // Left align if single view OR conversation mode
+                if (viewMode === 'single' || isConversationMode) {
+                    newX = 25; // 10px visual margin + 20px negative margin offset
+                } else {
+                    newX = Math.max(25, (containerWidth - barWidth) / 2);
+                }
+
                 setBarPosition({
-                    x: (containerWidth - barWidth) / 2,
-                    y: containerHeight - barHeight - 30 // 30px from bottom
+                    x: newX,
+                    y: containerHeight - barHeight - 35
                 });
             }
         };
@@ -186,6 +194,11 @@ export const TextbookPanel = ({
             return () => clearTimeout(timer);
         }
     }, [barPosition, viewMode, isConversationMode]);
+
+    // Force re-center when conversation mode changes
+    useEffect(() => {
+        setBarPosition(null);
+    }, [isConversationMode]);
 
     const handlePrev = () => {
         if (viewMode === 'single') {
@@ -233,7 +246,7 @@ export const TextbookPanel = ({
         if (!isDragging || !containerRef.current) return;
 
         const containerRect = containerRef.current.getBoundingClientRect();
-        const barWidth = 400;
+        const barWidth = 420;
         const barHeight = 44;
 
         let newX = e.clientX - dragStart.current.x;
@@ -354,7 +367,7 @@ export const TextbookPanel = ({
                             onClick={onVoiceChat}
                             disabled={isConversationMode}
                         >
-                            인물대화
+                            인물<br />대화
                         </button>
                     )}
 

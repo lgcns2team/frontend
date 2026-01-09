@@ -531,7 +531,7 @@ export const ChatbotPanel = ({ onClose, initialPosition, initialSize, onStateCha
         >
             <div className="chatbot-header" onMouseDown={handleMouseDown} onTouchStart={handleTouchStart}>
                 <div className="chatbot-title">
-                    <span>🤖</span> 역사 챗봇 H.AI
+                    역사 챗봇 H.AI
                     <button
                         className={`tts-btn ${isTTSEnabled ? 'tts-active' : ''}`}
                         onClick={(e) => {

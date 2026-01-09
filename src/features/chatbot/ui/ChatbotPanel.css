@@ -220,12 +220,7 @@
     bottom: 0;
     right: 0;
     cursor: nwse-resize;
-    width: 10px;
-    height: 10px;
-    /* Create black triangle using border */
-    border-right: 10px solid #000000;
-    border-top: 10px solid transparent;
-    z-index: 9999;
+    z-index: 2005;
 }
 
 /* Chat Typing Indicator (Three Dots) */
