@@ -97,7 +97,7 @@ export const Timeline = ({ currentYear, onYearChange, onEventClick, isVisible, o
         return () => clearTimeout(timeout);
     }, [dynamicWindowSize, smoothWindowSize]);
 
-    const displayWindowSize = showEvents ? smoothWindowSize : BASE_WINDOW_SIZE;
+    const displayWindowSize = showEvents ? smoothWindowSize : Math.min(BASE_WINDOW_SIZE, 200);
 
     // Initialize view window centered on current year
     const [viewStart, setViewStart] = useState(() => {

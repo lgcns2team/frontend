@@ -1193,7 +1193,12 @@ export default function HistoryMap() {
                         onPersonClick={handlePersonClickFromTextbook}
                         isPinsetEnabled={isPinsetEnabled}
                         onTogglePinset={() => setIsPinsetEnabled(prev => !prev)}
-                        onJumpToYear={handleYearChange}
+                        onJumpToYear={(year) => {
+                            handleYearChange(year);
+                            // Close conversation panel when jumping to map
+                            setIsConversationMode(false);
+                            setChatCharacter(null);
+                        }}
                     />
                 ) : activePanel === 'search' ? (
                     <MajorEventsPanel
