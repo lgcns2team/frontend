@@ -11,8 +11,10 @@ const GreetingPage = () => {
     const navigate = useNavigate();
     const [activeSection, setActiveSection] = useState(0);
 
-    // Zoom state for button trigger
+    // Zoom state for portal animation (triggered near end of video)
     const [isZooming, setIsZooming] = useState(false);
+    // Text hidden state (triggered immediately on button click)
+    const [isTextHidden, setIsTextHidden] = useState(false);
     const videoRef = useRef<HTMLVideoElement>(null);
 
 
@@ -22,6 +24,8 @@ const GreetingPage = () => {
     };
 
     const handleEnterBook = () => {
+        // Hide text immediately when button is clicked
+        setIsTextHidden(true);
         if (videoRef.current) {
             videoRef.current.play();
         }
@@ -104,7 +108,7 @@ const GreetingPage = () => {
                 </video>
 
                 <div
-                    className={isZooming ? 'fade-out' : ''}
+                    className={isTextHidden ? 'fade-out' : ''}
                     style={{ position: 'relative', zIndex: 1 }}
                 >
                     <h1 className="book-title" style={{ color: '#fff', textShadow: '0 4px 10px rgba(0,0,0,0.8)' }}>
