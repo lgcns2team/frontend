@@ -1,7 +1,7 @@
 import { useMemo, useState, useEffect, useRef } from 'react';
 import { fetchMainEvents, type ParsedMainEvent } from '../../../shared/api/main-events-api';
 import './Timeline.css';
-import { getEraColor, ERA_LIMITS, ERAS } from '../../../shared/config/era-theme';
+import { getEraColor, ERA_LIMITS, ERAS, getEraForYear } from '../../../shared/config/era-theme';
 
 
 interface TimelineProps {
@@ -13,13 +13,49 @@ interface TimelineProps {
     onDecreaseVisibility: () => void;
     showEvents?: boolean;
     timelineVisibility?: 'full' | 'no-events' | 'hidden' | 'full-hidden';
+    onGameStart?: () => void; // Dino game trigger
 }
 
 
 const GLOBAL_MIN_YEAR = -2333;
 const GLOBAL_MAX_YEAR = 2024;
 
-export const Timeline = ({ currentYear, onYearChange, onEventClick, isVisible, onIncreaseVisibility, onDecreaseVisibility, showEvents = true, timelineVisibility = 'full' }: TimelineProps) => {
+// Dynamic window size calculation based on event density
+const calculateDynamicWindowSize = (year: number, events: ParsedMainEvent[]): number => {
+    const era = getEraForYear(year);
+
+    // Get era boundaries (clamped to global limits)
+    const eraStart = Math.max(era.startYear === -Infinity ? GLOBAL_MIN_YEAR : era.startYear, GLOBAL_MIN_YEAR);
+    const eraEnd = Math.min(era.endYear === Infinity ? GLOBAL_MAX_YEAR : era.endYear, GLOBAL_MAX_YEAR);
+    const eraDuration = eraEnd - eraStart;
+
+    // Count events in this era
+    const eraEvents = events.filter(e => e.year >= eraStart && e.year <= eraEnd);
+    const eventCount = eraEvents.length;
+
+    // Calculate density (events per 100 years)
+    const density = eraDuration > 0 ? (eventCount / eraDuration) * 100 : 0;
+
+    // Window size scaling:
+    // - High density (many events) -> smaller window (zoom in) -> more space between labels
+    // - Low density (few events) -> larger window (zoom out) -> compact view
+    const MIN_WINDOW = 50;   // Maximum zoom in (dense eras like 대한제국/일제강점기)
+    const MAX_WINDOW = 300;  // Maximum zoom out (sparse eras like 고조선/조선)
+    const BASE_WINDOW = 150; // Default window size
+
+    // Scale inversely with density
+    // density 0.5 events/100yr -> 300 years window
+    // density 5+ events/100yr -> 50 years window
+    let windowSize = BASE_WINDOW;
+    if (density > 0) {
+        // Higher density = smaller window
+        windowSize = Math.max(MIN_WINDOW, Math.min(MAX_WINDOW, BASE_WINDOW / (density * 0.5 + 0.5)));
+    }
+
+    return Math.round(windowSize);
+};
+
+export const Timeline = ({ currentYear, onYearChange, onEventClick, isVisible, onIncreaseVisibility, onDecreaseVisibility, showEvents = true, timelineVisibility = 'full', onGameStart }: TimelineProps) => {
     const thumbColor = getEraColor(currentYear);
     const [mainEvents, setMainEvents] = useState<ParsedMainEvent[]>([]);
     // const [isVisible, setIsVisible] = useState(true); // Moved to parent
@@ -32,10 +68,37 @@ export const Timeline = ({ currentYear, onYearChange, onEventClick, isVisible, o
         });
     }, []);
 
-    // Base window size is 500 years, but smaller when showing events for better readability
+    // Base window size is 500 years, but dynamic when showing events for better readability
     const BASE_WINDOW_SIZE = 500;
-    const EVENTS_WINDOW_SIZE = 200; // Narrower view when showing events
-    const displayWindowSize = showEvents ? EVENTS_WINDOW_SIZE : BASE_WINDOW_SIZE;
+
+    // Calculate dynamic window size based on current era's event density
+    const dynamicWindowSize = useMemo(() => {
+        if (!showEvents || mainEvents.length === 0) return 200; // Default when no events
+        return calculateDynamicWindowSize(currentYear, mainEvents);
+    }, [currentYear, mainEvents, showEvents]);
+
+    // Smooth transition for window size changes
+    const [smoothWindowSize, setSmoothWindowSize] = useState(dynamicWindowSize);
+
+    useEffect(() => {
+        // Gradually transition to new window size for smooth zoom effect
+        const targetSize = dynamicWindowSize;
+        const currentSize = smoothWindowSize;
+
+        if (Math.abs(targetSize - currentSize) < 5) {
+            setSmoothWindowSize(targetSize);
+            return;
+        }
+
+        const step = (targetSize - currentSize) * 0.15; // 15% per frame for smooth transition
+        const timeout = setTimeout(() => {
+            setSmoothWindowSize(Math.round(currentSize + step));
+        }, 16); // ~60fps
+
+        return () => clearTimeout(timeout);
+    }, [dynamicWindowSize, smoothWindowSize]);
+
+    const displayWindowSize = showEvents ? smoothWindowSize : Math.min(BASE_WINDOW_SIZE, 200);
 
     // Initialize view window centered on current year
     const [viewStart, setViewStart] = useState(() => {
@@ -55,9 +118,9 @@ export const Timeline = ({ currentYear, onYearChange, onEventClick, isVisible, o
     useEffect(() => {
         if (!isDragging) {
             if (currentYear < viewStart) {
-                setViewStart(Math.max(GLOBAL_MIN_YEAR, currentYear - displayWindowSize * 0.1));
+                setViewStart(Math.round(Math.max(GLOBAL_MIN_YEAR, currentYear - displayWindowSize * 0.1)));
             } else if (currentYear > viewEnd) {
-                setViewStart(Math.min(GLOBAL_MAX_YEAR - displayWindowSize, currentYear - displayWindowSize * 0.9));
+                setViewStart(Math.round(Math.min(GLOBAL_MAX_YEAR - displayWindowSize, currentYear - displayWindowSize * 0.9)));
             }
         }
     }, [currentYear, viewStart, viewEnd, isDragging, displayWindowSize]);
@@ -65,21 +128,21 @@ export const Timeline = ({ currentYear, onYearChange, onEventClick, isVisible, o
     useEffect(() => {
         const scroll = () => {
             if (scrollDirection.current !== 0) {
-                const step = displayWindowSize / 100; // Scroll speed: 1% of window per frame (5 years or 1 year)
+                const step = Math.max(1, Math.round(displayWindowSize / 100)); // Scroll speed: 1% of window per frame, minimum 1 year
 
                 setViewStart(prev => {
                     let nextStart = prev;
                     if (scrollDirection.current === 1) {
-                        nextStart = Math.min(GLOBAL_MAX_YEAR - displayWindowSize, prev + step);
+                        nextStart = Math.round(Math.min(GLOBAL_MAX_YEAR - displayWindowSize, prev + step));
                         // Also push currentYear if we are scrolling right
                         if (nextStart > prev) {
-                            onYearChange(Math.min(GLOBAL_MAX_YEAR, currentYear + step));
+                            onYearChange(Math.round(Math.min(GLOBAL_MAX_YEAR, currentYear + step)));
                         }
                     } else if (scrollDirection.current === -1) {
-                        nextStart = Math.max(GLOBAL_MIN_YEAR, prev - step);
+                        nextStart = Math.round(Math.max(GLOBAL_MIN_YEAR, prev - step));
                         // Also push currentYear if we are scrolling left
                         if (nextStart < prev) {
-                            onYearChange(Math.max(GLOBAL_MIN_YEAR, currentYear - step));
+                            onYearChange(Math.round(Math.max(GLOBAL_MIN_YEAR, currentYear - step)));
                         }
                     }
                     return nextStart;
@@ -261,31 +324,89 @@ export const Timeline = ({ currentYear, onYearChange, onEventClick, isVisible, o
     }, [viewStart, viewEnd]);
 
 
-    // Process events for staggering (Vertical Alternation)
+    // Process events for staggering (Vertical Alternation + Same-year stacking + Era label avoidance)
     const processedEvents = useMemo(() => {
         const sortedEvents = [...mainEvents].sort((a, b) => a.year - b.year);
+
+        const totalRange = viewEnd - viewStart;
+
+        // Get era start years for horizontal offset check
+        const eraStartYears = ERAS.filter(era => !era.hideOnTimeline).map(era => era.startYear);
+
+        const reservedPercents = [
+            ...ticks.map(t => t.percent),
+            ...eraLabels.map(e => e.percent),
+        ];
+
+        const NEAR_PCT = 3; // 3% 이내면 아래 금지
+
+        const isReservedX = (eventYear: number) => {
+            const p = ((eventYear - viewStart) / totalRange) * 100;
+            return reservedPercents.some(rp => Math.abs(rp - p) <= NEAR_PCT);
+        };
+
+        // Check if event is near an era start (for horizontal offset)
+        const isNearEraStart = (eventYear: number): boolean => {
+            // Check if within 5 years of any era start
+            return eraStartYears.some(eraYear => Math.abs(eventYear - eraYear) <= 5);
+        };
+
         const GAP = 10; // Years gap to consider as overlap
+
+        // Track same-year event indices for horizontal offsetting
+        const yearCurrentIndex: { [year: number]: number } = {};
 
         let lastYear = -9999;
         let lastPosition = 'above'; // 'above' or 'below'
 
-        return sortedEvents.map(event => {
-            let position = 'above';
+        return sortedEvents.map(ev => {
+            // Track same-year index for horizontal offset
+            if (yearCurrentIndex[ev.year] === undefined) {
+                yearCurrentIndex[ev.year] = 0;
+            } else {
+                yearCurrentIndex[ev.year]++;
+            }
+            const sameYearIndex = yearCurrentIndex[ev.year];
 
-            if (event.year - lastYear < GAP) {
-                // If within GAP, toggle position relative to last one
+            // Calculate horizontal offset
+            let horizontalOffset = 0;
+
+            // Same-year events alternate left/right
+            if (sameYearIndex > 0) {
+                // Odd indices go left, even go right
+                const direction = sameYearIndex % 2 === 1 ? -1 : 1;
+                const magnitude = Math.ceil(sameYearIndex / 2) * 35; // 35px spacing
+                horizontalOffset = direction * magnitude;
+            }
+
+            // Era label conflicts - push to LEFT (negative offset) to avoid right-side label
+            if (isNearEraStart(ev.year)) {
+                horizontalOffset -= 30; // Push left away from era label
+            }
+
+            // Determine above/below position
+            let position: 'above' | 'below' = 'above';
+
+            // 연도/시대 라벨이 있는 구간이면 below 금지
+            if (isReservedX(ev.year)) {
+                position = 'above';
+            } else if (ev.year === lastYear || ev.year - lastYear < GAP) {
+                // Same year or within GAP years - alternate above/below
                 position = lastPosition === 'above' ? 'below' : 'above';
             } else {
-                // Reset to default 'above' if no overlap
                 position = 'above';
             }
 
-            lastYear = event.year;
+            lastYear = ev.year;
             lastPosition = position;
 
-            return { ...event, position };
+            return {
+                ...ev,
+                position,
+                horizontalOffset
+            };
         });
-    }, [mainEvents]);
+    }, [mainEvents, showEvents, viewStart, viewEnd, ticks, eraLabels]);
 
     return (
         <div className="timeline-component">
@@ -357,6 +478,7 @@ export const Timeline = ({ currentYear, onYearChange, onEventClick, isVisible, o
                         </svg>
                     </button>
 
+
                     <div className="timeline-wrapper">
                         <div className="timeline-slider-container">
                             {/* Brush Stroke Line */}
@@ -427,7 +549,8 @@ export const Timeline = ({ currentYear, onYearChange, onEventClick, isVisible, o
                                                         borderColor: getEraColor(event.year),
                                                         bottom: isBelow ? 'auto' : '15px',
                                                         top: isBelow ? '25px' : 'auto',
-                                                        transformOrigin: isBelow ? 'top center' : 'bottom center'
+                                                        transformOrigin: isBelow ? 'top center' : 'bottom center',
+                                                        marginLeft: event.horizontalOffset ? `${event.horizontalOffset}px` : '0'
                                                     }}
                                                 >
                                                     {formatEventName(displayName)}
@@ -437,6 +560,45 @@ export const Timeline = ({ currentYear, onYearChange, onEventClick, isVisible, o
                                     })}
                                 </div>
                             )}
+
+                            {/* Easter Egg: 역사속으로 Event Marker at BC2333 */}
+                            {showEvents && onGameStart && (() => {
+                                const easterEggYear = GLOBAL_MIN_YEAR; // BC2333
+                                const totalRange = viewEnd - viewStart;
+                                const percent = ((easterEggYear - viewStart) / totalRange) * 100;
+
+                                // Only show if visible in current view
+                                if (percent < -5 || percent > 105) return null;
+
+                                return (
+                                    <div
+                                        className="timeline-event-markers"
+                                        style={{ pointerEvents: 'auto' }}
+                                    >
+                                        <div
+                                            className="event-marker easter-egg-marker"
+                                            style={{ left: `${percent}%` }}
+                                            onClick={(e) => {
+                                                e.stopPropagation();
+                                                onGameStart();
+                                            }}
+                                            title="🎮 숨겨진 게임!"
+                                        >
+                                            <div className="event-marker-dot" style={{ backgroundColor: '#9b59b6' }}></div>
+                                            <div
+                                                className="event-marker-label"
+                                                style={{
+                                                    borderColor: '#9b59b6',
+                                                    bottom: '15px',
+                                                    color: '#9b59b6'
+                                                }}
+                                            >
+                                                역사속으로
+                                            </div>
+                                        </div>
+                                    </div>
+                                );
+                            })()}
 
                             <input
                                 type="range"
