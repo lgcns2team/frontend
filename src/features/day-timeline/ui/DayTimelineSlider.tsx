@@ -4,7 +4,8 @@ import {
     KOREAN_WAR_START,
     KOREAN_WAR_END,
     generateDateRange,
-    type FrontlineData
+    type FrontlineData,
+    type KoreanWarBattle
 } from '../../../shared/api/korean-war-api';
 
 interface DayTimelineSliderProps {
@@ -17,6 +18,7 @@ interface DayTimelineSliderProps {
     onSpeedChange: (speed: number) => void;
     isOpen?: boolean;
     onToggle?: (isOpen: boolean) => void;
+    activeBattle?: KoreanWarBattle | null; // 현재 표시할 전투 정보
 }
 
 const formatDate = (dateStr: string): string => {
@@ -38,7 +40,8 @@ export const DayTimelineSlider: React.FC<DayTimelineSliderProps> = ({
     speed,
     onSpeedChange,
     isOpen,
-    onToggle
+    onToggle,
+    activeBattle
 }) => {
     const [allDates] = useState(() => generateDateRange(KOREAN_WAR_START, KOREAN_WAR_END));
     const [internalIsPanelOpen, setInternalIsPanelOpen] = useState(false);
@@ -129,6 +132,26 @@ export const DayTimelineSlider: React.FC<DayTimelineSliderProps> = ({
                     <span className="korean-war-label-arrow">{isPanelOpen ? '▼' : '▶'}</span>
                 </div>
             </div>
+
+            {/* Battle Info Popup - 전투 정보 표시 */}
+            {activeBattle && (
+                <div className="battle-info-popup">
+                    <div className="battle-info-header">
+                        <span className="battle-info-icon">⚔️</span>
+                        <h4 className="battle-info-name">{activeBattle.name}</h4>
+                    </div>
+                    <div className="battle-info-content">
+                        <p className="battle-info-date">📅 {activeBattle.date}</p>
+                        <div className="battle-info-result">
+                            <span className="battle-winner">✅ 승리: {activeBattle.winner}</span>
+                            <span className="battle-loser">❌ 패배: {activeBattle.loser}</span>
+                        </div>
+                        {activeBattle.description && (
+                            <p className="battle-info-desc">{activeBattle.description}</p>
+                        )}
+                    </div>
+                </div>
+            )}
 
             {/* Timeline Panel - conditionally shown */}
             {isPanelOpen && (

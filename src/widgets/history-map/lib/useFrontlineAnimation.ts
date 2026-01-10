@@ -31,6 +31,7 @@ interface UseFrontlineAnimationProps {
     currentDate: string; // "1950-06-25" format
     animationSpeed: number; // 1 = normal speed
     currentZoom?: number;
+    onBattleStart?: (battle: KoreanWarBattle) => void; // 전투 정보를 상위 컴포넌트로 전달
 }
 
 // Korean peninsula polygon (simplified)
@@ -100,7 +101,8 @@ export const useFrontlineAnimation = ({
     isActive,
     currentDate,
     animationSpeed = 1,
-    currentZoom = 6
+    currentZoom = 6,
+    onBattleStart
 }: UseFrontlineAnimationProps) => {
     const frontlineLayer = useRef<L.LayerGroup | null>(null);
     const territoryLayer = useRef<L.LayerGroup | null>(null);
@@ -475,13 +477,14 @@ export const useFrontlineAnimation = ({
 
             // If marker doesn't exist, create it
             if (!activeBattleMarkersRef.current.has(uniqueKey)) {
+                const bgColor = battle.winner === '북한' || battle.winner === '중국' || battle.winner === '중국/북한' ? '#ef4444' : '#3b82f6';
                 const icon = L.divIcon({
-                    className: 'korean-war-battle-marker',
+                    className: 'korean-war-battle-marker battle-glow-marker',
                     html: `
-                        <div style="
+                        <div class="battle-marker-inner battle-glow" style="
                             width: 24px;
                             height: 24px;
-                            background: ${battle.winner === '북한' || battle.winner === '중국' || battle.winner === '중국/북한' ? '#ef4444' : '#3b82f6'};
+                            background: ${bgColor};
                             border: 3px solid white;
                             border-radius: 50%;
                             box-shadow: 0 2px 8px rgba(0,0,0,0.4);
@@ -520,14 +523,20 @@ export const useFrontlineAnimation = ({
                 if (!shownBattleIdsRef.current.has(uniqueKey)) {
                     shownBattleIdsRef.current.add(uniqueKey);
 
-                    // Open popup after short delay
-                    setTimeout(() => {
-                        marker.openPopup();
-                    }, 100);
+                    // 전투 정보를 상위 컴포넌트로 전달 (팝업 대신 왼쪽 UI에 표시)
+                    if (onBattleStart) {
+                        onBattleStart(battle);
+                    }
 
-                    // Auto-close after 5 seconds
+                    // Glow 효과 제거 (3초 후)
                     setTimeout(() => {
-                        marker.closePopup();
+                        const el = marker.getElement();
+                        if (el) {
+                            const inner = el.querySelector('.battle-glow');
+                            if (inner) {
+                                inner.classList.remove('battle-glow');
+                            }
+                        }
                     }, 3000);
                 }
             }
@@ -540,7 +549,7 @@ export const useFrontlineAnimation = ({
                 activeBattleMarkersRef.current.delete(key);
             }
         });
-    }, [map]);
+    }, [map, onBattleStart]);
 
     // Draw movement markers (unchanged logic mostly)
     const drawMovements = useCallback((movements: KoreanWarMovement[]) => {

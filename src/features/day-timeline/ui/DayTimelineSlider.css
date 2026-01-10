@@ -505,3 +505,111 @@
 .korean-war-label.active .korean-war-label-content::after {
     background: white;
 }
+
+/* ======================================
+   Battle Info Popup
+   ====================================== */
+.battle-info-popup {
+    position: fixed;
+    top: 220px;
+    left: 20px;
+    z-index: 998;
+    max-width: 300px;
+    background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+    border-radius: 16px;
+    padding: 16px;
+    box-shadow:
+        0 10px 40px rgba(0, 0, 0, 0.5),
+        0 0 0 1px rgba(255, 255, 255, 0.1),
+        inset 0 1px 0 rgba(255, 255, 255, 0.1);
+    animation: battlePopupIn 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+    color: #f9f7f1;
+}
+
+@keyframes battlePopupIn {
+    0% {
+        opacity: 0;
+        transform: translateX(-20px) scale(0.9);
+    }
+
+    100% {
+        opacity: 1;
+        transform: translateX(0) scale(1);
+    }
+}
+
+.battle-info-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 12px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.15);
+}
+
+.battle-info-icon {
+    font-size: 24px;
+    animation: battleIconPulse 1s ease-in-out infinite;
+}
+
+@keyframes battleIconPulse {
+
+    0%,
+    100% {
+        transform: scale(1);
+    }
+
+    50% {
+        transform: scale(1.2);
+    }
+}
+
+.battle-info-name {
+    margin: 0;
+    font-size: 18px;
+    font-weight: 700;
+    color: #fbbf24;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+.battle-info-content {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.battle-info-date {
+    margin: 0;
+    font-size: 14px;
+    color: #94a3b8;
+}
+
+.battle-info-result {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    padding: 8px;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 8px;
+}
+
+.battle-winner {
+    font-size: 13px;
+    color: #4ade80;
+    font-weight: 600;
+}
+
+.battle-loser {
+    font-size: 13px;
+    color: #f87171;
+    font-weight: 600;
+}
+
+.battle-info-desc {
+    margin: 0;
+    font-size: 12px;
+    color: #cbd5e1;
+    line-height: 1.5;
+    padding-top: 8px;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+}

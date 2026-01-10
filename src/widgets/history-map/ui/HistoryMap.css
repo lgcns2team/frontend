@@ -495,3 +495,30 @@
     cursor: pointer !important;
     stroke-width: 5px;
 }
+
+/* Battle Marker Glow Effect */
+@keyframes battleGlow {
+
+    0%,
+    100% {
+        box-shadow: 0 0 5px rgba(255, 255, 255, 0.8),
+            0 0 10px rgba(255, 255, 255, 0.6),
+            0 0 20px rgba(255, 200, 100, 0.5);
+        transform: scale(1);
+    }
+
+    50% {
+        box-shadow: 0 0 15px rgba(255, 255, 255, 1),
+            0 0 25px rgba(255, 200, 100, 0.8),
+            0 0 40px rgba(255, 150, 50, 0.6);
+        transform: scale(1.2);
+    }
+}
+
+.battle-glow {
+    animation: battleGlow 0.5s ease-in-out infinite;
+}
+
+.battle-marker-inner {
+    transition: box-shadow 0.3s ease, transform 0.3s ease;
+}
