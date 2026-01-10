@@ -174,11 +174,7 @@ export const DinoGame = ({ onClose }: DinoGameProps) => {
     return (
         <div className="dino-game-overlay" onClick={handleTouch}>
             <div className="dino-game-container" onClick={e => e.stopPropagation()}>
-<<<<<<< HEAD
                 <button className="dino-game-close-btn" onClick={onClose}>✕</button>
-=======
-                <button className="close-btn" onClick={onClose}>✕</button>
->>>>>>> 9e9d551e85f7ca5055fd56a53c3ba59f88e2f5b0
 
                 <div className="dino-game-header">
                     <div className="dino-game-title">
