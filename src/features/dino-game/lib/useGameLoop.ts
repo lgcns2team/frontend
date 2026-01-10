@@ -10,10 +10,10 @@ const PLAYER_HEIGHT = 80;
 const OBSTACLE_WIDTH = 40;
 const OBSTACLE_HEIGHT = 60;
 const INITIAL_SPEED = 5;
-const SPEED_INCREMENT = 0.005; // 점수가 올라갈수록 속도 빠르게 증가
+const SPEED_INCREMENT = 0.004; // 점수가 올라갈수록 속도 빠르게 증가
 const MAX_SPEED = 20; // 최고 속도
 const MIN_OBSTACLE_GAP = 300; // 장애물 최소 간격 (px)
-const MAX_OBSTACLE_GAP = 500; // 장애물 최대 간격 (px)
+const MAX_OBSTACLE_GAP = 700; // 장애물 최대 간격 (px)
 
 export interface GameState {
     isPlaying: boolean;
