@@ -10,7 +10,7 @@ import type { TradeRouteWithColor } from '../lib/trade-route';
 import { useTradeAnimation } from '../lib/useTradeAnimation';
 import { useWarLayer } from '../lib/useWarLayer';
 import { useFrontlineAnimation } from '../lib/useFrontlineAnimation';
-import { isKoreanWarPeriod, KOREAN_WAR_START } from '../../../shared/api/korean-war-api';
+import { isKoreanWarPeriod, KOREAN_WAR_START, type KoreanWarBattle } from '../../../shared/api/korean-war-api';
 import { fetchPersonsByYear, fetchAllPersons, type PersonData } from '../../../shared/api/person-api';
 
 // Features
@@ -158,6 +158,10 @@ export default function HistoryMap() {
     const [isDayTimelineOpen, setIsDayTimelineOpen] = useState(false);
     const prevIsDayTimelineOpen = useRef(false);
 
+    // Active Battle state for info popup
+    const [activeBattle, setActiveBattle] = useState<KoreanWarBattle | null>(null);
+    const activeBattleTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
     // Sync DayTimeline open state with Main Timeline visibility
     useEffect(() => {
         if (isDayTimelineOpen) {
@@ -230,7 +234,19 @@ export default function HistoryMap() {
         isActive: isKoreanWarMode && layerType === 'battles',
         currentDate: currentKoreanWarDate,
         animationSpeed: koreanWarSpeed,
-        currentZoom: currentMapZoom
+        currentZoom: currentMapZoom,
+        onBattleStart: (battle) => {
+            // Clear previous timeout
+            if (activeBattleTimeoutRef.current) {
+                clearTimeout(activeBattleTimeoutRef.current);
+            }
+            // Set active battle for display
+            setActiveBattle(battle);
+            // Clear after 3 seconds
+            activeBattleTimeoutRef.current = setTimeout(() => {
+                setActiveBattle(null);
+            }, 3000);
+        }
     });
 
     // Update frontlines when Korean War data loads
@@ -1381,6 +1397,7 @@ export default function HistoryMap() {
                     onSpeedChange={setKoreanWarSpeed}
                     isOpen={isDayTimelineOpen}
                     onToggle={setIsDayTimelineOpen}
+                    activeBattle={activeBattle}
                 />
             )}
 

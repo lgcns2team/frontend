@@ -54,7 +54,10 @@
     display: flex;
     gap: 20px;
     font-family: 'Courier New', monospace;
+<<<<<<< HEAD
     margin-right: 70px;
+=======
+>>>>>>> 9e9d551e85f7ca5055fd56a53c3ba59f88e2f5b0
 }
 
 .score-item {
@@ -74,7 +77,11 @@
     font-weight: bold;
 }
 
+<<<<<<< HEAD
 .dino-game-close-btn {
+=======
+.close-btn {
+>>>>>>> 9e9d551e85f7ca5055fd56a53c3ba59f88e2f5b0
     position: absolute;
     top: 10px;
     right: 10px;
@@ -93,7 +100,11 @@
     z-index: 10;
 }
 
+<<<<<<< HEAD
 .dino-game-close-btn:hover {
+=======
+.close-btn:hover {
+>>>>>>> 9e9d551e85f7ca5055fd56a53c3ba59f88e2f5b0
     background: rgba(255, 255, 255, 0.3);
     transform: scale(1.1);
 }
