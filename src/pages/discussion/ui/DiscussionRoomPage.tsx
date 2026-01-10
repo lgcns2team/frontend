@@ -48,7 +48,9 @@ const DiscussionRoomPage: React.FC = () => {
         broadcastVote,
         isAnonymous,
         // sendSystemSignal removed
-        sendAnonymousStatus
+        sendAnonymousStatus,
+        sendSummary,
+        summaryData: hookSummaryData // Rename to avoid conflict with local state name if kept, but I will remove local state. Let's just use summaryData
     } = useDiscussion(id);
 
     // Debug: Log messages changes
@@ -89,7 +91,9 @@ const DiscussionRoomPage: React.FC = () => {
     const [replyToId, setReplyToId] = useState<string | null>(null);
     const [flippedBoxes, setFlippedBoxes] = useState<{ [key: number]: boolean }>({});
     const [isTopicCollapsed, setIsTopicCollapsed] = useState(true);
-    const [summaryData, setSummaryData] = useState<DiscussionSummaryResponse | null>(null);
+    // const [summaryData, setSummaryData] = useState<DiscussionSummaryResponse | null>(null); // Replaced by hook data
+    // Use hook data directly.
+    const summaryData = hookSummaryData as DiscussionSummaryResponse | null;
     const [isLoadingSummary, setIsLoadingSummary] = useState(false);
     const [summaryError, setSummaryError] = useState<string | null>(null);
 
@@ -111,32 +115,51 @@ const DiscussionRoomPage: React.FC = () => {
     const description = discussion?.description || discussion?.content || '';
 
     const handleNext = async () => {
-        let next: 'vote' | 'chat' | 'verify' | 'result' | 'final' = viewMode;
+        let next: 'vote' | 'chat' | 'verify' | 'result' | 'loading' | 'final' = viewMode;
         if (viewMode === 'chat') next = 'verify';
         else if (viewMode === 'verify') next = 'result';
         else if (viewMode === 'result') next = 'final';
 
         if (next !== viewMode) {
-            // If transitioning to final, fetch summary data
-            if (next === 'final' && !summaryData) {
-                setIsLoadingSummary(true);
-                setSummaryError(null);
-                try {
-                    const summary = await getDiscussionSummary(id!, topic);
-                    setSummaryData(summary);
-                    console.log('✅ Summary loaded:', summary);
-                } catch (error) {
-                    console.error('❌ Failed to load summary:', error);
-                    setSummaryError('요약을 불러오는데 실패했습니다.');
-                } finally {
-                    setIsLoadingSummary(false);
+            // If transitioning to final
+            if (next === 'final') {
+                // 1. Send LOADING mode first (Sync spinner)
+                if (localStorage.getItem('userRole') === 'TEACHER') {
+                    sendModeChange('loading'); // Broadcast 'loading' to students
                 }
-            }
 
-            if (localStorage.getItem('userRole') === 'TEACHER') {
-                sendModeChange(next);
+                if (!summaryData) {
+                    setIsLoadingSummary(true);
+                    setSummaryError(null);
+                    try {
+                        const summary = await getDiscussionSummary(id!, topic);
+                        console.log('✅ [DiscussionRoomPage] 요약 데이터 로드 성공:', summary);
+                        // setSummaryData(summary); -> Send to websocket
+                        sendSummary(summary);
+                        console.log('✅ [DiscussionRoomPage] sendSummary 호출 완료');
+                    } catch (error) {
+                        console.error('❌ Failed to load summary:', error);
+                        setSummaryError('요약을 불러오는데 실패했습니다.');
+                    } finally {
+                        setIsLoadingSummary(false);
+                        // 2. Send FINAL mode after loading finishes (Wait slightly to ensure data arrives first)
+                        if (localStorage.getItem('userRole') === 'TEACHER') {
+                            sendModeChange('final');
+                        }
+                    }
+                } else {
+                    // Data already exists, just go final
+                    if (localStorage.getItem('userRole') === 'TEACHER') {
+                        sendModeChange('final');
+                    }
+                }
             } else {
-                setViewMode(next);
+                // Normal mode change
+                if (localStorage.getItem('userRole') === 'TEACHER') {
+                    sendModeChange(next);
+                } else {
+                    setViewMode(next);
+                }
             }
         }
     };
@@ -647,7 +670,7 @@ const DiscussionRoomPage: React.FC = () => {
             )}
 
             {/* Loading Overlay Panel */}
-            {isLoadingSummary && (
+            {(viewMode === 'loading' || isLoadingSummary || (String(viewMode) === 'final' && !summaryData)) && (
                 <div className={styles.loadingOverlay}>
                     <div className={styles.loadingPanel}>
                         <div className={styles.spinner}></div>

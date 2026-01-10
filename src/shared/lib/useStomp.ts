@@ -12,7 +12,7 @@ export interface ChatMessage {
     // userId?: string;
     sender: string;
     content: string;
-    type: 'CHAT' | 'JOIN' | 'LEAVE' | 'STATUS' | 'END_SESSION';
+    type: 'CHAT' | 'JOIN' | 'LEAVE' | 'STATUS' | 'END_SESSION' | 'SUMMARY';
     side?: 'agree' | 'disagree';
     status?: 'PRO' | 'CON';
 }
@@ -251,6 +251,8 @@ export const useStomp = ({ url, onConnect, onDisconnect, onError }: UseStompConf
         };
     }, []);
 
+
+
     return {
         connect,
         disconnect,
@@ -271,7 +273,8 @@ export const useDiscussion = (roomId: string | undefined) => {
     // 2. State Management
     const [messages, setMessages] = useState<DisplayMessage[]>([]);
     const [vote, setVote] = useState<'agree' | 'disagree' | null>(null);
-    const [viewMode, setViewMode] = useState<'vote' | 'chat' | 'verify' | 'result' | 'final'>('vote');
+    const [viewMode, setViewMode] = useState<'vote' | 'chat' | 'verify' | 'result' | 'loading' | 'final'>('vote');
+    const [summaryData, setSummaryData] = useState<any>(null); // Store AI summary data
     const [isAnonymous, setIsAnonymous] = useState(false);
 
 
@@ -332,6 +335,19 @@ export const useDiscussion = (roomId: string | undefined) => {
                 return;
             }
 
+            if (message.status === 'SUMMARY' || message.type === 'SUMMARY') {
+                console.log('📊 [handleIncomingMessage] SUMMARY 데이터 수신:', message);
+                try {
+                    // Parse if string, otherwise use as is
+                    const data = typeof message.content === 'string' ? JSON.parse(message.content) : message.content;
+                    console.log('✅ [handleIncomingMessage] SUMMARY 데이터 파싱 성공:', data);
+                    setSummaryData(data);
+                } catch (e) {
+                    console.error('❌ [handleIncomingMessage] SUMMARY 데이터 파싱 실패:', e);
+                }
+                return;
+            }
+
             if (message.status === 'PRO' || message.status === 'CON') {
                 const voteSide = message.status === 'PRO' ? 'agree' : 'disagree';
                 if (userKey) {
@@ -345,6 +361,7 @@ export const useDiscussion = (roomId: string | undefined) => {
                 if (!message.content || message.type !== 'CHAT') return;
             }
         }
+
 
         // Backward compatibility checks (Cleaned up as we use status now, but keeping minimal safety if needed, or remove)
         // ... (Removing legacy magic string checks as requested for full refactor)
@@ -398,17 +415,17 @@ export const useDiscussion = (roomId: string | undefined) => {
             // moderation 알림 구독 추가
             subscribe('/user/queue/moderation', (msg) => {
                 try {
-                const payload = JSON.parse(msg.body);
-                console.log('Moderation event:', payload);
+                    const payload = JSON.parse(msg.body);
+                    console.log('Moderation event:', payload);
 
-                if (payload.type === 'warning') {
-                    alert(payload.notice);
-                } else if (payload.type === 'blocked') {
-                    alert(payload.notice);
-                    // TODO: 입력창 잠금 + 카운트다운
-                }
+                    if (payload.type === 'warning') {
+                        alert(payload.notice);
+                    } else if (payload.type === 'blocked') {
+                        alert(payload.notice);
+                        // TODO: 입력창 잠금 + 카운트다운
+                    }
                 } catch (e) {
-                console.warn('Moderation message parse failed:', msg.body);
+                    console.warn('Moderation message parse failed:', msg.body);
                 }
             });
 
@@ -602,6 +619,26 @@ export const useDiscussion = (roomId: string | undefined) => {
         }
     };
 
+    const sendSummary = (data: any) => {
+        if (!roomId || !isConnected) return;
+        console.log('📤 Sending SUMMARY data');
+
+        // 1. Send to others
+        sendMessage(
+            "/app/room/" + roomId + "/status",
+            {
+                status: 'SUMMARY',
+                // Stringify data to send as content
+                content: JSON.stringify(data),
+                userId: userId,
+            }
+        );
+
+        // 2. Update local state immediately (for Teacher who sends it)
+        setSummaryData(data);
+        console.log('✅ [sendSummary] 선생님 로컬 상태 업데이트 완료:', data);
+    };
+
     return {
         // State
         messages,
@@ -624,6 +661,8 @@ export const useDiscussion = (roomId: string | undefined) => {
         sendVoteStatus, // This combines setting vote (if needed) and sending status
         sendModeChange,
         sendEndSession,
+        sendSummary, // Export the new function
+        summaryData, // Export the data state
         confirmStart: () => { // Replacement for handleStart logic
             console.log('🚀 confirmStart called:', { roomId, vote, isConnected });
             if (!roomId) {
