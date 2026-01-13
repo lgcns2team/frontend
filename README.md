@@ -44,7 +44,7 @@ Markdown
 
 ## 📂 Project Structure (FSD)
 
-이 프로젝트는 유지보수성과 확장성을 위해 **Feature-Sliced Design (FSD)** 아키텍처를 따릅니다.
+이 프로젝트는 유지보수성과 확장성을 위해 **Feature-Sliced Design (FSD)** 아키텍처를  따릅니다.
 
 ```bash
 src/
