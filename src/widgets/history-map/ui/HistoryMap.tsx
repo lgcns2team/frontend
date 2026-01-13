@@ -1215,6 +1215,8 @@ export default function HistoryMap() {
                         onTogglePinset={() => setIsPinsetEnabled(prev => !prev)}
                         onJumpToYear={(year) => {
                             handleYearChange(year);
+                            // 전쟁 레이어 활성화 (전쟁 지도 핫스팟에서 호출되므로)
+                            setLayerType('battles');
                             // Close conversation panel when jumping to map
                             setIsConversationMode(false);
                             setChatCharacter(null);
