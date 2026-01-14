@@ -27,6 +27,14 @@ export const CharactersPanel = ({ onYearChange, onCharacterClick, currentYear = 
                 setError(null);
                 const data = await fetchCharacters();
                 console.log("Fetched characters data:", data);
+
+                // 궁예 이미지 50% 확률로 변경
+                const gungYe = data.find(c => c.characterName === '궁예');
+                if (gungYe && gungYe.imagePath && Math.random() < 0.5) {
+                    // 기존 경로에서 파일명만 변경 (확장자 주의)
+                    gungYe.imagePath = gungYe.imagePath.replace('궁예.png', '궁예2.png');
+                }
+
                 // Sort by birthYear ascending
                 const sorted = data.sort((a, b) => {
                     if (a.birthYear === null) return 1;
