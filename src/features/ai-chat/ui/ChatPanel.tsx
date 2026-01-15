@@ -4,7 +4,7 @@ import { sendCharacterMessage } from '../../../shared/api/aichat-api';
 import { ERAS } from '../../../shared/config/era-theme';
 import './ChatPanel.css';
 import { createBrowserStt } from "../../../shared/api/browseStt"; // ✅ STT 추가
-import { createStreamingTts, type StreamingTtsController } from '../../../shared/api/streamingTts'; // ✅ 스트리밍 TTS 추가
+import { createStreamingTts, prewarmAudio, type StreamingTtsController } from '../../../shared/api/streamingTts'; // ✅ 스트리밍 TTS 추가
 
 
 interface ChatMessage {
@@ -379,7 +379,10 @@ export const ChatPanel = ({ character, onCallStart }: ChatPanelProps) => {
                             onClick={() => {
                                 const nextState = !isTTSEnabled;
                                 setIsTTSEnabled(nextState);
-                                if (!nextState) {
+                                if (nextState) {
+                                    // 🔓 iOS Safari 오디오 잠금 해제
+                                    prewarmAudio();
+                                } else {
                                     console.log('🔇 [ChatPanel] Speaker OFF -> Stopping TTS');
                                     // 1. 일반 TTS 오디오 중단
                                     if (audioRef.current) {

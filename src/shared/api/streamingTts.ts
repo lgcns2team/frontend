@@ -5,6 +5,23 @@
 
 import { getStreamingHeaders } from './api-utils';
 
+/**
+ * iOS Safari 오디오 잠금 해제를 위한 무음 오디오 재생
+ * 사용자 터치 이벤트 핸들러 내에서 호출해야 합니다.
+ * 이 함수를 호출하면 이후 비동기 컨텍스트에서도 audio.play()가 동작합니다.
+ */
+export function prewarmAudio(): void {
+    // 매우 짧은 무음 WAV 파일 (Base64 인코딩)
+    const silentWav = 'data:audio/wav;base64,UklGRigAAABXQVZFZm10IBIAAAABAAEARKwAAIhYAQACABAAAABkYXRhAgAAAAEA';
+    const audio = new Audio(silentWav);
+    audio.volume = 0.01; // 거의 무음
+    audio.play().then(() => {
+        console.log('🔓 [TTS] iOS Audio context unlocked');
+    }).catch((e) => {
+        console.warn('⚠️ [TTS] Audio prewarm failed (expected on non-iOS):', e.message);
+    });
+}
+
 export interface TtsQueueItem {
     text: string;
     audioUrl?: string;
@@ -98,7 +115,7 @@ export function createStreamingTts(options: StreamingTtsOptions): StreamingTtsCo
 
         try {
             item.status = 'loading';
-            
+
             console.log(`🔊 TTS 요청 시작: "${item.text.substring(0, 30)}..."`);
 
             const response = await fetch(ttsApiUrl, {
@@ -117,7 +134,7 @@ export function createStreamingTts(options: StreamingTtsOptions): StreamingTtsCo
 
             const blob = await response.blob();
             console.log(`✅ TTS 응답 완료: ${blob.size} bytes`);
-            
+
             const url = URL.createObjectURL(blob);
 
             item.audioUrl = url;
@@ -139,10 +156,10 @@ export function createStreamingTts(options: StreamingTtsOptions): StreamingTtsCo
             tryPlayNext();
         } finally {
             abortControllers = abortControllers.filter(c => c !== controller);
-            
+
             // 🔧 중요: 현재 요청 완료 후에만 다음 요청 처리
             isFetching = false;
-            
+
             // 응답 받은 후 다음 문장 요청 시작
             console.log(`📤 다음 문장 요청 준비 중... (대기 중인 항목: ${queue.filter(q => q.status === 'pending').length}개)`);
             processQueue();

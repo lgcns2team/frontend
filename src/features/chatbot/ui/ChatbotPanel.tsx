@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { sendGeneralMessage, type ToolCallEvent } from '../../../shared/api/aichat-api';
-import { createStreamingTts, type StreamingTtsController } from '../../../shared/api/streamingTts';
+import { createStreamingTts, prewarmAudio, type StreamingTtsController } from '../../../shared/api/streamingTts';
 import './ChatbotPanel.css';
 
 type Sender = 'bot' | 'user';
@@ -538,7 +538,10 @@ export const ChatbotPanel = ({ onClose, initialPosition, initialSize, onStateCha
                             e.stopPropagation();
                             const nextState = !isTTSEnabled;
                             setIsTTSEnabled(nextState);
-                            if (!nextState) {
+                            if (nextState) {
+                                // 🔓 iOS Safari 오디오 잠금 해제
+                                prewarmAudio();
+                            } else {
                                 console.log('🔇 [ChatbotPanel] Speaker OFF -> Stopping TTS');
                                 // 1. 일반 TTS 오디오 중단
                                 if (audioRef.current) {
