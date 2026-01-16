@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import { sendCharacterMessage } from '../../../shared/api/aichat-api';
 import { fetchCharacterDetail } from '../../../shared/api/characters-api';
 import { createBrowserStt } from "../../../shared/api/browseStt";
-import { createStreamingTts, type StreamingTtsController } from '../../../shared/api/streamingTts';
+import { createStreamingTts, prewarmAudio, type StreamingTtsController } from '../../../shared/api/streamingTts';
 import { getStreamingHeaders } from '../../../shared/api/api-utils';
 import './CallPanel.css';
 
@@ -661,7 +661,9 @@ export const CallPanel = ({ characterName, characterImage, promptId, initialMess
 
                                     setIsPlaying(false);
                                 } else {
-                                    // Turning ON -> Start STT ONLY if not muted
+                                    // Turning ON -> Unlock audio and Start STT
+                                    // 🔓 iOS Safari 오디오 잠금 해제
+                                    prewarmAudio();
                                     if (!isMuted) {
                                         sttRef.current?.start();
                                     }
