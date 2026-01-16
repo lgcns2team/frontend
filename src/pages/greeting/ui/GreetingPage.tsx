@@ -109,11 +109,25 @@ const GreetingPage = () => {
 
                 <div
                     className={isTextHidden ? 'fade-out' : ''}
-                    style={{ position: 'relative', zIndex: 1 }}
+                    style={{
+                        position: 'relative',
+                        zIndex: 1,
+                        display: 'flex',
+                        flexDirection: 'column',
+                        alignItems: 'center'
+                    }}
                 >
-                    <h1 className="book-title" style={{ color: '#fff', textShadow: '0 4px 10px rgba(0,0,0,0.8)' }}>
-                        H.AI
-                    </h1>
+                    <img
+                        src="/assets/images/etc/logo.png"
+                        alt="H.AI Logo"
+                        className="book-title-logo"
+                        style={{
+                            width: '300px',
+                            height: 'auto',
+                            marginBottom: '2rem',
+                            filter: 'drop-shadow(0 4px 10px rgba(0,0,0,0.8))'
+                        }}
+                    />
                     <p className="book-desc" style={{ whiteSpace: 'pre-wrap', color: '#eee', textShadow: '0 2px 5px rgba(0,0,0,0.8)' }}>
                         잠들어 있는 역사를 깨우다.<br />
                         교과서 속으로 빨려들어가는 경험
